@@ -19,19 +19,30 @@ export type Technician = {
   location: string;
 };
 
-export type Invoice = {
-  invoiceId: string;
-  amount: number;
-  status: "Paid" | "Pending" | "Overdue";
-  date: string;
-};
-
 export type QuotationItem = {
   id: string;
   description: string;
   quantity: number;
   price: number;
 };
+
+export type Invoice = {
+  invoiceId: string;
+  customer: {
+    name: string;
+    email: string;
+    address: string;
+  };
+  items: QuotationItem[];
+  laborCost: number;
+  discount: number; // Percentage
+  gst: number; // Percentage
+  totalAmount: number;
+  status: "Paid" | "Pending" | "Overdue";
+  date: string;
+  quoteId?: string; // Optional link to a quotation
+};
+
 
 export type Quotation = {
   quoteId: string;
