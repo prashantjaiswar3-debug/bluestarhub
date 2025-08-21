@@ -79,6 +79,8 @@ export default function DashboardLayout({
   const [isChangePasswordOpen, setIsChangePasswordOpen] = React.useState(false);
   const [passwordFields, setPasswordFields] = React.useState({ current: "", new: "", confirm: "" });
 
+  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
+
 
   const getRole = () => {
     if (pathname.startsWith('/dashboard/admin')) return 'admin';
@@ -271,7 +273,7 @@ export default function DashboardLayout({
                 <Settings className="h-5 w-5" />
                 <span className="sr-only">Settings</span>
               </Button>
-              <Button variant="ghost" size="icon" className="rounded-full">
+              <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setIsProfileOpen(true)}>
                 <UserCircle className="h-5 w-5" />
                 <span className="sr-only">Profile</span>
               </Button>
@@ -406,6 +408,31 @@ export default function DashboardLayout({
             </DialogClose>
             <Button onClick={handleChangePassword}>Save Changes</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>My Profile</DialogTitle>
+                <DialogDescription>
+                    Review your account details below.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 flex flex-col items-center gap-4">
+                <Avatar className="h-24 w-24">
+                    <AvatarImage src="https://placehold.co/100x100.png" alt="@user" data-ai-hint="profile picture" />
+                    <AvatarFallback>{currentUser.fallback}</AvatarFallback>
+                </Avatar>
+                <div className="text-center">
+                    <h2 className="text-xl font-bold">{currentUser.name}</h2>
+                    <p className="text-muted-foreground">{currentUser.email}</p>
+                </div>
+            </div>
+             <DialogFooter>
+                <DialogClose asChild>
+                    <Button variant="outline">Close</Button>
+                </DialogClose>
+            </DialogFooter>
         </DialogContent>
       </Dialog>
     </SidebarProvider>
