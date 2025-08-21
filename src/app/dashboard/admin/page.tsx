@@ -85,6 +85,12 @@ export default function AdminDashboard() {
 
   const openComplaints = complaints.filter(c => c.status === 'Open');
   const assignedComplaints = complaints.filter(c => c.status === 'Assigned');
+  
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+    });
+  };
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
@@ -103,6 +109,7 @@ export default function AdminDashboard() {
                   <TableHead>Ticket ID</TableHead>
                   <TableHead>Customer</TableHead>
                   <TableHead>Issue</TableHead>
+                  <TableHead>Date</TableHead>
                   <TableHead>Priority</TableHead>
                   <TableHead className="text-right">Assign</TableHead>
                 </TableRow>
@@ -113,6 +120,7 @@ export default function AdminDashboard() {
                     <TableCell className="font-medium">{complaint.ticketId}</TableCell>
                     <TableCell>{complaint.customer.name}</TableCell>
                     <TableCell className="max-w-[300px] truncate">{complaint.issue}</TableCell>
+                    <TableCell>{formatDate(complaint.date)}</TableCell>
                     <TableCell>
                       <Badge variant={priorityVariant[complaint.priority]}>
                         {complaint.priority}
@@ -136,7 +144,7 @@ export default function AdminDashboard() {
                   </TableRow>
                 )) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center">No open complaints.</TableCell>
+                    <TableCell colSpan={6} className="text-center">No open complaints.</TableCell>
                   </TableRow>
                 )}
               </TableBody>
@@ -212,6 +220,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-
-
-    

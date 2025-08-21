@@ -1,3 +1,6 @@
+
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +39,13 @@ const statusVariant: { [key in Quotation["status"]]: "default" | "secondary" | "
 };
 
 export default function SalesDashboard() {
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+    }).format(amount);
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-5">
       <Card className="lg:col-span-2">
@@ -89,7 +99,7 @@ export default function SalesDashboard() {
                 <TableRow key={quote.quoteId}>
                   <TableCell className="font-medium">{quote.quoteId}</TableCell>
                   <TableCell>{quote.customer}</TableCell>
-                  <TableCell>₹{quote.amount.toFixed(2)}</TableCell>
+                  <TableCell>{formatCurrency(quote.amount)}</TableCell>
                   <TableCell>
                     <Badge variant={statusVariant[quote.status]}>
                       {quote.status}

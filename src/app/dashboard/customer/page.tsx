@@ -103,14 +103,21 @@ export default function CustomerDashboard() {
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
+    return date.toLocaleString('en-IN', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      timeZone: 'UTC'
+      timeZone: 'Asia/Kolkata'
     });
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+    }).format(amount);
   }
 
   return (
@@ -179,8 +186,8 @@ export default function CustomerDashboard() {
               {invoices.map((invoice) => (
                 <TableRow key={invoice.invoiceId}>
                   <TableCell className="font-medium">{invoice.invoiceId}</TableCell>
-                  <TableCell>{invoice.date}</TableCell>
-                  <TableCell>₹{invoice.amount.toFixed(2)}</TableCell>
+                  <TableCell>{new Date(invoice.date).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</TableCell>
+                  <TableCell>{formatCurrency(invoice.amount)}</TableCell>
                   <TableCell>
                     <Badge variant={invoiceStatusVariant[invoice.status]}>
                       {invoice.status}
