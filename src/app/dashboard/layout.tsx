@@ -58,7 +58,7 @@ const allNavItems = [
   { href: "/dashboard/technician", icon: Wrench, label: "My Jobs", roles: ['technician'] },
   { href: "/dashboard/customer", icon: Users, label: "My Portal", roles: ['customer'] },
   { href: "/dashboard/sales", icon: FileText, label: "Sales & Quotes", roles: ['sales'] },
-  { href: "/dashboard/invoices", icon: FilePlus2, label: "Invoices", roles: ['admin'] },
+  { href: "/dashboard/invoices", icon: FilePlus2, label: "Invoices", roles: ['admin', 'sales'] },
 ];
 
 const roleInfo = {
@@ -95,8 +95,7 @@ export default function DashboardLayout({
     if (pathname.startsWith('/dashboard/admin')) return 'admin';
     if (pathname.startsWith('/dashboard/technician')) return 'technician';
     if (pathname.startsWith('/dashboard/customer')) return 'customer';
-    if (pathname.startsWith('/dashboard/sales')) return 'sales';
-    if (pathname.startsWith('/dashboard/invoices')) return 'admin';
+    if (pathname.startsWith('/dashboard/sales') || pathname.startsWith('/dashboard/invoices')) return 'sales';
     return 'admin';
   }
   
@@ -504,6 +503,8 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
+
+    
 
     
 
