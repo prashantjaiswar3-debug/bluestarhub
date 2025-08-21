@@ -283,11 +283,11 @@ export default function DashboardLayout({
                 <div className="font-semibold">Developed by -</div>
                 <div className="w-24 h-auto">
                     <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="fill-current">
-                        <path d="M50 10L10 30V70L50 90L90 70V30L50 10ZM50 20L80 35V65L50 80L20 65V35L50 20Z" fill-opacity="0.1"/>
+                        <path d="M50 10L10 30V70L50 90L90 70V30L50 10ZM50 20L80 35V65L50 80L20 65V35L50 20Z" fillOpacity="0.1"/>
                         <path d="M63.4,26.6,50,18,36.6,26.6,25,44.2v25L50,82l25-12.8v-25Zm-25,4.8L50,38.6,61.6,31.4,70,44.2,50,55.8,30,44.2ZM27.5,47,50,58.6,72.5,47,80,59.8,50,71.4,20,59.8ZM50,61.4,27.5,74.2H72.5Z" transform="translate(0, -5) scale(1.1)"/>
                         <path d="M49.9,2.5c-0.2,0-0.4,0-0.6,0.1L9,24.1c-0.3,0.2-0.5,0.5-0.5,0.9v49c0,0.4,0.2,0.7,0.5,0.9l40.3,21.5c0.2,0.1,0.4,0.1,0.6,0.1s0.4,0,0.6-0.1l40.3-21.5c0.3-0.2,0.5-0.5,0.5-0.9v-49c0-0.4-0.2-0.7-0.5-0.9L50.5,2.6C50.3,2.5,50.1,2.5,49.9,2.5z M48.6,25.9l-22.1,12l-2.8-5.3l25-13.3L48.6,25.9z M21,39.5l28.1,15.2v35.8l-28.1-15V39.5z M79,65.5l-28.1,15V44.7L79,29.5V65.5z M51.4,25.9L73.5,14l2.8,5.3l-25,13.3L51.4,25.9z"/>
-                        <text x="50" y="88" text-anchor="middle" font-size="10" font-family="sans-serif" fill="currentColor">DIGITAL FOX</text>
-                        <text x="50" y="96" text-anchor="middle" font-size="6" font-family="sans-serif" fill="currentColor" letter-spacing="0.1em">STUDIO</text>
+                        <text x="50" y="88" textAnchor="middle" fontSize="10" fontFamily="sans-serif" fill="currentColor">DIGITAL FOX</text>
+                        <text x="50" y="96" textAnchor="middle" fontSize="6" fontFamily="sans-serif" fill="currentColor" letterSpacing="0.1em">STUDIO</text>
                     </svg>
                 </div>
                 <div className="flex items-center gap-2">
@@ -536,3 +536,6 @@ export default function DashboardLayout({
 
     
 
+
+
+    
