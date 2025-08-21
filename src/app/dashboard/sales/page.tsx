@@ -32,7 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Send, Eye, PlusCircle, Trash2 } from "lucide-react";
+import { Send, Eye, PlusCircle, Trash2, Gem } from "lucide-react";
 import type { Quotation, QuotationItem } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 
@@ -368,6 +368,10 @@ export default function SalesDashboard() {
                         </TableRow>
                     </TableBody>
                 </Table>
+                <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                    <Gem className="h-3 w-3" />
+                    <span>Created on Bluestar Hub</span>
+                </div>
               </div>
             )
           })()}
