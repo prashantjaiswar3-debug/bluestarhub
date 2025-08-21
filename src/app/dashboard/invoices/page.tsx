@@ -44,7 +44,7 @@ import type { Invoice, Quotation, QuotationItem, Customer } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
 import type html2canvas from 'html2canvas';
-import { initialQuotations } from "@/app/dashboard/sales/page";
+import { initialQuotations } from "@/lib/data";
 import { compareInvoiceAndQuote } from "@/ai/flows/compare-invoice-quote-flow";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -97,6 +97,8 @@ export default function InvoicesPage() {
     laborCost: 0,
     discount: 0,
     gst: 18,
+    quoteId: "",
+    poNumber: "",
   });
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [comparisonResult, setComparisonResult] = useState<string>("");
@@ -152,7 +154,7 @@ export default function InvoicesPage() {
     setNewInvoice(prev => ({
       ...prev,
       items: prev.items.map(item =>
-        item.id === id ? { ...item, [field]: typeof value === 'string' ? value : (field === 'description' ? value : parseFloat(value as string) || 0) } : item
+        item.id === id ? { ...item, [field]: typeof value === 'string' && field !== 'description' ? parseFloat(value) || 0 : value } : item
       ),
     }));
   };
@@ -178,6 +180,8 @@ export default function InvoicesPage() {
         laborCost: 0,
         discount: 0,
         gst: 18,
+        quoteId: "",
+        poNumber: "",
       });
   }
 
@@ -200,6 +204,8 @@ export default function InvoicesPage() {
       totalAmount,
       status: "Pending",
       date: new Date().toISOString().split('T')[0],
+      quoteId: newInvoice.quoteId,
+      poNumber: newInvoice.poNumber,
     };
     
     const updatedInvoices = [newInvoiceData, ...invoices];
@@ -224,6 +230,21 @@ export default function InvoicesPage() {
                     address: customer.address
                 }
             }));
+        }
+    };
+    
+    const handleQuotationSelect = (quotationId: string) => {
+        const quote = initialQuotations.find(q => q.quoteId === quotationId);
+        if (quote) {
+            setNewInvoice({
+                customer: quote.customer,
+                items: quote.items,
+                laborCost: quote.laborCost,
+                discount: quote.discount,
+                gst: quote.gst,
+                quoteId: quote.quoteId,
+                poNumber: quote.poNumber || "",
+            });
         }
     };
 
@@ -316,11 +337,32 @@ export default function InvoicesPage() {
           <CardDescription>Fill in the details to generate a new invoice.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6">
+           <div className="space-y-4 rounded-md border p-4">
+             <h4 className="text-sm font-medium">Quotation Details</h4>
+             <div className="space-y-2">
+                 <Label>Select Approved Quotation</Label>
+                  <Select onValueChange={handleQuotationSelect}>
+                     <SelectTrigger>
+                         <SelectValue placeholder="Select a quotation to pre-fill" />
+                     </SelectTrigger>
+                     <SelectContent>
+                         {initialQuotations.filter(q => q.status === 'Approved').map((quote) => (
+                             <SelectItem key={quote.quoteId} value={quote.quoteId}>{quote.quoteId} - {quote.customer.name}</SelectItem>
+                         ))}
+                     </SelectContent>
+                 </Select>
+             </div>
+             <div className="space-y-2">
+                <Label htmlFor="po-number">Purchase Order Number (Optional)</Label>
+                <Input id="po-number" placeholder="e.g., PO-12345" value={newInvoice.poNumber} onChange={(e) => setNewInvoice(prev => ({...prev, poNumber: e.target.value}))}/>
+              </div>
+          </div>
+          
           <div className="space-y-4 rounded-md border p-4">
              <h4 className="text-sm font-medium">Customer Details</h4>
               <div className="space-y-2">
                   <Label>Select Registered Customer</Label>
-                   <Select onValueChange={handleCustomerSelect}>
+                   <Select onValueChange={handleCustomerSelect} value={registeredCustomers.find(c => c.name === newInvoice.customer.name)?.id}>
                       <SelectTrigger>
                           <SelectValue placeholder="Select a customer" />
                       </SelectTrigger>
@@ -474,21 +516,26 @@ export default function InvoicesPage() {
 
                     return (
                         <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '100%', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '20px' }}>
-                            <div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z" fill="#2563EB"/>
-                                    </svg>
-                                    <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#2563EB' }}>Bluestar Electronics</h1>
+                          <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#2563EB' }}>
+                                        <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill="currentColor" d="M100 10l25 50 55 10-40 35 10 55-50-25-50 25 10-55-40-35 55-10z"/>
+                                        </svg>
+                                        <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Bluestar Electronics</h1>
+                                    </div>
+                                    <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
+                                        <p>bluestar.elec@gmail.com</p>
+                                        <p>+91 9766661333</p>
+                                    </div>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>INVOICE</h2>
                                 </div>
                             </div>
-                            <div style={{ textAlign: 'right' }}>
-                                <h2 style={{ fontSize: '20px', fontWeight: 'bold' }}>INVOICE</h2>
-                                <p style={{ color: '#555' }}>Invoice #: {selectedInvoice.invoiceId}</p>
-                                <p style={{ color: '#555' }}>Date: {formatDate(invoiceDate)}</p>
-                            </div>
-                          </div>
+                          </header>
+
                           <div style={{ marginTop: '30px', flexGrow: 1 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', paddingBottom: '20px' }}>
                                 <div>
@@ -499,8 +546,11 @@ export default function InvoicesPage() {
                                 </div>
                                  <div style={{ width: '220px' }}>
                                     <div style={{ fontSize: '12px', textAlign: 'right' }}>
+                                        <div style={{ marginBottom: '5px' }}><strong>Invoice ID:</strong><span>{selectedInvoice.invoiceId}</span></div>
+                                        <div style={{ marginBottom: '5px' }}><strong>Invoice Date:</strong><span>{formatDate(invoiceDate)}</span></div>
                                         <div style={{ marginBottom: '5px' }}><strong>Due Date:</strong><span>{formatDate(dueDate)}</span></div>
                                         {selectedInvoice.quoteId && <div style={{ marginBottom: '5px' }}><strong>Quote Ref:</strong><span>{selectedInvoice.quoteId}</span></div>}
+                                        {selectedInvoice.poNumber && <div style={{ marginBottom: '5px' }}><strong>PO Number:</strong><span>{selectedInvoice.poNumber}</span></div>}
                                     </div>
                                 </div>
                             </div>
@@ -542,21 +592,22 @@ export default function InvoicesPage() {
                                 </div>
                             </div>
                           </div>
-                          <div style={{ marginTop: 'auto', paddingTop: '20px', display: 'flex', justifyContent: 'space-between', fontSize: '12px', flexShrink: 0, borderTop: '1px solid #E2E8F0' }}>
-                                <div>
-                                    <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Terms and Conditions:</h3>
-                                    <p style={{ color: '#64748B', maxWidth: '300px', fontSize: '10px' }}>Payment is due within 15 days of the invoice date. Please make checks payable to Bluestar Electronics.</p>
+                           <footer style={{ marginTop: 'auto', paddingTop: '20px', fontSize: '12px', flexShrink: 0, borderTop: '1px solid #E2E8F0' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <div>
+                                        <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Terms and Conditions:</h3>
+                                        <p style={{ color: '#64748B', maxWidth: '300px', fontSize: '10px' }}>Payment is due within 15 days of the invoice date. Please make checks payable to Bluestar Electronics.</p>
+                                    </div>
+                                    <div style={{ textAlign: 'center' }}>
+                                        <p style={{ borderTop: '1px solid #64748B', paddingTop: '5px', marginTop: '40px' }}>Authorized Signature</p>
+                                        <p style={{ fontWeight: 'bold', marginTop: '5px' }}>Bluestar Electronics</p>
+                                    </div>
                                 </div>
-                                <div style={{ textAlign: 'center' }}>
-                                    <p style={{ borderTop: '1px solid #64748B', paddingTop: '5px', marginTop: '40px' }}>Authorized Signature</p>
-                                    <p style={{ fontWeight: 'bold', marginTop: '5px' }}>Bluestar Electronics</p>
+                                <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '10px', color: '#888' }}>
+                                    <p>Thank you for your business!</p>
+                                    <p style={{marginTop: '5px', fontWeight: 'bold'}}>Created on Bluestar Hub</p>
                                 </div>
-                            </div>
-                          <div style={{ marginTop: '50px', paddingTop: '20px', borderTop: '1px solid #eee', textAlign: 'center', fontSize: '12px', color: '#888' }}>
-                            <p>Thank you for your business!</p>
-                            <p>bluestar.elec@gmail.com | +91 9766661333</p>
-                            <p style={{marginTop: '10px', fontWeight: 'bold'}}>Created on Bluestar Hub</p>
-                          </div>
+                           </footer>
                         </div>
                     );
                   })()}
@@ -612,3 +663,6 @@ export default function InvoicesPage() {
     </div>
   );
 }
+
+
+    

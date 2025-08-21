@@ -44,39 +44,13 @@ import type { Quotation, QuotationItem, Customer, Invoice } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
 import type html2canvas from 'html2canvas';
+import { initialQuotations } from "@/lib/data";
 
 const registeredCustomers: Customer[] = [
     { id: "CUST-001", name: "Green Valley Apartments", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City" },
     { id: "CUST-002", name: "ABC Corporation", email: "contact@abc.com", phone: "555-0102", address: "123 Business Rd, Corp Town" },
     { id: "CUST-003", name: "John Doe", email: "john.doe@example.com", phone: "555-0103", address: "789 Pine Ln, Sometown" },
 ];
-
-
-export const initialQuotations: Quotation[] = [
-  {
-    quoteId: "QT-2023-051",
-    customer: { name: "ABC Corporation", email: "contact@abc.com", address: "123 Business Rd, Corp Town" },
-    items: [{ id: "item-1", description: "4x Hikvision 5MP Dome Cameras", quantity: 1, price: 18000 }],
-    laborCost: 5000,
-    discount: 10,
-    gst: 18,
-    totalAmount: 24780,
-    status: "Sent",
-    date: "2023-10-25"
-  },
-  {
-    quoteId: "QT-2023-050",
-    customer: { name: "Green Valley Apartments", email: "manager@gva.com", address: "456 Park Ave, Residence City" },
-    items: [{ id: "item-1", description: "16-Channel NVR System", quantity: 1, price: 80000 }, { id: "item-2", description: "12x Bullet Cameras", quantity: 1, price: 40000 }],
-    laborCost: 20000,
-    discount: 5,
-    gst: 18,
-    totalAmount: 157528,
-    status: "Approved",
-    date: "2023-10-22"
-  },
-];
-
 
 const statusVariant: { [key in Quotation["status"]]: "default" | "secondary" | "outline" | "destructive" } = {
   Sent: "default",
@@ -94,6 +68,7 @@ export default function SalesDashboard() {
     laborCost: 0,
     discount: 0,
     gst: 18,
+    poNumber: "",
   });
   const [selectedQuote, setSelectedQuote] = useState<Quotation | null>(null);
   const quoteRef = useRef<HTMLDivElement>(null);
@@ -125,7 +100,7 @@ export default function SalesDashboard() {
     setNewQuote(prev => ({
       ...prev,
       items: prev.items.map(item =>
-        item.id === id ? { ...item, [field]: value } : item
+        item.id === id ? { ...item, [field]: typeof value === 'string' && field !== 'description' ? parseFloat(value) || 0 : value } : item
       ),
     }));
   };
@@ -151,6 +126,7 @@ export default function SalesDashboard() {
         laborCost: 0,
         discount: 0,
         gst: 18,
+        poNumber: "",
       });
   }
 
@@ -173,6 +149,7 @@ export default function SalesDashboard() {
       totalAmount,
       status: "Draft",
       date: new Date().toISOString().split('T')[0],
+      poNumber: newQuote.poNumber,
     };
     setQuotations([newQuotationData, ...quotations]);
     resetForm();
@@ -258,10 +235,9 @@ export default function SalesDashboard() {
       status: "Pending",
       date: new Date().toISOString().split('T')[0],
       quoteId: quote.quoteId,
+      poNumber: quote.poNumber,
     };
     
-    // This is a placeholder for a more robust state management solution
-    // In a real app, this would likely be an API call and update a global state (e.g., via Context or Redux)
     const existingInvoicesStr = localStorage.getItem('invoices');
     const existingInvoices: Invoice[] = existingInvoicesStr ? JSON.parse(existingInvoicesStr) : [];
     localStorage.setItem('invoices', JSON.stringify([newInvoice, ...existingInvoices]));
@@ -307,6 +283,10 @@ export default function SalesDashboard() {
                <div className="space-y-2">
                 <Label htmlFor="customer-address">Address</Label>
                 <Textarea id="customer-address" placeholder="e.g., 123 Business Road, Mumbai" value={newQuote.customer.address} onChange={(e) => setNewQuote(prev => ({...prev, customer: {...prev.customer, address: e.target.value}}))} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="po-number">Purchase Order Number (Optional)</Label>
+                <Input id="po-number" placeholder="e.g., PO-12345" value={newQuote.poNumber} onChange={(e) => setNewQuote(prev => ({...prev, poNumber: e.target.value}))}/>
               </div>
           </div>
 
@@ -429,7 +409,7 @@ export default function SalesDashboard() {
                 </DialogHeader>
             </div>
             <div className="max-h-[70vh] overflow-y-auto px-6 pb-6">
-                <div ref={quoteRef} className="bg-white text-black p-8 font-sans w-[210mm]">
+                <div ref={quoteRef} className="bg-white text-black font-sans w-[210mm]">
                 {selectedQuote && (() => {
                     const { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
                     const quoteDate = new Date(selectedQuote.date);
@@ -439,19 +419,28 @@ export default function SalesDashboard() {
 
                     return (
                         <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '100%', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '20px' }}>
-                              <div>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <svg width="40" height="40" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#30475E"/>
-                                    </svg>
-                                    <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#30475E' }}>Bluestar Electronics</h1>
-                                  </div>
-                              </div>
-                            </div>
+                             <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                    <div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#2563EB' }}>
+                                            <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                                                <path fill="currentColor" d="M100 10l25 50 55 10-40 35 10 55-50-25-50 25 10-55-40-35 55-10z"/>
+                                            </svg>
+                                            <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Bluestar Electronics</h1>
+                                        </div>
+                                        <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
+                                            <p>bluestar.elec@gmail.com</p>
+                                            <p>+91 9766661333</p>
+                                        </div>
+                                    </div>
+                                    <div style={{ textAlign: 'right' }}>
+                                        <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>QUOTATION</h2>
+                                    </div>
+                                </div>
+                            </header>
                             
                             <div style={{ flexGrow: 1}}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '40px', paddingBottom: '20px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', paddingBottom: '20px' }}>
                                   <div>
                                       <h2 style={{ fontSize: '14px', fontWeight: 'bold', color: '#30475E', marginBottom: '8px' }}>Billed To:</h2>
                                       <p style={{ margin: 0, fontSize: '12px' }}>{selectedQuote.customer.name}</p>
@@ -459,11 +448,11 @@ export default function SalesDashboard() {
                                       <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.email}</p>
                                   </div>
                                   <div style={{ width: '220px' }}>
-                                      <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 10px 0', textAlign: 'right', color: '#30475E' }}>QUOTATION</h2>
                                       <div style={{ fontSize: '12px', textAlign: 'right' }}>
-                                          <div style={{ marginBottom: '5px' }}><strong>Quote No:</strong><span>{selectedQuote.quoteId}</span></div>
+                                          <div style={{ marginBottom: '5px' }}><strong>Quote ID:</strong><span>{selectedQuote.quoteId}</span></div>
                                           <div style={{ marginBottom: '5px' }}><strong>Quote Date:</strong><span>{formatDate(quoteDate)}</span></div>
-                                          <div><strong>Due Date:</strong><span>{formatDate(dueDate)}</span></div>
+                                          <div style={{ marginBottom: '5px' }}><strong>Due Date:</strong><span>{formatDate(dueDate)}</span></div>
+                                          {selectedQuote.poNumber && <div style={{ marginBottom: '5px' }}><strong>PO Number:</strong><span>{selectedQuote.poNumber}</span></div>}
                                       </div>
                                   </div>
                               </div>
@@ -507,22 +496,22 @@ export default function SalesDashboard() {
                               </div>
                             </div>
                             
-                            <div style={{ marginTop: 'auto', paddingTop: '20px', display: 'flex', justifyContent: 'space-between', fontSize: '12px', flexShrink: 0, borderTop: '1px solid #E2E8F0' }}>
-                                <div>
-                                    <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Terms and Conditions:</h3>
-                                    <p style={{ color: '#64748B', maxWidth: '300px', fontSize: '10px' }}>Payment is due within 15 days. All products are subject to standard warranty. Thank you for your business!</p>
+                            <footer style={{ marginTop: 'auto', paddingTop: '20px', fontSize: '12px', flexShrink: 0, borderTop: '1px solid #E2E8F0' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <div>
+                                        <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Terms and Conditions:</h3>
+                                        <p style={{ color: '#64748B', maxWidth: '300px', fontSize: '10px' }}>Payment is due within 15 days. All products are subject to standard warranty. Thank you for your business!</p>
+                                    </div>
+                                    <div style={{ textAlign: 'center' }}>
+                                        <p style={{ borderTop: '1px solid #64748B', paddingTop: '5px', marginTop: '40px' }}>Authorized Signature</p>
+                                        <p style={{ fontWeight: 'bold', marginTop: '5px' }}>Bluestar Electronics</p>
+                                    </div>
                                 </div>
-                                <div style={{ textAlign: 'center' }}>
-                                    <p style={{ borderTop: '1px solid #64748B', paddingTop: '5px', marginTop: '40px' }}>Authorized Signature</p>
-                                    <p style={{ fontWeight: 'bold', marginTop: '5px' }}>Bluestar Electronics</p>
+                                <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '10px', color: '#888' }}>
+                                    <p>Thank you for your business!</p>
+                                    <p style={{marginTop: '5px', fontWeight: 'bold'}}>Created on Bluestar Hub</p>
                                 </div>
-                            </div>
-                            
-                            <div style={{ marginTop: '50px', paddingTop: '20px', borderTop: '1px solid #eee', textAlign: 'center', fontSize: '12px', color: '#888' }}>
-                                <p>Thank you for your business!</p>
-                                <p>bluestar.elec@gmail.com | +91 9766661333</p>
-                                <p style={{marginTop: '10px', fontWeight: 'bold'}}>Created on Bluestar Hub</p>
-                            </div>
+                           </footer>
                         </div>
                     );
                 })()}
@@ -548,3 +537,6 @@ export default function SalesDashboard() {
     </div>
   );
 }
+
+
+    

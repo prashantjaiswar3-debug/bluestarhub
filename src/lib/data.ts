@@ -1,0 +1,31 @@
+
+import type { Quotation } from './types';
+
+export const initialQuotations: Quotation[] = [
+  {
+    quoteId: "QT-2023-051",
+    customer: { name: "ABC Corporation", email: "contact@abc.com", address: "123 Business Rd, Corp Town" },
+    items: [{ id: "item-1", description: "4x Hikvision 5MP Dome Cameras", quantity: 1, price: 18000 }],
+    laborCost: 5000,
+    discount: 10,
+    gst: 18,
+    totalAmount: 24780,
+    status: "Sent",
+    date: "2023-10-25",
+    poNumber: "PO-ABC-101",
+  },
+  {
+    quoteId: "QT-2023-050",
+    customer: { name: "Green Valley Apartments", email: "manager@gva.com", address: "456 Park Ave, Residence City" },
+    items: [{ id: "item-1", description: "16-Channel NVR System", quantity: 1, price: 80000 }, { id: "item-2", description: "12x Bullet Cameras", quantity: 1, price: 40000 }],
+    laborCost: 20000,
+    discount: 5,
+    gst: 18,
+    totalAmount: 157528,
+    status: "Approved",
+    date: "2023-10-22",
+    poNumber: "PO-GVA-203",
+  },
+];
+
+    

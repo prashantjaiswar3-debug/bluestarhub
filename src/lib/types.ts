@@ -50,6 +50,7 @@ export type Invoice = {
   status: "Paid" | "Pending" | "Overdue";
   date: string;
   quoteId?: string; // Optional link to a quotation
+  poNumber?: string;
 };
 
 
@@ -67,6 +68,7 @@ export type Quotation = {
   totalAmount: number;
   status: "Draft" | "Sent" | "Approved" | "Rejected";
   date: string;
+  poNumber?: string;
 };
 
 export type Job = {
@@ -88,3 +90,6 @@ export type Review = {
   comment: string;
   date: string;
 };
+
+
+    
