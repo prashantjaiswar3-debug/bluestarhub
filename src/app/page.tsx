@@ -33,7 +33,7 @@ export default function LoginPage() {
               Bluestar Hub
             </CardTitle>
             <CardDescription>
-              by Star Electronics
+              by Bluestar Electronics
             </CardDescription>
           </CardHeader>
           <CardContent>
