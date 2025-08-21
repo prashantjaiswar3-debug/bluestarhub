@@ -290,7 +290,7 @@ export default function DashboardLayout({
                 </div>
                 <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4" />
-                    <a href="mailto:thefoxcreations3@gmail.com" className="hover:underline truncate">thefoxcreations3@gmail.com</a>
+                    <a href="mailto:info.digitalfoxstudio@gmail.com" className="hover:underline truncate">info.digitalfoxstudio@gmail.com</a>
                 </div>
             </div>
           </SidebarFooter>
