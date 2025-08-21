@@ -64,17 +64,16 @@ export default function SalesDashboard() {
   const [quotations, setQuotations] = useState<Quotation[]>(initialQuotations);
   const [newQuote, setNewQuote] = useState({
     customer: { name: "", email: "", address: "" },
-    items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, price: 0 }],
+    items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, price: 0, gstRate: 18 }],
     laborCost: 0,
     discount: 0,
-    gst: 18,
     poNumber: "",
   });
   const [selectedQuote, setSelectedQuote] = useState<Quotation | null>(null);
   const quoteRef = useRef<HTMLDivElement>(null);
 
 
-  const subTotal = useMemo(() => {
+ const subTotal = useMemo(() => {
     const itemsTotal = newQuote.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
     return itemsTotal + newQuote.laborCost;
   }, [newQuote.items, newQuote.laborCost]);
@@ -88,8 +87,11 @@ export default function SalesDashboard() {
   }, [subTotal, discountAmount]);
 
   const gstAmount = useMemo(() => {
-    return totalAfterDiscount * (newQuote.gst / 100);
-  }, [totalAfterDiscount, newQuote.gst]);
+    return newQuote.items.reduce((sum, item) => {
+        const itemTotal = item.quantity * item.price;
+        return sum + (itemTotal * (item.gstRate / 100));
+    }, 0);
+  }, [newQuote.items]);
 
   const totalAmount = useMemo(() => {
     return Math.round(totalAfterDiscount + gstAmount);
@@ -108,7 +110,7 @@ export default function SalesDashboard() {
   const addItem = () => {
     setNewQuote(prev => ({
       ...prev,
-      items: [...prev.items, { id: `item-${Date.now()}`, description: "", quantity: 1, price: 0 }],
+      items: [...prev.items, { id: `item-${Date.now()}`, description: "", quantity: 1, price: 0, gstRate: 18 }],
     }));
   };
 
@@ -122,10 +124,9 @@ export default function SalesDashboard() {
   const resetForm = () => {
       setNewQuote({
         customer: { name: "", email: "", address: "" },
-        items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, price: 0 }],
+        items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, price: 0, gstRate: 18 }],
         laborCost: 0,
         discount: 0,
-        gst: 18,
         poNumber: "",
       });
   }
@@ -145,7 +146,6 @@ export default function SalesDashboard() {
       items: newQuote.items,
       laborCost: newQuote.laborCost,
       discount: newQuote.discount,
-      gst: newQuote.gst,
       totalAmount,
       status: "Draft",
       date: new Date().toISOString().split('T')[0],
@@ -186,7 +186,10 @@ export default function SalesDashboard() {
     const subTotal = itemsTotal + quote.laborCost;
     const discountAmount = subTotal * (quote.discount / 100);
     const totalAfterDiscount = subTotal - discountAmount;
-    const gstAmount = totalAfterDiscount * (quote.gst / 100);
+    const gstAmount = quote.items.reduce((sum, item) => {
+        const itemTotal = item.quantity * item.price;
+        return sum + (itemTotal * (item.gstRate / 100));
+    }, 0);
     const grandTotal = Math.round(totalAfterDiscount + gstAmount);
     return { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal };
   }
@@ -231,7 +234,6 @@ export default function SalesDashboard() {
       items: quote.items,
       laborCost: quote.laborCost,
       discount: quote.discount,
-      gst: quote.gst,
       totalAmount: quote.totalAmount,
       status: "Pending",
       date: new Date().toISOString().split('T')[0],
@@ -304,7 +306,7 @@ export default function SalesDashboard() {
                   <Label htmlFor={`item-desc-${index}`}>Description</Label>
                   <Textarea id={`item-desc-${index}`} placeholder="e.g., 4x Dome Cameras, 1x 8-Channel DVR..." value={item.description} onChange={(e) => handleItemChange(item.id, 'description', e.target.value)} />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                    <div className="space-y-2">
                       <Label htmlFor={`item-qty-${index}`}>Quantity</Label>
                       <Input id={`item-qty-${index}`} type="number" placeholder="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value, 10) || 1)} />
@@ -312,6 +314,10 @@ export default function SalesDashboard() {
                     <div className="space-y-2">
                       <Label htmlFor={`item-price-${index}`}>Price (₹)</Label>
                       <Input id={`item-price-${index}`} type="number" placeholder="10000" value={item.price} onChange={(e) => handleItemChange(item.id, 'price', parseFloat(e.target.value) || 0)}/>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`item-gst-${index}`}>GST (%)</Label>
+                      <Input id={`item-gst-${index}`} type="number" placeholder="18" value={item.gstRate} onChange={(e) => handleItemChange(item.id, 'gstRate', parseFloat(e.target.value) || 0)}/>
                     </div>
                 </div>
               </div>
@@ -334,13 +340,9 @@ export default function SalesDashboard() {
                     <Input id="discount" type="number" placeholder="10" value={newQuote.discount} onChange={(e) => setNewQuote(prev => ({...prev, discount: parseFloat(e.target.value) || 0}))} />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="gst">GST (%)</Label>
-                    <Input id="gst" type="number" placeholder="18" value={newQuote.gst} onChange={(e) => setNewQuote(prev => ({...prev, gst: parseFloat(e.target.value) || 0}))}/>
+                    <Label>Grand Total</Label>
+                    <Input readOnly value={formatCurrency(totalAmount)} className="font-semibold border-none p-0 h-auto text-lg"/>
                 </div>
-            </div>
-            <div className="space-y-2">
-                <Label>Grand Total</Label>
-                <Input readOnly value={formatCurrency(totalAmount)} className="font-semibold border-none p-0 h-auto text-lg"/>
             </div>
            </div>
         </CardContent>
@@ -425,7 +427,7 @@ export default function SalesDashboard() {
                                     <div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#2563EB' }}>
                                             <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                                                <path fill="currentColor" d="M100,12.5 C105.52,12.5 110,16.98 110,22.5 L110,62.5 L142.5,45 C147.2,42.12 153.21,43.87 156.08,48.58 C158.96,53.28 157.21,59.29 152.5,62.17 L115,82.5 L152.5,102.83 C157.21,105.71 158.96,111.72 156.08,116.42 C153.21,121.13 147.2,122.88 142.5,120 L110,102.5 L110,142.5 C110,148.02 105.52,152.5 100,152.5 C94.48,152.5 90,148.02 90,142.5 L90,102.5 L57.5,120 C52.8,122.88 46.79,121.13 43.92,116.42 C41.04,111.72 42.79,105.71 47.5,102.83 L85,82.5 L47.5,62.17 C42.79,59.29 41.04,53.28 43.92,48.58 C46.79,43.87 52.8,42.12 57.5,45 L90,62.5 L90,22.5 C90,16.98 94.48,12.5 100,12.5 Z"/>
+                                              <path fill="currentColor" d="M100 12.5C105.523 12.5 110 16.9772 110 22.5V62.5H142.5C147.201 62.5 151.084 65.6116 152.17 70.0934C153.255 74.5753 151.211 79.4247 147.5 81.65L115 100L147.5 118.35C151.211 120.575 153.255 125.425 152.17 129.907C151.084 134.388 147.201 137.5 142.5 137.5H110V177.5C110 183.023 105.523 187.5 100 187.5C94.4772 187.5 90 183.023 90 177.5V137.5H57.5C52.7989 137.5 48.9156 134.388 47.8304 129.907C46.7451 125.425 48.7887 120.575 52.5 118.35L85 100L52.5 81.65C48.7887 79.4247 46.7451 74.5753 47.8304 70.0934C48.9156 65.6116 52.7989 62.5 57.5 62.5H90V22.5C90 16.9772 94.4772 12.5 100 12.5Z"/>
                                             </svg>
                                             <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Bluestar Electronics</h1>
                                         </div>
@@ -466,6 +468,7 @@ export default function SalesDashboard() {
                                           <th style={{ padding: '10px', textAlign: 'left' }}>DESCRIPTION</th>
                                           <th style={{ padding: '10px', textAlign: 'right' }}>PRICE</th>
                                           <th style={{ padding: '10px', textAlign: 'right' }}>QTY</th>
+                                          <th style={{ padding: '10px', textAlign: 'right' }}>GST</th>
                                           <th style={{ padding: '10px', textAlign: 'right' }}>TOTAL</th>
                                       </tr>
                                   </thead>
@@ -476,12 +479,13 @@ export default function SalesDashboard() {
                                               <td style={{ padding: '10px', maxWidth: '300px' }}>{item.description}</td>
                                               <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
                                               <td style={{ padding: '10px', textAlign: 'right' }}>{item.quantity}</td>
+                                               <td style={{ padding: '10px', textAlign: 'right' }}>{item.gstRate}%</td>
                                               <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.quantity * item.price)}</td>
                                           </tr>
                                       ))}
                                       {selectedQuote.laborCost > 0 && (
                                           <tr style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: selectedQuote.items.length % 2 === 0 ? '#F8FAFC' : 'white' }}>
-                                              <td colSpan={4} style={{ padding: '10px', textAlign: 'right', fontWeight: 'bold' }}>Labor Cost</td>
+                                              <td colSpan={5} style={{ padding: '10px', textAlign: 'right', fontWeight: 'bold' }}>Labor Cost</td>
                                               <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(selectedQuote.laborCost)}</td>
                                           </tr>
                                       )}
@@ -492,7 +496,7 @@ export default function SalesDashboard() {
                                   <div style={{ width: '250px', fontSize: '12px' }}>
                                       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Sub Total:</span><span>{formatCurrency(subTotal)}</span></div>
                                       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Discount ({selectedQuote.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>GST ({selectedQuote.gst}%):</span><span>{formatCurrency(gstAmount)}</span></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Total GST:</span><span>{formatCurrency(gstAmount)}</span></div>
                                       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px' }}><span>TOTAL:</span><span>{formatCurrency(grandTotal)}</span></div>
                                   </div>
                               </div>

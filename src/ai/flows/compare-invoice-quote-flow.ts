@@ -16,6 +16,7 @@ const QuotationItemSchema = z.object({
   description: z.string(),
   quantity: z.number(),
   price: z.number(),
+  gstRate: z.number(),
 });
 
 const CustomerSchema = z.object({
@@ -30,7 +31,6 @@ const QuotationSchema = z.object({
   items: z.array(QuotationItemSchema),
   laborCost: z.number(),
   discount: z.number(),
-  gst: z.number(),
   totalAmount: z.number(),
   status: z.string(), // Draft | Sent | Approved | Rejected
   date: z.string(),
@@ -42,7 +42,6 @@ const InvoiceSchema = z.object({
   items: z.array(QuotationItemSchema),
   laborCost: z.number(),
   discount: z.number(),
-  gst: z.number(),
   totalAmount: z.number(),
   status: z.string(), // Paid | Pending | Overdue
   date: z.string(),
@@ -66,7 +65,7 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert accounting assistant for Bluestar Electronics. Your task is to compare an invoice with its original quotation and provide a concise summary of the differences.
 
 Analyze the provided JSON objects for the invoice and the quotation. Pay close attention to any discrepancies in:
-- Items (descriptions, quantities, prices)
+- Items (descriptions, quantities, prices, GST rates)
 - Labor costs
 - Discounts
 - Total amounts

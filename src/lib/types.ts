@@ -27,6 +27,8 @@ export type Customer = {
   email: string;
   phone: string;
   address: string;
+  isCompany?: boolean;
+  companyName?: string;
 };
 
 export type QuotationItem = {
@@ -34,6 +36,7 @@ export type QuotationItem = {
   description: string;
   quantity: number;
   price: number;
+  gstRate: number; // Percentage
 };
 
 export type Invoice = {
@@ -47,7 +50,6 @@ export type Invoice = {
   items: QuotationItem[];
   laborCost: number;
   discount: number; // Percentage
-  gst: number; // Percentage
   totalAmount: number;
   status: "Paid" | "Pending" | "Overdue";
   date: string;
@@ -67,7 +69,6 @@ export type Quotation = {
   items: QuotationItem[];
   laborCost: number;
   discount: number; // Percentage
-  gst: number; // Percentage
   totalAmount: number;
   status: "Draft" | "Sent" | "Approved" | "Rejected";
   date: string;
