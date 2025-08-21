@@ -93,6 +93,13 @@ export default function CustomerDashboard() {
       description: `Your ticket ID is ${newTicketId}. We will get back to you shortly.`,
     });
   };
+  
+  const handleDownloadInvoice = (invoiceId: string) => {
+    toast({
+        title: "Downloading Invoice",
+        description: `Your invoice ${invoiceId} will be downloaded shortly.`,
+    })
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -169,7 +176,7 @@ export default function CustomerDashboard() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => handleDownloadInvoice(invoice.invoiceId)}>
                             <Download className="mr-2 h-3 w-3" />
                             Download
                         </Button>
