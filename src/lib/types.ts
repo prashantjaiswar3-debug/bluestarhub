@@ -42,6 +42,8 @@ export type Quotation = {
   };
   items: QuotationItem[];
   laborCost: number;
+  discount: number; // Percentage
+  gst: number; // Percentage
   totalAmount: number;
   status: "Draft" | "Sent" | "Approved" | "Rejected";
   date: string;

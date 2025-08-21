@@ -42,7 +42,9 @@ const initialQuotations: Quotation[] = [
     customer: { name: "ABC Corporation", email: "contact@abc.com", address: "123 Business Rd, Corp Town" },
     items: [{ id: "item-1", description: "4x Hikvision 5MP Dome Cameras", quantity: 1, price: 18000 }],
     laborCost: 5000,
-    totalAmount: 23000,
+    discount: 10,
+    gst: 18,
+    totalAmount: 24780,
     status: "Sent",
     date: "2023-10-25"
   },
@@ -51,7 +53,9 @@ const initialQuotations: Quotation[] = [
     customer: { name: "Green Valley Apartments", email: "manager@gva.com", address: "456 Park Ave, Residence City" },
     items: [{ id: "item-1", description: "16-Channel NVR System", quantity: 1, price: 80000 }, { id: "item-2", description: "12x Bullet Cameras", quantity: 1, price: 40000 }],
     laborCost: 20000,
-    totalAmount: 140000,
+    discount: 5,
+    gst: 18,
+    totalAmount: 157528,
     status: "Approved",
     date: "2023-10-22"
   },
@@ -72,13 +76,32 @@ export default function SalesDashboard() {
     customer: { name: "", email: "", address: "" },
     items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, price: 0 }],
     laborCost: 0,
+    discount: 0,
+    gst: 18,
   });
   const [selectedQuote, setSelectedQuote] = useState<Quotation | null>(null);
 
-  const totalAmount = useMemo(() => {
+  const subTotal = useMemo(() => {
     const itemsTotal = newQuote.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
     return itemsTotal + newQuote.laborCost;
   }, [newQuote.items, newQuote.laborCost]);
+
+  const discountAmount = useMemo(() => {
+    return subTotal * (newQuote.discount / 100);
+  }, [subTotal, newQuote.discount]);
+
+  const totalAfterDiscount = useMemo(() => {
+    return subTotal - discountAmount;
+  }, [subTotal, discountAmount]);
+
+  const gstAmount = useMemo(() => {
+    return totalAfterDiscount * (newQuote.gst / 100);
+  }, [totalAfterDiscount, newQuote.gst]);
+
+  const totalAmount = useMemo(() => {
+    return Math.round(totalAfterDiscount + gstAmount);
+  }, [totalAfterDiscount, gstAmount]);
+
 
   const handleItemChange = (id: string, field: keyof Omit<QuotationItem, 'id'>, value: string | number) => {
     setNewQuote(prev => ({
@@ -108,6 +131,8 @@ export default function SalesDashboard() {
         customer: { name: "", email: "", address: "" },
         items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, price: 0 }],
         laborCost: 0,
+        discount: 0,
+        gst: 18,
       });
   }
 
@@ -122,7 +147,11 @@ export default function SalesDashboard() {
     }
     const newQuotationData: Quotation = {
       quoteId: `QT-${new Date().getFullYear()}-${Math.floor(Math.random() * 100) + 52}`,
-      ...newQuote,
+      customer: newQuote.customer,
+      items: newQuote.items,
+      laborCost: newQuote.laborCost,
+      discount: newQuote.discount,
+      gst: newQuote.gst,
       totalAmount,
       status: "Draft",
       date: new Date().toISOString().split('T')[0],
@@ -140,6 +169,15 @@ export default function SalesDashboard() {
         style: 'currency',
         currency: 'INR',
     }).format(amount);
+  }
+
+  const calculateQuoteTotals = (quote: Quotation) => {
+    const subTotal = quote.items.reduce((sum, item) => sum + item.quantity * item.price, 0) + quote.laborCost;
+    const discountAmount = subTotal * (quote.discount / 100);
+    const totalAfterDiscount = subTotal - discountAmount;
+    const gstAmount = totalAfterDiscount * (quote.gst / 100);
+    const grandTotal = Math.round(totalAfterDiscount + gstAmount);
+    return { subTotal, discountAmount, gstAmount, grandTotal };
   }
 
   return (
@@ -197,13 +235,24 @@ export default function SalesDashboard() {
             </Button>
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4 rounded-md border p-4">
+            <h4 className="text-sm font-medium">Costs & Total</h4>
              <div className="space-y-2">
                 <Label htmlFor="labor-cost">Labor Cost (₹)</Label>
                 <Input id="labor-cost" type="number" placeholder="5000" value={newQuote.laborCost} onChange={(e) => setNewQuote(prev => ({...prev, laborCost: parseFloat(e.target.value) || 0}))}/>
             </div>
-             <div className="space-y-2">
-                <Label>Total Amount</Label>
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="discount">Discount (%)</Label>
+                    <Input id="discount" type="number" placeholder="10" value={newQuote.discount} onChange={(e) => setNewQuote(prev => ({...prev, discount: parseFloat(e.target.value) || 0}))} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="gst">GST (%)</Label>
+                    <Input id="gst" type="number" placeholder="18" value={newQuote.gst} onChange={(e) => setNewQuote(prev => ({...prev, gst: parseFloat(e.target.value) || 0}))}/>
+                </div>
+            </div>
+            <div className="space-y-2">
+                <Label>Grand Total</Label>
                 <Input readOnly value={formatCurrency(totalAmount)} className="font-semibold border-none p-0 h-auto text-lg"/>
             </div>
            </div>
@@ -263,52 +312,65 @@ export default function SalesDashboard() {
               A detailed view of quote <span className="font-semibold">{selectedQuote?.quoteId}</span> for {selectedQuote?.customer.name}.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <h4 className="font-semibold">Billed To:</h4>
-                    <p>{selectedQuote?.customer.name}</p>
-                    <p className="text-sm text-muted-foreground">{selectedQuote?.customer.email}</p>
-                    <p className="text-sm text-muted-foreground">{selectedQuote?.customer.address}</p>
+          {selectedQuote && (() => {
+            const { subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
+            return (
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <h4 className="font-semibold">Billed To:</h4>
+                        <p>{selectedQuote.customer.name}</p>
+                        <p className="text-sm text-muted-foreground">{selectedQuote.customer.email}</p>
+                        <p className="text-sm text-muted-foreground">{selectedQuote.customer.address}</p>
+                    </div>
+                     <div className="text-right">
+                        <h4 className="font-semibold">Quote ID: {selectedQuote.quoteId}</h4>
+                        <p className="text-sm text-muted-foreground">Date: {new Date(selectedQuote.date).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
+                     </div>
                 </div>
-                 <div className="text-right">
-                    <h4 className="font-semibold">Quote ID: {selectedQuote?.quoteId}</h4>
-                    <p className="text-sm text-muted-foreground">Date: {selectedQuote ? new Date(selectedQuote.date).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }) : ''}</p>
-                 </div>
-            </div>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Description</TableHead>
-                        <TableHead className="text-center">Quantity</TableHead>
-                        <TableHead className="text-right">Price</TableHead>
-                        <TableHead className="text-right">Total</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {selectedQuote?.items.map(item => (
-                        <TableRow key={item.id}>
-                            <TableCell>{item.description}</TableCell>
-                            <TableCell className="text-center">{item.quantity}</TableCell>
-                            <TableCell className="text-right">{formatCurrency(item.price)}</TableCell>
-                            <TableCell className="text-right">{formatCurrency(item.quantity * item.price)}</TableCell>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Description</TableHead>
+                            <TableHead className="text-center">Quantity</TableHead>
+                            <TableHead className="text-right">Price</TableHead>
+                            <TableHead className="text-right">Total</TableHead>
                         </TableRow>
-                    ))}
-                    <TableRow>
-                        <TableCell colSpan={3} className="text-right font-medium">Subtotal</TableCell>
-                        <TableCell className="text-right">{formatCurrency(selectedQuote?.items.reduce((sum, i) => sum + (i.quantity * i.price), 0) || 0)}</TableCell>
-                    </TableRow>
-                     <TableRow>
-                        <TableCell colSpan={3} className="text-right font-medium">Labor Cost</TableCell>
-                        <TableCell className="text-right">{formatCurrency(selectedQuote?.laborCost || 0)}</TableCell>
-                    </TableRow>
-                     <TableRow className="font-bold text-lg">
-                        <TableCell colSpan={3} className="text-right">Grand Total</TableCell>
-                        <TableCell className="text-right">{formatCurrency(selectedQuote?.totalAmount || 0)}</TableCell>
-                    </TableRow>
-                </TableBody>
-            </Table>
-          </div>
+                    </TableHeader>
+                    <TableBody>
+                        {selectedQuote.items.map(item => (
+                            <TableRow key={item.id}>
+                                <TableCell>{item.description}</TableCell>
+                                <TableCell className="text-center">{item.quantity}</TableCell>
+                                <TableCell className="text-right">{formatCurrency(item.price)}</TableCell>
+                                <TableCell className="text-right">{formatCurrency(item.quantity * item.price)}</TableCell>
+                            </TableRow>
+                        ))}
+                         <TableRow>
+                            <TableCell colSpan={3} className="text-right font-medium">Labor Cost</TableCell>
+                            <TableCell className="text-right">{formatCurrency(selectedQuote.laborCost)}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell colSpan={3} className="text-right font-medium">Subtotal</TableCell>
+                            <TableCell className="text-right">{formatCurrency(subTotal)}</TableCell>
+                        </TableRow>
+                         <TableRow>
+                            <TableCell colSpan={3} className="text-right font-medium">Discount ({selectedQuote.discount}%)</TableCell>
+                            <TableCell className="text-right text-destructive">-{formatCurrency(discountAmount)}</TableCell>
+                        </TableRow>
+                         <TableRow>
+                            <TableCell colSpan={3} className="text-right font-medium">GST ({selectedQuote.gst}%)</TableCell>
+                            <TableCell className="text-right">{formatCurrency(gstAmount)}</TableCell>
+                        </TableRow>
+                         <TableRow className="font-bold text-lg">
+                            <TableCell colSpan={3} className="text-right">Grand Total (Rounded)</TableCell>
+                            <TableCell className="text-right">{formatCurrency(grandTotal)}</TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+              </div>
+            )
+          })()}
           <DialogFooter>
             <DialogClose asChild>
                 <Button variant="outline">Close</Button>
