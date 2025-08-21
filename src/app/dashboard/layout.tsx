@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Gem,
-  Home,
   LayoutGrid,
   Users,
   Wrench,
@@ -31,7 +30,6 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const allNavItems = [
-  { href: "/dashboard", icon: Home, label: "Dashboard", roles: ['admin', 'technician', 'customer', 'sales'] },
   { href: "/dashboard/admin", icon: LayoutGrid, label: "Assignments", roles: ['admin'] },
   { href: "/dashboard/technician", icon: Wrench, label: "My Jobs", roles: ['technician'] },
   { href: "/dashboard/customer", icon: Users, label: "My Portal", roles: ['customer'] },
@@ -58,34 +56,12 @@ export default function DashboardLayout({
     if (pathname.startsWith('/dashboard/technician')) return 'technician';
     if (pathname.startsWith('/dashboard/customer')) return 'customer';
     if (pathname.startsWith('/dashboard/sales')) return 'sales';
-    return 'default';
+    return 'admin';
   }
 
   const currentRole = getRole();
-  const navItems = allNavItems.filter(item => {
-    if (currentRole === 'admin') {
-        const adminRoutes = ['/dashboard', '/dashboard/admin'];
-        if(adminRoutes.includes(item.href)) return true;
-        const techRoute = allNavItems.find(i => i.roles.includes('technician'));
-        if (techRoute && item.href === techRoute.href) {
-            item.label = 'Technician View'
-            return true;
-        };
-        const customerRoute = allNavItems.find(i => i.roles.includes('customer'));
-        if (customerRoute && item.href === customerRoute.href) {
-            item.label = 'Customer Portal'
-            return true;
-        }
-        const salesRoute = allNavItems.find(i => i.roles.includes('sales'));
-        if (salesRoute && item.href === salesRoute.href) {
-            item.label = 'Sales & Quotes'
-            return true;
-        }
+  const navItems = allNavItems.filter(item => item.roles.includes(currentRole));
 
-        return false;
-    }
-    return item.roles.includes(currentRole);
-  });
   const currentUser = roleInfo[currentRole] || roleInfo.default;
   const dashboardLabel = navItems.find(item => pathname.startsWith(item.href))?.label || 'Dashboard';
 
