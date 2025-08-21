@@ -22,7 +22,8 @@ export type Technician = {
 
 export type Customer = {
   id: string;
-  name: string;
+  name: string; // If company, this is company name. If individual, this is person's name.
+  contactPerson?: string;
   email: string;
   phone: string;
   address: string;
@@ -41,6 +42,7 @@ export type Invoice = {
     name: string;
     email: string;
     address: string;
+    contactPerson?: string;
   };
   items: QuotationItem[];
   laborCost: number;
@@ -60,6 +62,7 @@ export type Quotation = {
     name: string;
     email: string;
     address: string;
+    contactPerson?: string;
   };
   items: QuotationItem[];
   laborCost: number;

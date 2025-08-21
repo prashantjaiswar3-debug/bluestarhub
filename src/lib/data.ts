@@ -4,7 +4,7 @@ import type { Quotation } from './types';
 export const initialQuotations: Quotation[] = [
   {
     quoteId: "QT-2023-051",
-    customer: { name: "ABC Corporation", email: "contact@abc.com", address: "123 Business Rd, Corp Town" },
+    customer: { name: "ABC Corporation", contactPerson: "Ms. Priya", email: "contact@abc.com", address: "123 Business Rd, Corp Town" },
     items: [{ id: "item-1", description: "4x Hikvision 5MP Dome Cameras", quantity: 1, price: 18000 }],
     laborCost: 5000,
     discount: 10,
@@ -16,7 +16,7 @@ export const initialQuotations: Quotation[] = [
   },
   {
     quoteId: "QT-2023-050",
-    customer: { name: "Green Valley Apartments", email: "manager@gva.com", address: "456 Park Ave, Residence City" },
+    customer: { name: "Green Valley Apartments", contactPerson: "Mr. Sharma", email: "manager@gva.com", address: "456 Park Ave, Residence City" },
     items: [{ id: "item-1", description: "16-Channel NVR System", quantity: 1, price: 80000 }, { id: "item-2", description: "12x Bullet Cameras", quantity: 1, price: 40000 }],
     laborCost: 20000,
     discount: 5,

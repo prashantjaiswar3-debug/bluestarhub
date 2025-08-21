@@ -50,15 +50,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const registeredCustomers: Customer[] = [
-    { id: "CUST-001", name: "Green Valley Apartments", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City" },
-    { id: "CUST-002", name: "ABC Corporation", email: "contact@abc.com", phone: "555-0102", address: "123 Business Rd, Corp Town" },
+    { id: "CUST-001", name: "Green Valley Apartments", contactPerson: "Mr. Sharma", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City" },
+    { id: "CUST-002", name: "ABC Corporation", contactPerson: "Ms. Priya", email: "contact@abc.com", phone: "555-0102", address: "123 Business Rd, Corp Town" },
     { id: "CUST-003", name: "John Doe", email: "john.doe@example.com", phone: "555-0103", address: "789 Pine Ln, Sometown" },
 ];
 
 const initialInvoices: Invoice[] = [
     {
         invoiceId: "INV-2023-0012",
-        customer: { name: "Green Valley Apartments", email: "manager@gva.com", address: "456 Park Ave, Residence City" },
+        customer: { name: "Green Valley Apartments", email: "manager@gva.com", address: "456 Park Ave, Residence City", contactPerson: "Mr. Sharma" },
         items: [{ id: "item-1", description: "16-Channel NVR System", quantity: 1, price: 80000 }, { id: "item-2", description: "12x Bullet Cameras", quantity: 1, price: 40000 }],
         laborCost: 20000,
         discount: 5,
@@ -70,7 +70,7 @@ const initialInvoices: Invoice[] = [
     },
     {
         invoiceId: "INV-2023-0015",
-        customer: { name: "ABC Corporation", email: "contact@abc.com", address: "123 Business Rd, Corp Town" },
+        customer: { name: "ABC Corporation", email: "contact@abc.com", address: "123 Business Rd, Corp Town", contactPerson: "Ms. Priya" },
         items: [{ id: "item-1", description: "4x Hikvision 5MP Dome Cameras", quantity: 1, price: 18000 }],
         laborCost: 5000,
         discount: 10,
@@ -227,7 +227,8 @@ export default function InvoicesPage() {
                 customer: {
                     name: customer.name,
                     email: customer.email,
-                    address: customer.address
+                    address: customer.address,
+                    contactPerson: customer.contactPerson
                 }
             }));
         }
@@ -374,7 +375,7 @@ export default function InvoicesPage() {
                   </Select>
               </div>
              <div className="space-y-2">
-                <Label htmlFor="customer-name">Full Name</Label>
+                <Label htmlFor="customer-name">Customer / Company Name</Label>
                 <Input id="customer-name" placeholder="e.g., ABC Corporation" value={newInvoice.customer.name} onChange={(e) => setNewInvoice(prev => ({...prev, customer: {...prev.customer, name: e.target.value}}))}/>
               </div>
               <div className="space-y-2">
@@ -521,7 +522,7 @@ export default function InvoicesPage() {
                                 <div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#2563EB' }}>
                                         <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                                            <path fill="currentColor" d="M100 10l25 50 55 10-40 35 10 55-50-25-50 25 10-55-40-35 55-10z"/>
+                                            <path fill="currentColor" d="M100,12.5 C105.52,12.5 110,16.98 110,22.5 L110,62.5 L142.5,45 C147.2,42.12 153.21,43.87 156.08,48.58 C158.96,53.28 157.21,59.29 152.5,62.17 L115,82.5 L152.5,102.83 C157.21,105.71 158.96,111.72 156.08,116.42 C153.21,121.13 147.2,122.88 142.5,120 L110,102.5 L110,142.5 C110,148.02 105.52,152.5 100,152.5 C94.48,152.5 90,148.02 90,142.5 L90,102.5 L57.5,120 C52.8,122.88 46.79,121.13 43.92,116.42 C41.04,111.72 42.79,105.71 47.5,102.83 L85,82.5 L47.5,62.17 C42.79,59.29 41.04,53.28 43.92,48.58 C46.79,43.87 52.8,42.12 57.5,45 L90,62.5 L90,22.5 C90,16.98 94.48,12.5 100,12.5 Z"/>
                                         </svg>
                                         <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Bluestar Electronics</h1>
                                     </div>
@@ -540,7 +541,8 @@ export default function InvoicesPage() {
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', paddingBottom: '20px' }}>
                                 <div>
                                     <h2 style={{ fontSize: '14px', fontWeight: 'bold', color: '#30475E', marginBottom: '8px' }}>Bill To:</h2>
-                                    <p style={{ margin: 0, fontSize: '12px' }}>{selectedInvoice.customer.name}</p>
+                                    <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold' }}>{selectedInvoice.customer.name}</p>
+                                     {selectedInvoice.customer.contactPerson && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>Attn: {selectedInvoice.customer.contactPerson}</p>}
                                     <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedInvoice.customer.address}</p>
                                     <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedInvoice.customer.email}</p>
                                 </div>

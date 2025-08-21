@@ -47,8 +47,8 @@ import type html2canvas from 'html2canvas';
 import { initialQuotations } from "@/lib/data";
 
 const registeredCustomers: Customer[] = [
-    { id: "CUST-001", name: "Green Valley Apartments", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City" },
-    { id: "CUST-002", name: "ABC Corporation", email: "contact@abc.com", phone: "555-0102", address: "123 Business Rd, Corp Town" },
+    { id: "CUST-001", name: "Green Valley Apartments", contactPerson: "Mr. Sharma", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City" },
+    { id: "CUST-002", name: "ABC Corporation", contactPerson: "Ms. Priya", email: "contact@abc.com", phone: "555-0102", address: "123 Business Rd, Corp Town" },
     { id: "CUST-003", name: "John Doe", email: "john.doe@example.com", phone: "555-0103", address: "789 Pine Ln, Sometown" },
 ];
 
@@ -167,7 +167,8 @@ export default function SalesDashboard() {
             customer: {
                 name: customer.name,
                 email: customer.email,
-                address: customer.address
+                address: customer.address,
+                contactPerson: customer.contactPerson,
             }
         }));
     }
@@ -273,7 +274,7 @@ export default function SalesDashboard() {
                 </Select>
               </div>
              <div className="space-y-2">
-                <Label htmlFor="customer-name">Full Name</Label>
+                <Label htmlFor="customer-name">Customer / Company Name</Label>
                 <Input id="customer-name" placeholder="e.g., ABC Corporation" value={newQuote.customer.name} onChange={(e) => setNewQuote(prev => ({...prev, customer: {...prev.customer, name: e.target.value}}))}/>
               </div>
               <div className="space-y-2">
@@ -424,7 +425,7 @@ export default function SalesDashboard() {
                                     <div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#2563EB' }}>
                                             <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                                                <path fill="currentColor" d="M100 10l25 50 55 10-40 35 10 55-50-25-50 25 10-55-40-35 55-10z"/>
+                                                <path fill="currentColor" d="M100,12.5 C105.52,12.5 110,16.98 110,22.5 L110,62.5 L142.5,45 C147.2,42.12 153.21,43.87 156.08,48.58 C158.96,53.28 157.21,59.29 152.5,62.17 L115,82.5 L152.5,102.83 C157.21,105.71 158.96,111.72 156.08,116.42 C153.21,121.13 147.2,122.88 142.5,120 L110,102.5 L110,142.5 C110,148.02 105.52,152.5 100,152.5 C94.48,152.5 90,148.02 90,142.5 L90,102.5 L57.5,120 C52.8,122.88 46.79,121.13 43.92,116.42 C41.04,111.72 42.79,105.71 47.5,102.83 L85,82.5 L47.5,62.17 C42.79,59.29 41.04,53.28 43.92,48.58 C46.79,43.87 52.8,42.12 57.5,45 L90,62.5 L90,22.5 C90,16.98 94.48,12.5 100,12.5 Z"/>
                                             </svg>
                                             <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Bluestar Electronics</h1>
                                         </div>
@@ -443,7 +444,8 @@ export default function SalesDashboard() {
                               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', paddingBottom: '20px' }}>
                                   <div>
                                       <h2 style={{ fontSize: '14px', fontWeight: 'bold', color: '#30475E', marginBottom: '8px' }}>Billed To:</h2>
-                                      <p style={{ margin: 0, fontSize: '12px' }}>{selectedQuote.customer.name}</p>
+                                      <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold' }}>{selectedQuote.customer.name}</p>
+                                      {selectedQuote.customer.contactPerson && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>Attn: {selectedQuote.customer.contactPerson}</p>}
                                       <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.address}</p>
                                       <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.email}</p>
                                   </div>

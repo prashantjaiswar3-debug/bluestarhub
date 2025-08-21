@@ -51,6 +51,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
 
 
 const allNavItems = [
@@ -77,7 +78,14 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const { toast } = useToast();
   const [isRegisterCustomerOpen, setIsRegisterCustomerOpen] = React.useState(false);
-  const [newCustomer, setNewCustomer] = React.useState({ name: "", email: "", phone: "", address: "" });
+  const [newCustomer, setNewCustomer] = React.useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    isCompany: false,
+    companyName: ""
+  });
 
   const [isRegisterTechnicianOpen, setIsRegisterTechnicianOpen] = React.useState(false);
   const [newTechnician, setNewTechnician] = React.useState({ name: "", email: "", phone: "", skills: "" });
@@ -100,22 +108,23 @@ export default function DashboardLayout({
   }
   
   const handleRegisterCustomer = () => {
-    if(!newCustomer.name || !newCustomer.email || !newCustomer.phone || !newCustomer.address) {
+    if(!newCustomer.name || !newCustomer.email || !newCustomer.phone || !newCustomer.address || (newCustomer.isCompany && !newCustomer.companyName)) {
          toast({
             variant: "destructive",
             title: "Missing Information",
-            description: "Please fill out all fields to register a new customer.",
+            description: "Please fill out all required fields to register a new customer.",
         });
         return;
     }
     const generatedPassword = Math.random().toString(36).slice(-8);
+    const customerName = newCustomer.isCompany ? newCustomer.companyName : newCustomer.name;
     toast({
       title: "Customer Registered",
-      description: `Customer ${newCustomer.name} created. Email: ${newCustomer.email}, Password: ${generatedPassword}`,
+      description: `Customer ${customerName} created. Email: ${newCustomer.email}, Password: ${generatedPassword}`,
       duration: 9000,
     });
     setIsRegisterCustomerOpen(false);
-    setNewCustomer({ name: "", email: "", phone: "", address: "" });
+    setNewCustomer({ name: "", email: "", phone: "", address: "", isCompany: false, companyName: "" });
   }
 
   const handleRegisterTechnician = () => {
@@ -321,9 +330,20 @@ export default function DashboardLayout({
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+             <div className="flex items-center space-x-2">
+                <Checkbox id="is-company" checked={newCustomer.isCompany} onCheckedChange={(checked) => setNewCustomer({...newCustomer, isCompany: !!checked})} />
+                <Label htmlFor="is-company" className="cursor-pointer">Registering as a company?</Label>
+            </div>
+
+            {newCustomer.isCompany && (
+                <div className="space-y-2">
+                    <Label htmlFor="company-name">Company Name</Label>
+                    <Input id="company-name" value={newCustomer.companyName} onChange={(e) => setNewCustomer({...newCustomer, companyName: e.target.value})} placeholder="e.g., ABC Corporation" />
+                </div>
+            )}
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input id="name" value={newCustomer.name} onChange={(e) => setNewCustomer({...newCustomer, name: e.target.value})} placeholder="e.g., John Doe" />
+              <Label htmlFor="name">{newCustomer.isCompany ? "Contact Person Name" : "Full Name"}</Label>
+              <Input id="name" value={newCustomer.name} onChange={(e) => setNewCustomer({...newCustomer, name: e.target.value})} placeholder={newCustomer.isCompany ? "e.g., John Doe" : "e.g., John Doe"} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
