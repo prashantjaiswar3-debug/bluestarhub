@@ -26,8 +26,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Complaint, Technician } from "@/lib/types";
+import type { Complaint, Technician, Review } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
+import { Star } from "lucide-react";
 
 const initialComplaints: Complaint[] = [
   { ticketId: "BLU-7238", customer: { name: "John Doe", id: "CUST-001" }, issue: "CCTV Camera not recording", priority: "High", status: "Open", date: "2023-10-26" },
@@ -42,6 +43,11 @@ const initialTechnicians: Technician[] = [
   { id: "TECH-03", name: "Suresh Kumar", skills: ["Maintenance", "Installation"], load: 4, location: "North Zone" },
 ];
 
+const initialReviews: Review[] = [
+  { id: 'REV-001', customer: { name: 'Ravi Kumar', id: 'CUST-007' }, rating: 5, comment: 'Excellent and prompt service. The technician was very professional and resolved the issue in no time. Highly recommended!', date: '2023-10-28' },
+  { id: 'REV-002', customer: { name: 'Priya Sharma', id: 'CUST-008' }, rating: 4, comment: 'Good service, but the technician arrived a bit later than scheduled. Overall, satisfied with the work.', date: '2023-10-27' },
+];
+
 const priorityVariant: { [key in Complaint["priority"]]: "destructive" | "secondary" | "default" } = {
   High: "destructive",
   Medium: "secondary",
@@ -52,6 +58,7 @@ export default function AdminDashboard() {
   const { toast } = useToast();
   const [complaints, setComplaints] = useState<Complaint[]>(initialComplaints);
   const [technicians, setTechnicians] = useState<Technician[]>(initialTechnicians);
+  const [reviews, setReviews] = useState<Review[]>(initialReviews);
   const [selectedTechnicians, setSelectedTechnicians] = useState<{ [key: string]: string }>({});
 
   const handleAssign = (ticketId: string) => {
@@ -180,6 +187,50 @@ export default function AdminDashboard() {
                 )) : (
                    <TableRow>
                     <TableCell colSpan={4} className="text-center">No complaints assigned yet.</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Customer Reviews</CardTitle>
+            <CardDescription>
+              Feedback submitted by customers.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Rating</TableHead>
+                  <TableHead>Comment</TableHead>
+                  <TableHead>Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {reviews.length > 0 ? reviews.map((review) => (
+                  <TableRow key={review.id}>
+                    <TableCell className="font-medium">{review.customer.name}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        {[...Array(review.rating)].map((_, i) => (
+                          <Star key={i} className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                        ))}
+                        {[...Array(5 - review.rating)].map((_, i) => (
+                           <Star key={i} className="h-4 w-4 text-muted-foreground" />
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-xs truncate">{review.comment}</TableCell>
+                    <TableCell>{formatDate(review.date)}</TableCell>
+                  </TableRow>
+                )) : (
+                   <TableRow>
+                    <TableCell colSpan={4} className="text-center">No reviews submitted yet.</TableCell>
                   </TableRow>
                 )}
               </TableBody>

@@ -42,3 +42,14 @@ export type Job = {
   priority: "High" | "Medium" | "Low";
   phone: string;
 };
+
+export type Review = {
+  id: string;
+  customer: {
+    name: string;
+    id: string;
+  };
+  rating: number; // 1 to 5
+  comment: string;
+  date: string;
+};

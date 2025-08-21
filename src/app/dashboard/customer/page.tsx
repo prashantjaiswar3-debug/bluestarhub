@@ -31,8 +31,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, Download, CreditCard, Gift } from "lucide-react";
-import type { Complaint, Invoice } from "@/lib/types";
+import { PlusCircle, Download, CreditCard, Gift, Star, MessageSquare } from "lucide-react";
+import type { Complaint, Invoice, Review } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Image from "next/image";
@@ -47,6 +47,11 @@ const initialInvoices: Invoice[] = [
     { invoiceId: "INV-2023-0012", amount: 4500.00, status: "Paid", date: "2023-10-16" },
     { invoiceId: "INV-2023-0015", amount: 1500.00, status: "Pending", date: "2023-09-21" },
     { invoiceId: "INV-2023-0018", amount: 800.00, status: "Overdue", date: "2023-08-30" },
+];
+
+const initialReviews: Review[] = [
+  { id: 'REV-001', customer: { name: 'Ravi Kumar', id: 'CUST-007' }, rating: 5, comment: 'Excellent and prompt service. The technician was very professional and resolved the issue in no time. Highly recommended!', date: '2023-10-28' },
+  { id: 'REV-002', customer: { name: 'Priya Sharma', id: 'CUST-008' }, rating: 4, comment: 'Good service, but the technician arrived a bit later than scheduled. Overall, satisfied with the work.', date: '2023-10-27' },
 ];
 
 const statusVariant: { [key in Complaint["status"]]: "default" | "secondary" | "outline" } = {
@@ -67,8 +72,11 @@ export default function CustomerDashboard() {
   const { toast } = useToast();
   const [complaints, setComplaints] = useState(initialComplaints);
   const [invoices, setInvoices] = useState(initialInvoices);
+  const [reviews, setReviews] = useState<Review[]>(initialReviews);
   const [isLodgeComplaintOpen, setIsLodgeComplaintOpen] = useState(false);
   const [newComplaint, setNewComplaint] = useState("");
+  const [isLeaveReviewOpen, setIsLeaveReviewOpen] = useState(false);
+  const [newReview, setNewReview] = useState({ rating: 0, comment: "" });
 
   const handleLodgeComplaint = () => {
     if (!newComplaint) {
@@ -95,6 +103,31 @@ export default function CustomerDashboard() {
       description: `Your ticket ID is ${newTicketId}. We will get back to you shortly.`,
     });
   };
+
+  const handleLeaveReview = () => {
+    if (newReview.rating === 0 || !newReview.comment) {
+      toast({
+        variant: "destructive",
+        title: "Incomplete Review",
+        description: "Please provide a rating and a comment.",
+      });
+      return;
+    }
+    const newReviewData: Review = {
+      id: `REV-${Math.floor(Math.random() * 1000) + 3}`,
+      customer: { name: 'Customer User', id: 'CUST-101' }, // Hardcoded for demo
+      rating: newReview.rating,
+      comment: newReview.comment,
+      date: new Date().toISOString(),
+    }
+    setReviews([newReviewData, ...reviews]);
+    setNewReview({ rating: 0, comment: "" });
+    setIsLeaveReviewOpen(false);
+    toast({
+      title: "Review Submitted",
+      description: "Thank you for your valuable feedback!",
+    });
+  };
   
   const handleDownloadInvoice = (invoiceId: string) => {
     toast({
@@ -114,6 +147,15 @@ export default function CustomerDashboard() {
       timeZone: 'Asia/Kolkata'
     });
   }
+  
+  const formatSimpleDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-IN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: 'Asia/Kolkata',
+    });
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -129,10 +171,16 @@ export default function CustomerDashboard() {
           <h1 className="text-2xl font-bold">My Portal</h1>
           <p className="text-muted-foreground">Here's an overview of your account.</p>
         </div>
-        <Button onClick={() => setIsLodgeComplaintOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Lodge New Complaint
-        </Button>
+        <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setIsLeaveReviewOpen(true)}>
+              <Star className="mr-2 h-4 w-4" />
+              Leave a Review
+            </Button>
+            <Button onClick={() => setIsLodgeComplaintOpen(true)}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Lodge New Complaint
+            </Button>
+        </div>
       </div>
 
       <Card>
@@ -194,6 +242,34 @@ export default function CustomerDashboard() {
               <CarouselPrevious className="ml-12" />
               <CarouselNext className="mr-12" />
             </Carousel>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>What Our Customers Say</CardTitle>
+            <CardDescription>Recent feedback from our valued clients.</CardDescription>
+          </div>
+          <MessageSquare className="h-8 w-8 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {reviews.map((review) => (
+              <div key={review.id} className="p-4 border rounded-lg bg-muted/20">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold">{review.customer.name}</h4>
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'}`} />
+                    ))}
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground mt-2 italic">"{review.comment}"</p>
+                <p className="text-xs text-muted-foreground text-right mt-2">{formatSimpleDate(review.date)}</p>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
 
@@ -308,8 +384,59 @@ export default function CustomerDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      <Dialog open={isLeaveReviewOpen} onOpenChange={setIsLeaveReviewOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Leave a Review</DialogTitle>
+            <DialogDescription>
+              We value your feedback. Please rate your experience and leave a comment.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Rating</Label>
+              <div className="col-span-3 flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Button
+                    key={i}
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setNewReview({ ...newReview, rating: i + 1 })}
+                    className="rounded-full"
+                  >
+                    <Star
+                      className={`h-6 w-6 transition-colors ${
+                        i < newReview.rating
+                          ? "text-yellow-400 fill-yellow-400"
+                          : "text-muted-foreground"
+                      }`}
+                    />
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="comment" className="text-right">
+                Comment
+              </Label>
+              <Textarea
+                id="comment"
+                value={newReview.comment}
+                onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                className="col-span-3"
+                placeholder="Tell us about your experience..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button onClick={handleLeaveReview}>Submit Review</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
-
-    
