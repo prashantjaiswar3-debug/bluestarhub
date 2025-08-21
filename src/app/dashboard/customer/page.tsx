@@ -394,12 +394,11 @@ export default function CustomerDashboard() {
           <div ref={invoiceRef} style={{ width: '800px', padding: '40px', backgroundColor: 'white', fontFamily: 'sans-serif' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #eee', paddingBottom: '20px' }}>
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#1E293B' }}>
-                   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z" fill="#9CA3AF"/>
-                      <path d="M12 17.27L5.82 21l1.64-7.03L2 9.24l7.19-.61L12 2v15.27z" fill="#30475E"/>
-                    </svg>
-                    <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Bluestar Electronics</h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                   <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                      <path fill="#2563EB" d="M100 0L122.45 69.098H195.11L136.33 111.803L158.78 180.902L100 138.197L41.22 180.902L63.67 111.803L4.89 69.098H77.55L100 0Z" />
+                   </svg>
+                    <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#2563EB' }}>Bluestar Electronics</h1>
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
@@ -534,3 +533,5 @@ export default function CustomerDashboard() {
     </div>
   );
 }
+
+    

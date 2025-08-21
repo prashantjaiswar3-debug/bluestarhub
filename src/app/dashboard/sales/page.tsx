@@ -321,7 +321,7 @@ export default function SalesDashboard() {
            </div>
         </CardContent>
         <CardFooter className="flex justify-end">
-            <Button onClick={handleCreateQuote} className="bg-[#fb923c] hover:bg-[#fb923c]/90 text-white">
+            <Button onClick={handleCreateQuote} className="bg-[#2563EB] hover:bg-[#2563EB]/90 text-white">
                 <Send className="mr-2 h-4 w-4" />
                 Create Quote
             </Button>
@@ -388,22 +388,14 @@ export default function SalesDashboard() {
 
                     return (
                         <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '210mm', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                            {/* Header */}
-                            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', zIndex: 0 }}>
-                               <svg viewBox="0 0 595 100" preserveAspectRatio="none" style={{ width: '100%', height: 'auto' }}>
-                                    <path d="M0 0 H 150 L 120 100 H 0 Z" fill="#30475E" />
-                                    <path d="M120 0 H 220 L 190 100 H 90 Z" fill="#9CA3AF" />
-                                </svg>
-                            </div>
                             <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '20px' }}>
                                 <div style={{ flex: '1', paddingTop: '10px' }}>
                                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z" fill="#9CA3AF"/>
-                                          <path d="M12 17.27L5.82 21l1.64-7.03L2 9.24l7.19-.61L12 2v15.27z" fill="#ffffff"/>
+                                        <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill="#2563EB" d="M100 0L122.45 69.098H195.11L136.33 111.803L158.78 180.902L100 138.197L41.22 180.902L63.67 111.803L4.89 69.098H77.55L100 0Z" />
                                         </svg>
                                         <div>
-                                            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff', margin: 0 }}>Bluestar Electronics</h1>
+                                            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#2563EB', margin: 0 }}>Bluestar Electronics</h1>
                                         </div>
                                     </div>
                                 </div>
@@ -480,14 +472,7 @@ export default function SalesDashboard() {
                                     <p style={{ fontWeight: 'bold', marginTop: '5px' }}>Bluestar Electronics</p>
                                 </div>
                             </div>
-
-                             {/* Footer Bar */}
-                            <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', zIndex: 0 }}>
-                                <svg viewBox="0 0 595 100" preserveAspectRatio="none" style={{ width: '100%', height: 'auto' }}>
-                                    <path d="M0 30 C 150 80, 450 -20, 595 30 V 100 H 0 Z" fill="#30475E" />
-                                    <path d="M0 40 C 150 90, 450 -10, 595 40 V 100 H 0 Z" fill="#9CA3AF" />
-                                </svg>
-                            </div>
+                            
                              <div style={{ position: 'absolute', zIndex: 2, display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: '60px', color: 'white', fontSize: '12px', bottom: 0, left: 0, right: 0, paddingBottom: '10px' }}>
                                 <span>bluestar.elec@gmail.com</span>
                                 <span>+91 9766661333</span>
@@ -521,3 +506,5 @@ export default function SalesDashboard() {
     </div>
   );
 }
+
+    
