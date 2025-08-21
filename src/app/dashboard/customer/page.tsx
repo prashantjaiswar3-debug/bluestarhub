@@ -31,9 +31,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, Download, CreditCard } from "lucide-react";
+import { PlusCircle, Download, CreditCard, Gift } from "lucide-react";
 import type { Complaint, Invoice } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import Image from "next/image";
 
 const initialComplaints: Omit<Complaint, 'customer' | 'assignedTo'>[] = [
     { ticketId: "BLU-7238", issue: "CCTV Camera not recording", priority: "High", status: "Assigned", date: "2023-10-26T10:30:00Z" },
@@ -132,6 +134,68 @@ export default function CustomerDashboard() {
           Lodge New Complaint
         </Button>
       </div>
+
+      <Card>
+        <CardHeader className="flex-row items-center gap-4 space-y-0">
+            <div className="p-3 rounded-md bg-accent/20 text-accent-foreground">
+                <Gift className="h-6 w-6" />
+            </div>
+            <div>
+              <CardTitle>Exclusive Offers for You</CardTitle>
+              <CardDescription>Check out our latest deals and promotions.</CardDescription>
+            </div>
+        </CardHeader>
+        <CardContent>
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                <CarouselItem className="md:basis-1/2 lg:basis-1/3">
+                   <Card className="overflow-hidden">
+                    <CardContent className="p-0">
+                       <Image src="https://placehold.co/600x400.png" alt="Offer 1" width={600} height={400} className="w-full h-auto aspect-video object-cover" data-ai-hint="security camera offer" />
+                       <div className="p-4">
+                           <h3 className="font-semibold">Upgrade Your Security</h3>
+                           <p className="text-sm text-muted-foreground">Get 20% off on all new smart camera installations. Limited time offer!</p>
+                           <Button className="w-full mt-4" size="sm">Claim Offer</Button>
+                       </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+                 <CarouselItem className="md:basis-1/2 lg:basis-1/3">
+                   <Card className="overflow-hidden">
+                    <CardContent className="p-0">
+                       <Image src="https://placehold.co/600x400.png" alt="Offer 2" width={600} height={400} className="w-full h-auto aspect-video object-cover" data-ai-hint="maintenance contract" />
+                       <div className="p-4">
+                           <h3 className="font-semibold">Peace of Mind Plan</h3>
+                           <p className="text-sm text-muted-foreground">Sign up for our Annual Maintenance Contract and get the first month free.</p>
+                           <Button className="w-full mt-4" size="sm">Learn More</Button>
+                       </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+                <CarouselItem className="md:basis-1/2 lg:basis-1/3">
+                   <Card className="overflow-hidden">
+                    <CardContent className="p-0">
+                       <Image src="https://placehold.co/600x400.png" alt="Offer 3" width={600} height={400} className="w-full h-auto aspect-video object-cover" data-ai-hint="referral program" />
+                       <div className="p-4">
+                           <h3 className="font-semibold">Refer a Friend</h3>
+                           <p className="text-sm text-muted-foreground">Refer a friend and you both get ₹500 off your next service. It's a win-win!</p>
+                           <Button className="w-full mt-4" size="sm">Start Referring</Button>
+                       </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              </CarouselContent>
+              <CarouselPrevious className="ml-12" />
+              <CarouselNext className="mr-12" />
+            </Carousel>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -247,3 +311,5 @@ export default function CustomerDashboard() {
     </div>
   );
 }
+
+    

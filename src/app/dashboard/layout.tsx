@@ -17,6 +17,7 @@ import {
   UserPlus,
   ShieldCheck,
   ScanLine,
+  Gift,
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -211,6 +212,12 @@ export default function DashboardLayout({
               )}
                {currentRole === 'admin' && (
                 <>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => {}} tooltip={{ children: "Manage Offers" }}>
+                      <Gift className="shrink-0" />
+                      <span>Manage Offers</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton onClick={() => setIsRegisterCustomerOpen(true)} tooltip={{ children: "Register Customer" }}>
                       <UserPlus className="shrink-0" />
@@ -475,3 +482,5 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
+
+    
