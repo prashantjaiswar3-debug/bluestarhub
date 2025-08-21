@@ -394,13 +394,18 @@ export default function CustomerDashboard() {
           <div ref={invoiceRef} style={{ width: '800px', padding: '40px', backgroundColor: 'white', fontFamily: 'sans-serif' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #eee', paddingBottom: '20px' }}>
               <div>
-                <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#30475E' }}>INVOICE</h1>
-                <p style={{ color: '#555' }}>Invoice #: {selectedInvoice.invoiceId}</p>
-                <p style={{ color: '#555' }}>Date: {formatSimpleDate(selectedInvoice.date)}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#1E293B' }}>
+                   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z" fill="#f97316"/>
+                      <path d="M12 17.27L5.82 21l1.64-7.03L2 9.24l7.19-.61L12 2v15.27z" fill="#1E293B"/>
+                    </svg>
+                    <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Bluestar Electronics</h1>
+                </div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <h2 style={{ fontSize: '20px', fontWeight: 'bold' }}>Bluestar Electronics</h2>
-                <p style={{ color: '#555' }}>123 Security Lane, Tech City</p>
+                <h2 style={{ fontSize: '20px', fontWeight: 'bold' }}>INVOICE</h2>
+                <p style={{ color: '#555' }}>Invoice #: {selectedInvoice.invoiceId}</p>
+                <p style={{ color: '#555' }}>Date: {formatSimpleDate(selectedInvoice.date)}</p>
               </div>
             </div>
             <div style={{ marginTop: '30px' }}>
@@ -435,7 +440,8 @@ export default function CustomerDashboard() {
             </div>
             <div style={{ marginTop: '50px', paddingTop: '20px', borderTop: '1px solid #eee', textAlign: 'center', fontSize: '12px', color: '#888' }}>
               <p>Thank you for your business!</p>
-              <p>Created on Bluestar Hub</p>
+              <p>bluestar.elec@gmail.com | +91 9766661333</p>
+              <p style={{marginTop: '10px', fontWeight: 'bold'}}>Created on Bluestar Hub</p>
             </div>
           </div>
         </div>
@@ -528,5 +534,3 @@ export default function CustomerDashboard() {
     </div>
   );
 }
-
-    

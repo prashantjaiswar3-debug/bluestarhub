@@ -32,7 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Send, Eye, PlusCircle, Trash2, Gem, Download, Share2 } from "lucide-react";
+import { Send, Eye, PlusCircle, Trash2, Download, Share2 } from "lucide-react";
 import type { Quotation, QuotationItem } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
@@ -387,87 +387,90 @@ export default function SalesDashboard() {
                     const formatDate = (date: Date) => date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
 
                     return (
-                        <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '210mm', height: '297mm', padding: '40px', boxSizing: 'border-box', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '210mm', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                             {/* Header */}
                             <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', zIndex: 0 }}>
                                 <svg viewBox="0 0 595 120" preserveAspectRatio="none" style={{ width: '100%', height: 'auto' }}>
-                                    <path d="M0 0 H 595 V 80 L 0 120 Z" fill="#1E293B" />
-                                    <path d="M0 0 H 400 V 60 L 0 90 Z" fill="#f97316" />
+                                    <path d="M0 0 H 595 V 80 C 450 100, 150 100, 0 120 Z" fill="#1E293B" />
+                                    <path d="M0 0 H 400 V 60 C 300 70, 100 70, 0 90 Z" fill="#f97316" />
                                 </svg>
                             </div>
                             <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '20px' }}>
                                 <div style={{ flex: '1', paddingTop: '10px' }}>
                                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <Gem style={{ height: '40px', width: '40px', color: '#ffffff' }} />
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z" fill="#f97316"/>
+                                          <path d="M12 17.27L5.82 21l1.64-7.03L2 9.24l7.19-.61L12 2v15.27z" fill="#ffffff"/>
+                                        </svg>
                                         <div>
-                                            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff', margin: 0 }}>Bluestar Hub</h1>
-                                            <p style={{ fontSize: '12px', color: '#E2E8F0', margin: 0 }}>by Bluestar Electronics</p>
+                                            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff', margin: 0 }}>Bluestar Electronics</h1>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
+                            <div style={{ flexGrow: 1}}>
+                              {/* Billed To and Invoice Details */}
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '40px', paddingBottom: '20px' }}>
+                                  <div>
+                                      <h2 style={{ fontSize: '14px', fontWeight: 'bold', color: '#1E293B', marginBottom: '8px' }}>Billed To:</h2>
+                                      <p style={{ margin: 0, fontSize: '12px' }}>{selectedQuote.customer.name}</p>
+                                      <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.address}</p>
+                                      <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.email}</p>
+                                  </div>
+                                  <div style={{ width: '220px', backgroundColor: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '10px' }}>
+                                      <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 10px 0', textAlign: 'center', color: '#1E293B', borderBottom: '1px solid #E2E8F0', paddingBottom: '5px' }}>QUOTATION</h2>
+                                      <div style={{ fontSize: '12px' }}>
+                                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}><strong>Quote No:</strong><span>{selectedQuote.quoteId}</span></div>
+                                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}><strong>Quote Date:</strong><span>{formatDate(quoteDate)}</span></div>
+                                          <div style={{ display: 'flex', justifyContent: 'space-between' }}><strong>Due Date:</strong><span>{formatDate(dueDate)}</span></div>
+                                      </div>
+                                  </div>
+                              </div>
+                              
+                              {/* Items Table */}
+                              <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px', fontSize: '12px' }}>
+                                  <thead>
+                                      <tr style={{ backgroundColor: '#1E293B', color: 'white' }}>
+                                          <th style={{ padding: '10px', textAlign: 'left' }}>S.No.</th>
+                                          <th style={{ padding: '10px', textAlign: 'left' }}>DESCRIPTION</th>
+                                          <th style={{ padding: '10px', textAlign: 'right' }}>PRICE</th>
+                                          <th style={{ padding: '10px', textAlign: 'right' }}>QTY</th>
+                                          <th style={{ padding: '10px', textAlign: 'right' }}>TOTAL</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                      {selectedQuote.items.map((item, index) => (
+                                          <tr key={item.id} style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: index % 2 === 0 ? '#F8FAFC' : 'white' }}>
+                                              <td style={{ padding: '10px' }}>{index + 1}</td>
+                                              <td style={{ padding: '10px', maxWidth: '300px' }}>{item.description}</td>
+                                              <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
+                                              <td style={{ padding: '10px', textAlign: 'right' }}>{item.quantity}</td>
+                                              <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.quantity * item.price)}</td>
+                                          </tr>
+                                      ))}
+                                      {selectedQuote.laborCost > 0 && (
+                                          <tr style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: selectedQuote.items.length % 2 === 0 ? '#F8FAFC' : 'white' }}>
+                                              <td colSpan={4} style={{ padding: '10px', textAlign: 'right' }}>Labor Cost</td>
+                                              <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(selectedQuote.laborCost)}</td>
+                                          </tr>
+                                      )}
+                                  </tbody>
+                              </table>
 
-                            {/* Billed To and Invoice Details */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '40px', paddingBottom: '20px' }}>
-                                <div>
-                                    <h2 style={{ fontSize: '14px', fontWeight: 'bold', color: '#1E293B', marginBottom: '8px' }}>Billed To:</h2>
-                                    <p style={{ margin: 0, fontSize: '12px' }}>{selectedQuote.customer.name}</p>
-                                    <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.address}</p>
-                                    <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.email}</p>
-                                </div>
-                                <div style={{ width: '220px', backgroundColor: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '10px' }}>
-                                    <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 10px 0', textAlign: 'center', color: '#1E293B', borderBottom: '1px solid #E2E8F0', paddingBottom: '5px' }}>QUOTATION</h2>
-                                    <div style={{ fontSize: '12px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}><strong>Quote No:</strong><span>{selectedQuote.quoteId}</span></div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}><strong>Quote Date:</strong><span>{formatDate(quoteDate)}</span></div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}><strong>Due Date:</strong><span>{formatDate(dueDate)}</span></div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            {/* Items Table */}
-                            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px', fontSize: '12px' }}>
-                                <thead>
-                                    <tr style={{ backgroundColor: '#1E293B', color: 'white' }}>
-                                        <th style={{ padding: '10px', textAlign: 'left' }}>S.No.</th>
-                                        <th style={{ padding: '10px', textAlign: 'left' }}>DESCRIPTION</th>
-                                        <th style={{ padding: '10px', textAlign: 'right' }}>PRICE</th>
-                                        <th style={{ padding: '10px', textAlign: 'right' }}>QTY</th>
-                                        <th style={{ padding: '10px', textAlign: 'right' }}>TOTAL</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {selectedQuote.items.map((item, index) => (
-                                        <tr key={item.id} style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: index % 2 === 0 ? '#F8FAFC' : 'white' }}>
-                                            <td style={{ padding: '10px' }}>{index + 1}</td>
-                                            <td style={{ padding: '10px', maxWidth: '300px' }}>{item.description}</td>
-                                            <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
-                                            <td style={{ padding: '10px', textAlign: 'right' }}>{item.quantity}</td>
-                                            <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.quantity * item.price)}</td>
-                                        </tr>
-                                    ))}
-                                    {selectedQuote.laborCost > 0 && (
-                                        <tr style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: selectedQuote.items.length % 2 === 0 ? '#F8FAFC' : 'white' }}>
-                                            <td colSpan={4} style={{ padding: '10px', textAlign: 'right' }}>Labor Cost</td>
-                                            <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(selectedQuote.laborCost)}</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-
-                            {/* Totals */}
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-                                <div style={{ width: '250px', fontSize: '12px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Sub Total:</span><span>{formatCurrency(subTotal)}</span></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Discount ({selectedQuote.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>GST ({selectedQuote.gst}%):</span><span>{formatCurrency(gstAmount)}</span></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #1E293B', fontWeight: 'bold', fontSize: '16px' }}><span>TOTAL:</span><span>{formatCurrency(grandTotal)}</span></div>
-                                </div>
+                              {/* Totals */}
+                              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                                  <div style={{ width: '250px', fontSize: '12px' }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Sub Total:</span><span>{formatCurrency(subTotal)}</span></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Discount ({selectedQuote.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>GST ({selectedQuote.gst}%):</span><span>{formatCurrency(gstAmount)}</span></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #1E293B', fontWeight: 'bold', fontSize: '16px' }}><span>TOTAL:</span><span>{formatCurrency(grandTotal)}</span></div>
+                                  </div>
+                              </div>
                             </div>
                             
                              {/* Signature and Terms */}
-                            <div style={{ marginTop: '50px', display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                            <div style={{ marginTop: 'auto', paddingTop: '20px', display: 'flex', justifyContent: 'space-between', fontSize: '12px', flexShrink: 0 }}>
                                 <div>
                                     <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Terms and Conditions:</h3>
                                     <p style={{ color: '#64748B', maxWidth: '300px' }}>Payment is due within 15 days. All products are subject to standard warranty. Thank you for your business!</p>
@@ -486,8 +489,8 @@ export default function SalesDashboard() {
                                 </svg>
                             </div>
                              <div style={{ position: 'absolute', zIndex: 2, display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: '60px', color: 'white', fontSize: '12px', bottom: 0, left: 0, right: 0, paddingBottom: '10px' }}>
-                                <span>info@bluestarhub.com</span>
-                                <span>+91 12345 67890</span>
+                                <span>bluestar.elec@gmail.com</span>
+                                <span>+91 9766661333</span>
                                 <span>www.bluestarhub.com</span>
                             </div>
                              <div style={{ position: 'absolute', bottom: '5px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: '#E2E8F0' }}>
