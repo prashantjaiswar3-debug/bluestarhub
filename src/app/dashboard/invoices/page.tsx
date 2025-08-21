@@ -39,11 +39,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Send, Eye, PlusCircle, Trash2, Download, Share2, CreditCard } from "lucide-react";
-import type { Invoice, QuotationItem, Customer } from "@/lib/types";
+import { Send, Eye, PlusCircle, Trash2, Download, Share2, CreditCard, Wand2 } from "lucide-react";
+import type { Invoice, Quotation, QuotationItem, Customer } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
 import type html2canvas from 'html2canvas';
+import { initialQuotations } from "@/app/dashboard/sales/page";
+import { compareInvoiceAndQuote } from "@/ai/flows/compare-invoice-quote-flow";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const registeredCustomers: Customer[] = [
     { id: "CUST-001", name: "Green Valley Apartments", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City" },
@@ -61,7 +65,8 @@ const initialInvoices: Invoice[] = [
         gst: 18,
         totalAmount: 157528,
         status: "Paid",
-        date: "2023-10-22"
+        date: "2023-10-22",
+        quoteId: "QT-2023-050",
     },
     {
         invoiceId: "INV-2023-0015",
@@ -72,7 +77,8 @@ const initialInvoices: Invoice[] = [
         gst: 18,
         totalAmount: 24780,
         status: "Pending",
-        date: "2023-10-25"
+        date: "2023-10-25",
+        quoteId: "QT-2023-051"
     },
 ];
 
@@ -93,6 +99,8 @@ export default function InvoicesPage() {
     gst: 18,
   });
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [comparisonResult, setComparisonResult] = useState<string>("");
+  const [isComparing, setIsComparing] = useState<boolean>(false);
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -108,6 +116,14 @@ export default function InvoicesPage() {
         });
     }
   }, []);
+
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      setSelectedInvoice(null);
+      setComparisonResult("");
+      setIsComparing(false);
+    }
+  }
 
 
   const subTotal = useMemo(() => {
@@ -136,7 +152,7 @@ export default function InvoicesPage() {
     setNewInvoice(prev => ({
       ...prev,
       items: prev.items.map(item =>
-        item.id === id ? { ...item, [field]: typeof value === 'string' ? (field === 'quantity' ? parseInt(value) || 1 : value) : value } : item
+        item.id === id ? { ...item, [field]: typeof value === 'string' ? value : (field === 'description' ? value : parseFloat(value as string) || 0) } : item
       ),
     }));
   };
@@ -255,6 +271,39 @@ export default function InvoicesPage() {
                 description: "There was an error generating the PDF.",
             });
         }
+    }
+  };
+
+  const handleCompare = async () => {
+    if (!selectedInvoice || !selectedInvoice.quoteId) return;
+
+    const quote = initialQuotations.find(q => q.quoteId === selectedInvoice.quoteId);
+    if (!quote) {
+        toast({
+            variant: "destructive",
+            title: "Quotation not found",
+            description: `Could not find original quotation ${selectedInvoice.quoteId}.`
+        });
+        return;
+    }
+
+    setIsComparing(true);
+    setComparisonResult("");
+    try {
+        const result = await compareInvoiceAndQuote({
+            invoice: selectedInvoice,
+            quotation: quote,
+        });
+        setComparisonResult(result);
+    } catch (error) {
+        console.error("Comparison failed:", error);
+        toast({
+            variant: "destructive",
+            title: "Comparison Failed",
+            description: "Could not generate comparison summary.",
+        });
+    } finally {
+        setIsComparing(false);
     }
   };
 
@@ -404,7 +453,7 @@ export default function InvoicesPage() {
         </CardContent>
       </Card>
       
-      <Dialog open={!!selectedInvoice} onOpenChange={(isOpen) => !isOpen && setSelectedInvoice(null)}>
+      <Dialog open={!!selectedInvoice} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-4xl p-0" data-slot="header-plain">
             <div className="p-6">
                 <DialogHeader>
@@ -414,7 +463,7 @@ export default function InvoicesPage() {
                     </DialogDescription>
                 </DialogHeader>
             </div>
-            <div className="max-h-[70vh] overflow-y-auto px-6 pb-6">
+            <div className="max-h-[70vh] overflow-y-auto px-6 pb-6 space-y-6">
                  <div ref={invoiceRef} className="bg-white text-black p-8 font-sans w-[210mm]">
                   {selectedInvoice && (() => {
                     const { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal } = calculateInvoiceTotals(selectedInvoice);
@@ -428,8 +477,8 @@ export default function InvoicesPage() {
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '20px' }}>
                             <div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                                      <path fill="#2563EB" d="M100,12.5 C105.52,12.5 110,16.98 110,22.5 L110,62.5 L142.5,45 C147.2,42.12 153.21,43.87 156.08,48.58 C158.96,53.28 157.21,59.29 152.5,62.17 L115,82.5 L152.5,102.83 C157.21,105.71 158.96,111.72 156.08,116.42 C153.21,121.13 147.2,122.88 142.5,120 L110,102.5 L110,142.5 C110,148.02 105.52,152.5 100,152.5 C94.48,152.5 90,148.02 90,142.5 L90,102.5 L57.5,120 C52.8,122.88 46.79,121.13 43.92,116.42 C41.04,111.72 42.79,105.71 47.5,102.83 L85,82.5 L47.5,62.17 C42.79,59.29 41.04,53.28 43.92,48.58 C46.79,43.87 52.8,42.12 57.5,45 L90,62.5 L90,22.5 C90,16.98 94.48,12.5 100,12.5 Z" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z" fill="#2563EB"/>
                                     </svg>
                                     <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#2563EB' }}>Bluestar Electronics</h1>
                                 </div>
@@ -512,6 +561,36 @@ export default function InvoicesPage() {
                     );
                   })()}
                 </div>
+                 {selectedInvoice?.quoteId && (
+                    <div className="p-4 border rounded-md">
+                        {isComparing ? (
+                           <div className="space-y-2">
+                                <Skeleton className="h-4 w-1/3" />
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-4/5" />
+                           </div>
+                        ) : comparisonResult ? (
+                             <Alert>
+                                <Wand2 className="h-4 w-4" />
+                                <AlertTitle>Comparison Summary</AlertTitle>
+                                <AlertDescription>
+                                    <pre className="whitespace-pre-wrap font-sans text-sm">{comparisonResult}</pre>
+                                </AlertDescription>
+                            </Alert>
+                        ) : (
+                           <div className="flex items-center justify-between">
+                                <div>
+                                    <h4 className="font-semibold">AI-Powered Comparison</h4>
+                                    <p className="text-sm text-muted-foreground">Compare this invoice with its original quotation to spot differences.</p>
+                                </div>
+                                <Button onClick={handleCompare} disabled={isComparing}>
+                                    <Wand2 className="mr-2 h-4 w-4" />
+                                    Compare with Quote
+                                </Button>
+                           </div>
+                        )}
+                    </div>
+                )}
             </div>
           <DialogFooter className="px-6 py-4 flex-row justify-between w-full border-t">
             <div className="flex gap-2">
@@ -533,5 +612,3 @@ export default function InvoicesPage() {
     </div>
   );
 }
-
-    
