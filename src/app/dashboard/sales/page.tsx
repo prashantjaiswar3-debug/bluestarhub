@@ -390,9 +390,9 @@ export default function SalesDashboard() {
                         <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '210mm', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                             {/* Header */}
                             <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', zIndex: 0 }}>
-                                <svg viewBox="0 0 595 120" preserveAspectRatio="none" style={{ width: '100%', height: 'auto' }}>
-                                    <path d="M0 0 H 595 V 80 C 450 100, 150 100, 0 120 Z" fill="#1E293B" />
-                                    <path d="M0 0 H 400 V 60 C 300 70, 100 70, 0 90 Z" fill="#f97316" />
+                               <svg viewBox="0 0 595 100" preserveAspectRatio="none" style={{ width: '100%', height: 'auto' }}>
+                                    <path d="M0 0 H 150 L 120 100 H 0 Z" fill="#1E293B" />
+                                    <path d="M120 0 H 220 L 190 100 H 90 Z" fill="#f97316" />
                                 </svg>
                             </div>
                             <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '20px' }}>
