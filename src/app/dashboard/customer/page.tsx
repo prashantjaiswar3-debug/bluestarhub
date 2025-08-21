@@ -36,8 +36,8 @@ import type { Complaint, Invoice, Review } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Image from "next/image";
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import type jsPDF from 'jspdf';
+import type html2canvas from 'html2canvas';
 
 const initialComplaints: Omit<Complaint, 'customer' | 'assignedTo'>[] = [
     { ticketId: "BLU-7238", issue: "CCTV Camera not recording", priority: "High", status: "Assigned", date: "2023-10-26T10:30:00Z" },
@@ -142,6 +142,10 @@ export default function CustomerDashboard() {
     const invoiceContent = invoiceRef.current;
     if (invoiceContent) {
         try {
+            const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+              import('jspdf'),
+              import('html2canvas'),
+            ]);
             const canvas = await html2canvas(invoiceContent, { scale: 2 });
             const imgData = canvas.toDataURL('image/png');
             const pdf = new jsPDF('p', 'mm', 'a4');
@@ -524,3 +528,5 @@ export default function CustomerDashboard() {
     </div>
   );
 }
+
+    

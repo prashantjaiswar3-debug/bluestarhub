@@ -35,8 +35,8 @@ import {
 import { Send, Eye, PlusCircle, Trash2, Gem, Download } from "lucide-react";
 import type { Quotation, QuotationItem } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import type jsPDF from 'jspdf';
+import type html2canvas from 'html2canvas';
 
 
 const initialQuotations: Quotation[] = [
@@ -189,6 +189,10 @@ export default function SalesDashboard() {
     const quoteContent = quoteRef.current;
     if (quoteContent) {
         try {
+            const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+              import('jspdf'),
+              import('html2canvas'),
+            ]);
             const canvas = await html2canvas(quoteContent, { scale: 2 });
             const imgData = canvas.toDataURL('image/png');
             const pdf = new jsPDF('p', 'mm', 'a4');
@@ -423,3 +427,5 @@ export default function SalesDashboard() {
     </div>
   );
 }
+
+    
