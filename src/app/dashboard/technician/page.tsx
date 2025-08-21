@@ -24,7 +24,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { MapPin, Phone, FilePlus, UserPlus } from "lucide-react";
+import { MapPin, Phone, FilePlus } from "lucide-react";
 import type { Job } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 
@@ -44,8 +44,6 @@ export default function TechnicianDashboard() {
   const { toast } = useToast();
   const [selectedJob, setSelectedJob] = React.useState<Job | null>(null);
   const [reportText, setReportText] = React.useState("");
-  const [isRegisterCustomerOpen, setIsRegisterCustomerOpen] = React.useState(false);
-  const [newCustomer, setNewCustomer] = React.useState({ name: "", email: "", phone: "", address: "" });
 
   const handleCall = (phone: string) => {
     toast({
@@ -81,25 +79,6 @@ export default function TechnicianDashboard() {
     setSelectedJob(null);
     setReportText("");
   };
-  
-  const handleRegisterCustomer = () => {
-    if(!newCustomer.name || !newCustomer.email || !newCustomer.phone || !newCustomer.address) {
-         toast({
-            variant: "destructive",
-            title: "Missing Information",
-            description: "Please fill out all fields to register a new customer.",
-        });
-        return;
-    }
-    const generatedPassword = Math.random().toString(36).slice(-8);
-    toast({
-      title: "Customer Registered",
-      description: `Customer ${newCustomer.name} created. Email: ${newCustomer.email}, Password: ${generatedPassword}`,
-      duration: 9000,
-    });
-    setIsRegisterCustomerOpen(false);
-    setNewCustomer({ name: "", email: "", phone: "", address: "" });
-  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -108,10 +87,6 @@ export default function TechnicianDashboard() {
             <h1 className="text-2xl font-bold">Today's Jobs</h1>
             <p className="text-muted-foreground">Here are your assignments for the day.</p>
           </div>
-          <Button onClick={() => setIsRegisterCustomerOpen(true)}>
-            <UserPlus className="mr-2 h-4 w-4" />
-            Register Customer
-          </Button>
         </div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {jobs.map((job) => (
@@ -170,41 +145,6 @@ export default function TechnicianDashboard() {
                 <Button variant="outline" onClick={handleDialogClose}>Cancel</Button>
             </DialogClose>
             <Button onClick={handleReportSubmit}>Submit Report</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      <Dialog open={isRegisterCustomerOpen} onOpenChange={setIsRegisterCustomerOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Register New Customer</DialogTitle>
-            <DialogDescription>
-              Enter the customer's details below to create a new account and generate login credentials.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input id="name" value={newCustomer.name} onChange={(e) => setNewCustomer({...newCustomer, name: e.target.value})} placeholder="e.g., John Doe" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input id="email" type="email" value={newCustomer.email} onChange={(e) => setNewCustomer({...newCustomer, email: e.target.value})} placeholder="e.g., john.doe@example.com" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input id="phone" value={newCustomer.phone} onChange={(e) => setNewCustomer({...newCustomer, phone: e.target.value})} placeholder="e.g., 9876543210" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
-              <Textarea id="address" value={newCustomer.address} onChange={(e) => setNewCustomer({...newCustomer, address: e.target.value})} placeholder="e.g., 123 Main St, Anytown" />
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button onClick={handleRegisterCustomer}>Register & Generate Credentials</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
