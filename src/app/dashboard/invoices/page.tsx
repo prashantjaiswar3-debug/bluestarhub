@@ -522,14 +522,14 @@ export default function InvoicesPage() {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#2563EB' }}>
-                                        <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                                            <path fill="currentColor" d="M100 12.5C105.523 12.5 110 16.9772 110 22.5V62.5H142.5C147.201 62.5 151.084 65.6116 152.17 70.0934C153.255 74.5753 151.211 79.4247 147.5 81.65L115 100L147.5 118.35C151.211 120.575 153.255 125.425 152.17 129.907C151.084 134.388 147.201 137.5 142.5 137.5H110V177.5C110 183.023 105.523 187.5 100 187.5C94.4772 187.5 90 183.023 90 177.5V137.5H57.5C52.7989 137.5 48.9156 134.388 47.8304 129.907C46.7451 125.425 48.7887 120.575 52.5 118.35L85 100L52.5 81.65C48.7887 79.4247 46.7451 74.5753 47.8304 70.0934C48.9156 65.6116 52.7989 62.5 57.5 62.5H90V22.5C90 16.9772 94.4772 12.5 100 12.5Z"/>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
                                         </svg>
                                         <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Bluestar Electronics</h1>
                                     </div>
                                     <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
-                                        <p>bluestar.elec@gmail.com</p>
-                                        <p>+91 9766661333</p>
+                                        <p><strong>Email:</strong> bluestar.elec@gmail.com</p>
+                                        <p><strong>Contact:</strong> +91 9766661333</p>
                                     </div>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
@@ -545,7 +545,7 @@ export default function InvoicesPage() {
                                     <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold' }}>{selectedInvoice.customer.name}</p>
                                      {selectedInvoice.customer.contactPerson && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>Attn: {selectedInvoice.customer.contactPerson}</p>}
                                     <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedInvoice.customer.address}</p>
-                                    <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedInvoice.customer.email}</p>
+                                    <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>Email:</strong> {selectedInvoice.customer.email}</p>
                                 </div>
                                  <div style={{ width: '220px' }}>
                                     <div style={{ fontSize: '12px', textAlign: 'right' }}>
@@ -669,5 +669,7 @@ export default function InvoicesPage() {
   );
 }
 
+
+    
 
     
