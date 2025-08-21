@@ -39,15 +39,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Send, Eye, PlusCircle, Trash2, Download, Share2, CreditCard, Wand2, DollarSign } from "lucide-react";
+import { Send, Eye, PlusCircle, Trash2, Download, Share2, CreditCard, DollarSign } from "lucide-react";
 import type { Invoice, Quotation, QuotationItem, Customer, Payment } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
 import type html2canvas from 'html2canvas';
 import { initialQuotations } from "@/lib/data";
-import { compareInvoiceAndQuote } from "@/ai/flows/compare-invoice-quote-flow";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const registeredCustomers: Customer[] = [
     { id: "CUST-001", name: "Green Valley Apartments", contactPerson: "Mr. Sharma", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City" },
@@ -105,8 +102,6 @@ export default function InvoicesPage() {
     poNumber: "",
   });
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
-  const [comparisonResult, setComparisonResult] = useState<string>("");
-  const [isComparing, setIsComparing] = useState<boolean>(false);
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState<boolean>(false);
   const [newPayment, setNewPayment] = useState({ amount: 0, method: "Online" as Payment["method"]});
   const invoiceRef = useRef<HTMLDivElement>(null);
@@ -128,8 +123,6 @@ export default function InvoicesPage() {
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
       setSelectedInvoice(null);
-      setComparisonResult("");
-      setIsComparing(false);
     }
   }
 
@@ -307,39 +300,6 @@ export default function InvoicesPage() {
                 description: "There was an error generating the PDF.",
             });
         }
-    }
-  };
-
-  const handleCompare = async () => {
-    if (!selectedInvoice || !selectedInvoice.quoteId) return;
-
-    const quote = initialQuotations.find(q => q.quoteId === selectedInvoice.quoteId);
-    if (!quote) {
-        toast({
-            variant: "destructive",
-            title: "Quotation not found",
-            description: `Could not find original quotation ${selectedInvoice.quoteId}.`
-        });
-        return;
-    }
-
-    setIsComparing(true);
-    setComparisonResult("");
-    try {
-        const result = await compareInvoiceAndQuote({
-            invoice: selectedInvoice,
-            quotation: quote,
-        });
-        setComparisonResult(result);
-    } catch (error) {
-        console.error("Comparison failed:", error);
-        toast({
-            variant: "destructive",
-            title: "Comparison Failed",
-            description: "Could not generate comparison summary.",
-        });
-    } finally {
-        setIsComparing(false);
     }
   };
 
@@ -708,36 +668,6 @@ export default function InvoicesPage() {
                         </Table>
                     </div>
                 )}
-                 {selectedInvoice?.quoteId && (
-                    <div className="p-4 border rounded-md">
-                        {isComparing ? (
-                           <div className="space-y-2">
-                                <Skeleton className="h-4 w-1/3" />
-                                <Skeleton className="h-4 w-full" />
-                                <Skeleton className="h-4 w-4/5" />
-                           </div>
-                        ) : comparisonResult ? (
-                             <Alert>
-                                <Wand2 className="h-4 w-4" />
-                                <AlertTitle>Comparison Summary</AlertTitle>
-                                <AlertDescription>
-                                    <pre className="whitespace-pre-wrap font-sans text-sm">{comparisonResult}</pre>
-                                </AlertDescription>
-                            </Alert>
-                        ) : (
-                           <div className="flex items-center justify-between">
-                                <div>
-                                    <h4 className="font-semibold">AI-Powered Comparison</h4>
-                                    <p className="text-sm text-muted-foreground">Compare this invoice with its original quotation to spot differences.</p>
-                                </div>
-                                <Button onClick={handleCompare} disabled={isComparing}>
-                                    <Wand2 className="mr-2 h-4 w-4" />
-                                    Compare with Quote
-                                </Button>
-                           </div>
-                        )}
-                    </div>
-                )}
             </div>
           <DialogFooter className="px-6 py-4 flex-row justify-between w-full border-t">
             <div className="flex gap-2">
@@ -808,3 +738,4 @@ export default function InvoicesPage() {
     
 
     
+
