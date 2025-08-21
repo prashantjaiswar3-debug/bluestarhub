@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +36,8 @@ import type { Complaint, Invoice, Review } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Image from "next/image";
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const initialComplaints: Omit<Complaint, 'customer' | 'assignedTo'>[] = [
     { ticketId: "BLU-7238", issue: "CCTV Camera not recording", priority: "High", status: "Assigned", date: "2023-10-26T10:30:00Z" },
@@ -77,6 +79,9 @@ export default function CustomerDashboard() {
   const [newComplaint, setNewComplaint] = useState("");
   const [isLeaveReviewOpen, setIsLeaveReviewOpen] = useState(false);
   const [newReview, setNewReview] = useState({ rating: 0, comment: "" });
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const invoiceRef = useRef<HTMLDivElement>(null);
+
 
   const handleLodgeComplaint = () => {
     if (!newComplaint) {
@@ -129,11 +134,36 @@ export default function CustomerDashboard() {
     });
   };
   
-  const handleDownloadInvoice = (invoiceId: string) => {
-    toast({
-        title: "Downloading Invoice",
-        description: `Your invoice ${invoiceId} will be downloaded shortly.`,
-    })
+  const handleDownloadInvoice = async (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    const invoiceContent = invoiceRef.current;
+    if (invoiceContent) {
+        try {
+            const canvas = await html2canvas(invoiceContent, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`invoice-${invoice.invoiceId}.pdf`);
+            toast({
+                title: "Download Started",
+                description: `Your invoice ${invoice.invoiceId} is downloading.`,
+            });
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+            toast({
+                variant: "destructive",
+                title: "Download Failed",
+                description: "There was an error generating the PDF for your invoice.",
+            });
+        } finally {
+             setSelectedInvoice(null);
+        }
+    }
   }
   
   const formatDate = (dateString: string) => {
@@ -335,9 +365,9 @@ export default function CustomerDashboard() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleDownloadInvoice(invoice.invoiceId)}>
+                        <Button variant="outline" size="sm" onClick={() => handleDownloadInvoice(invoice)}>
                             <Download className="mr-2 h-3 w-3" />
-                            Download
+                            Download PDF
                         </Button>
                         {invoice.status !== "Paid" && (
                             <Button size="sm">
@@ -353,6 +383,60 @@ export default function CustomerDashboard() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Hidden Invoice for PDF Generation */}
+      {selectedInvoice && (
+        <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+          <div ref={invoiceRef} style={{ width: '800px', padding: '40px', backgroundColor: 'white', fontFamily: 'sans-serif' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #eee', paddingBottom: '20px' }}>
+              <div>
+                <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#30475E' }}>INVOICE</h1>
+                <p style={{ color: '#555' }}>Invoice #: {selectedInvoice.invoiceId}</p>
+                <p style={{ color: '#555' }}>Date: {formatSimpleDate(selectedInvoice.date)}</p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <h2 style={{ fontSize: '20px', fontWeight: 'bold' }}>Bluestar Electronics</h2>
+                <p style={{ color: '#555' }}>123 Security Lane, Tech City</p>
+              </div>
+            </div>
+            <div style={{ marginTop: '30px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#30475E' }}>Bill To:</h3>
+              <p style={{ color: '#555' }}>Customer User</p>
+            </div>
+            <table style={{ width: '100%', marginTop: '30px', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#F0F0F0' }}>
+                  <th style={{ padding: '10px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Description</th>
+                  <th style={{ padding: '10px', textAlign: 'right', borderBottom: '1px solid #ddd' }}>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{ padding: '10px', borderBottom: '1px solid #ddd' }}>Service Charges for {selectedInvoice.invoiceId}</td>
+                  <td style={{ padding: '10px', textAlign: 'right', borderBottom: '1px solid #ddd' }}>{formatCurrency(selectedInvoice.amount)}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div style={{ marginTop: '30px', textAlign: 'right' }}>
+              <div style={{ display: 'inline-block', width: '250px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
+                  <span style={{ fontWeight: 'bold' }}>Total:</span>
+                  <span>{formatCurrency(selectedInvoice.amount)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderTop: '2px solid #30475E', marginTop: '10px' }}>
+                  <span style={{ fontWeight: 'bold', fontSize: '18px' }}>AMOUNT DUE</span>
+                  <span style={{ fontWeight: 'bold', fontSize: '18px' }}>{formatCurrency(selectedInvoice.amount)}</span>
+                </div>
+              </div>
+            </div>
+            <div style={{ marginTop: '50px', paddingTop: '20px', borderTop: '1px solid #eee', textAlign: 'center', fontSize: '12px', color: '#888' }}>
+              <p>Thank you for your business!</p>
+              <p>Created on Bluestar Hub</p>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       <Dialog open={isLodgeComplaintOpen} onOpenChange={setIsLodgeComplaintOpen}>
         <DialogContent>

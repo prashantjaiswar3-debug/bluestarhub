@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,9 +32,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Send, Eye, PlusCircle, Trash2, Gem } from "lucide-react";
+import { Send, Eye, PlusCircle, Trash2, Gem, Download } from "lucide-react";
 import type { Quotation, QuotationItem } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
 
 const initialQuotations: Quotation[] = [
   {
@@ -80,6 +83,8 @@ export default function SalesDashboard() {
     gst: 18,
   });
   const [selectedQuote, setSelectedQuote] = useState<Quotation | null>(null);
+  const quoteRef = useRef<HTMLDivElement>(null);
+
 
   const subTotal = useMemo(() => {
     const itemsTotal = newQuote.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
@@ -179,6 +184,33 @@ export default function SalesDashboard() {
     const grandTotal = Math.round(totalAfterDiscount + gstAmount);
     return { subTotal, discountAmount, gstAmount, grandTotal };
   }
+
+  const handleDownloadPdf = async () => {
+    const quoteContent = quoteRef.current;
+    if (quoteContent) {
+        try {
+            const canvas = await html2canvas(quoteContent, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`quotation-${selectedQuote?.quoteId}.pdf`);
+            toast({
+                title: "Download Started",
+                description: `Your quotation ${selectedQuote?.quoteId} is downloading.`,
+            });
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+            toast({
+                variant: "destructive",
+                title: "Download Failed",
+                description: "There was an error generating the PDF.",
+            });
+        }
+    }
+  };
+
 
   return (
     <div className="grid gap-6 lg:grid-cols-5">
@@ -312,70 +344,76 @@ export default function SalesDashboard() {
               A detailed view of quote <span className="font-semibold">{selectedQuote?.quoteId}</span> for {selectedQuote?.customer.name}.
             </DialogDescription>
           </DialogHeader>
-          {selectedQuote && (() => {
-            const { subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
-            return (
-              <div className="grid gap-4 py-4 px-6">
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <h4 className="font-semibold">Billed To:</h4>
-                        <p>{selectedQuote.customer.name}</p>
-                        <p className="text-sm text-muted-foreground">{selectedQuote.customer.email}</p>
-                        <p className="text-sm text-muted-foreground">{selectedQuote.customer.address}</p>
+           <div ref={quoteRef}>
+              {selectedQuote && (() => {
+                const { subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
+                return (
+                  <div className="grid gap-4 py-4 px-6">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <h4 className="font-semibold">Billed To:</h4>
+                            <p>{selectedQuote.customer.name}</p>
+                            <p className="text-sm text-muted-foreground">{selectedQuote.customer.email}</p>
+                            <p className="text-sm text-muted-foreground">{selectedQuote.customer.address}</p>
+                        </div>
+                         <div className="text-right">
+                            <h4 className="font-semibold">Quote ID: {selectedQuote.quoteId}</h4>
+                            <p className="text-sm text-muted-foreground">Date: {new Date(selectedQuote.date).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
+                         </div>
                     </div>
-                     <div className="text-right">
-                        <h4 className="font-semibold">Quote ID: {selectedQuote.quoteId}</h4>
-                        <p className="text-sm text-muted-foreground">Date: {new Date(selectedQuote.date).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
-                     </div>
-                </div>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Description</TableHead>
-                            <TableHead className="text-center">Quantity</TableHead>
-                            <TableHead className="text-right">Price</TableHead>
-                            <TableHead className="text-right">Total</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {selectedQuote.items.map(item => (
-                            <TableRow key={item.id}>
-                                <TableCell>{item.description}</TableCell>
-                                <TableCell className="text-center">{item.quantity}</TableCell>
-                                <TableCell className="text-right">{formatCurrency(item.price)}</TableCell>
-                                <TableCell className="text-right">{formatCurrency(item.quantity * item.price)}</TableCell>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Description</TableHead>
+                                <TableHead className="text-center">Quantity</TableHead>
+                                <TableHead className="text-right">Price</TableHead>
+                                <TableHead className="text-right">Total</TableHead>
                             </TableRow>
-                        ))}
-                         <TableRow>
-                            <TableCell colSpan={3} className="text-right font-medium">Labor Cost</TableCell>
-                            <TableCell className="text-right">{formatCurrency(selectedQuote.laborCost)}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell colSpan={3} className="text-right font-medium">Subtotal</TableCell>
-                            <TableCell className="text-right">{formatCurrency(subTotal)}</TableCell>
-                        </TableRow>
-                         <TableRow>
-                            <TableCell colSpan={3} className="text-right font-medium">Discount ({selectedQuote.discount}%)</TableCell>
-                            <TableCell className="text-right text-destructive">-{formatCurrency(discountAmount)}</TableCell>
-                        </TableRow>
-                         <TableRow>
-                            <TableCell colSpan={3} className="text-right font-medium">GST ({selectedQuote.gst}%)</TableCell>
-                            <TableCell className="text-right">{formatCurrency(gstAmount)}</TableCell>
-                        </TableRow>
-                         <TableRow className="font-bold text-lg bg-muted/50">
-                            <TableCell colSpan={3} className="text-right">Grand Total (Rounded)</TableCell>
-                            <TableCell className="text-right">{formatCurrency(grandTotal)}</TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-                <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                    <Gem className="h-3 w-3" />
-                    <span>Created on Bluestar Hub</span>
-                </div>
-              </div>
-            )
-          })()}
-          <DialogFooter className="px-6 pb-4">
+                        </TableHeader>
+                        <TableBody>
+                            {selectedQuote.items.map(item => (
+                                <TableRow key={item.id}>
+                                    <TableCell>{item.description}</TableCell>
+                                    <TableCell className="text-center">{item.quantity}</TableCell>
+                                    <TableCell className="text-right">{formatCurrency(item.price)}</TableCell>
+                                    <TableCell className="text-right">{formatCurrency(item.quantity * item.price)}</TableCell>
+                                </TableRow>
+                            ))}
+                             <TableRow>
+                                <TableCell colSpan={3} className="text-right font-medium">Labor Cost</TableCell>
+                                <TableCell className="text-right">{formatCurrency(selectedQuote.laborCost)}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell colSpan={3} className="text-right font-medium">Subtotal</TableCell>
+                                <TableCell className="text-right">{formatCurrency(subTotal)}</TableCell>
+                            </TableRow>
+                             <TableRow>
+                                <TableCell colSpan={3} className="text-right font-medium">Discount ({selectedQuote.discount}%)</TableCell>
+                                <TableCell className="text-right text-destructive">-{formatCurrency(discountAmount)}</TableCell>
+                            </TableRow>
+                             <TableRow>
+                                <TableCell colSpan={3} className="text-right font-medium">GST ({selectedQuote.gst}%)</TableCell>
+                                <TableCell className="text-right">{formatCurrency(gstAmount)}</TableCell>
+                            </TableRow>
+                             <TableRow className="font-bold text-lg bg-muted/50">
+                                <TableCell colSpan={3} className="text-right">Grand Total (Rounded)</TableCell>
+                                <TableCell className="text-right">{formatCurrency(grandTotal)}</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                    <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                        <Gem className="h-3 w-3" />
+                        <span>Created on Bluestar Hub</span>
+                    </div>
+                  </div>
+                )
+              })()}
+          </div>
+          <DialogFooter className="px-6 pb-4 flex justify-between w-full">
+            <Button variant="secondary" onClick={handleDownloadPdf}>
+                <Download className="mr-2 h-4 w-4" />
+                Download PDF
+            </Button>
             <DialogClose asChild>
                 <Button variant="outline">Close</Button>
             </DialogClose>
