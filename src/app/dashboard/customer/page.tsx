@@ -36,9 +36,9 @@ import type { Complaint, Invoice } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 
 const initialComplaints: Omit<Complaint, 'customer' | 'assignedTo'>[] = [
-    { ticketId: "BLU-7238", issue: "CCTV Camera not recording", priority: "High", status: "Assigned", date: "2023-10-26" },
-    { ticketId: "BLU-7211", issue: "Request for new installation", priority: "Low", status: "Resolved", date: "2023-10-15" },
-    { ticketId: "BLU-7199", issue: "Annual Maintenance", priority: "Medium", status: "Closed", date: "2023-09-20" },
+    { ticketId: "BLU-7238", issue: "CCTV Camera not recording", priority: "High", status: "Assigned", date: "2023-10-26T10:30:00Z" },
+    { ticketId: "BLU-7211", issue: "Request for new installation", priority: "Low", status: "Resolved", date: "2023-10-15T14:00:00Z" },
+    { ticketId: "BLU-7199", issue: "Annual Maintenance", priority: "Medium", status: "Closed", date: "2023-09-20T09:00:00Z" },
 ];
 
 const initialInvoices: Invoice[] = [
@@ -83,7 +83,7 @@ export default function CustomerDashboard() {
       issue: newComplaint,
       priority: 'Medium',
       status: 'Open',
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toISOString(),
     };
     setComplaints([newComplaintData, ...complaints]);
     setNewComplaint("");
@@ -99,6 +99,17 @@ export default function CustomerDashboard() {
         title: "Downloading Invoice",
         description: `Your invoice ${invoiceId} will be downloaded shortly.`,
     })
+  }
+  
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString(undefined, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   }
 
   return (
@@ -125,7 +136,7 @@ export default function CustomerDashboard() {
               <TableRow>
                 <TableHead>Ticket ID</TableHead>
                 <TableHead>Issue</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead>Date & Time</TableHead>
                 <TableHead className="text-right">Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -134,7 +145,7 @@ export default function CustomerDashboard() {
                 <TableRow key={complaint.ticketId}>
                   <TableCell className="font-medium">{complaint.ticketId}</TableCell>
                   <TableCell>{complaint.issue}</TableCell>
-                  <TableCell>{complaint.date}</TableCell>
+                  <TableCell>{formatDate(complaint.date)}</TableCell>
                   <TableCell className="text-right">
                     <Badge variant={statusVariant[complaint.status]}>
                       {complaint.status}
