@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -95,6 +95,20 @@ export default function InvoicesPage() {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const invoiceRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const storedInvoicesStr = localStorage.getItem('invoices');
+    if (storedInvoicesStr) {
+        const storedInvoices: Invoice[] = JSON.parse(storedInvoicesStr);
+        setInvoices(prevInvoices => {
+            const allInvoices = [...storedInvoices, ...prevInvoices];
+            const uniqueInvoices = allInvoices.filter(
+                (invoice, index, self) => index === self.findIndex(t => t.invoiceId === invoice.invoiceId)
+            );
+            return uniqueInvoices;
+        });
+    }
+  }, []);
+
 
   const subTotal = useMemo(() => {
     const itemsTotal = newInvoice.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
@@ -171,7 +185,11 @@ export default function InvoicesPage() {
       status: "Pending",
       date: new Date().toISOString().split('T')[0],
     };
-    setInvoices([newInvoiceData, ...invoices]);
+    
+    const updatedInvoices = [newInvoiceData, ...invoices];
+    setInvoices(updatedInvoices);
+    localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+
     resetForm();
     toast({
         title: "Invoice Created",
@@ -387,7 +405,7 @@ export default function InvoicesPage() {
       </Card>
       
       <Dialog open={!!selectedInvoice} onOpenChange={(isOpen) => !isOpen && setSelectedInvoice(null)}>
-        <DialogContent className="sm:max-w-3xl p-0" data-slot="header-plain">
+        <DialogContent className="sm:max-w-4xl p-0" data-slot="header-plain">
             <div className="p-6">
                 <DialogHeader>
                     <DialogTitle>Invoice Details</DialogTitle>
@@ -411,7 +429,8 @@ export default function InvoicesPage() {
                             <div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                     <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                                        <path fill="#2563EB" d="M100,12.5 C105.52,12.5 110,16.98 110,22.5 L110,62.5 L142.5,45 C147.2,42.12 153.21,43.87 156.08,48.58 C158.96,53.28 157.21,59.29 152.5,62.17 L115,82.5 L152.5,102.83 C157.21,105.71 158.96,111.72 156.08,116.42 C153.21,121.13 147.2,122.88 142.5,120 L110,102.5 L110,142.5 C110,148.02 105.52,152.5 100,152.5 C94.48,152.5 90,148.02 90,142.5 L90,102.5 L57.5,120 C52.8,122.88 46.79,121.13 43.92,116.42 C41.04,111.72 42.79,105.71 47.5,102.83 L85,82.5 L47.5,62.17 C42.79,59.29 41.04,53.28 43.92,48.58 C46.79,43.87 52.8,42.12 57.5,45 L90,62.5 L90,22.5 C90,16.98 94.48,12.5 100,12.5 Z" />
+                                        <path fill="#2563EB" d="M100 10.4c-4.8 0-9.2 2-12.4 5.2l-40 40c-6.8 6.8-6.8 18 0 24.8l40 40c3.2 3.2 7.6 5.2 12.4 5.2s9.2-2 12.4-5.2l40-40c6.8-6.8 6.8-18 0-24.8l-40-40c-3.2-3.2-7.6-5.2-12.4-5.2zm0 14.8c1.6 0 3.2.6 4.4 1.8l40 40c2.4 2.4 2.4 6.4 0 8.8l-40 40c-1.2 1.2-2.8 1.8-4.4 1.8s-3.2-.6-4.4-1.8l-40-40c-2.4-2.4-2.4-6.4 0-8.8l40-40c1.2-1.2 2.8-1.8 4.4-1.8z"/>
+                                        <path fill="#9CA3AF" d="m100 62.5c-2.4 0-4.6.9-6.4 2.5l-25 20c-4 3.2-4.6 9-1.4 13s9 4.6 13 1.4l19.6-15.7 19.6 15.7c4 3.2 9.6 2.6 13-1.4s2.6-9.6-1.4-13l-25-20c-1.8-1.6-4-2.5-6.4-2.5z"/>
                                     </svg>
                                     <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#2563EB' }}>Bluestar Electronics</h1>
                                 </div>
@@ -433,6 +452,7 @@ export default function InvoicesPage() {
                                  <div style={{ width: '220px' }}>
                                     <div style={{ fontSize: '12px', textAlign: 'right' }}>
                                         <div style={{ marginBottom: '5px' }}><strong>Due Date:</strong><span>{formatDate(dueDate)}</span></div>
+                                        {selectedInvoice.quoteId && <div style={{ marginBottom: '5px' }}><strong>Quote Ref:</strong><span>{selectedInvoice.quoteId}</span></div>}
                                     </div>
                                 </div>
                             </div>
