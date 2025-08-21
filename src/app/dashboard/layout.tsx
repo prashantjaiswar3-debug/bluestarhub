@@ -29,13 +29,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const navItems = [
-  { href: "/dashboard", icon: Home, label: "Dashboard" },
-  { href: "/dashboard/admin", icon: LayoutGrid, label: "Assignments" },
-  { href: "/dashboard/technician", icon: Wrench, label: "Technician View" },
-  { href: "/dashboard/customer", icon: Users, label: "Customer Portal" },
-  { href: "/dashboard/sales", icon: FileText, label: "Sales & Quotes" },
+const allNavItems = [
+  { href: "/dashboard", icon: Home, label: "Dashboard", roles: ['admin', 'technician', 'customer', 'sales'] },
+  { href: "/dashboard/admin", icon: LayoutGrid, label: "Assignments", roles: ['admin'] },
+  { href: "/dashboard/technician", icon: Wrench, label: "Technician View", roles: ['technician', 'admin'] },
+  { href: "/dashboard/customer", icon: Users, label: "Customer Portal", roles: ['customer', 'admin'] },
+  { href: "/dashboard/sales", icon: FileText, label: "Sales & Quotes", roles: ['sales', 'admin'] },
 ];
+
+const roleInfo = {
+    admin: { name: "Admin User", email: "admin@bluestar.com", fallback: "AD" },
+    technician: { name: "Technician User", email: "tech@bluestar.com", fallback: "TU" },
+    customer: { name: "Customer User", email: "customer@bluestar.com", fallback: "CU" },
+    sales: { name: "Sales User", email: "sales@bluestar.com", fallback: "SU" },
+    default: { name: "Demo User", email: "user@bluestar.com", fallback: "DU" },
+};
 
 export default function DashboardLayout({
   children,
@@ -43,6 +51,20 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+
+  const getRole = () => {
+    if (pathname.startsWith('/dashboard/admin')) return 'admin';
+    if (pathname.startsWith('/dashboard/technician')) return 'technician';
+    if (pathname.startsWith('/dashboard/customer')) return 'customer';
+    if (pathname.startsWith('/dashboard/sales')) return 'sales';
+    return 'default';
+  }
+
+  const currentRole = getRole();
+  const navItems = allNavItems.filter(item => item.roles.includes(currentRole) || currentRole === 'admin');
+  const currentUser = roleInfo[currentRole] || roleInfo.default;
+  const dashboardLabel = navItems.find(item => pathname.startsWith(item.href))?.label || 'Dashboard';
+
 
   return (
     <SidebarProvider>
@@ -78,24 +100,24 @@ export default function DashboardLayout({
             <div className="flex items-center gap-3 p-2 rounded-md transition-colors hover:bg-sidebar-accent">
               <Avatar className="h-9 w-9">
                 <AvatarImage src="https://placehold.co/100x100.png" alt="@user" data-ai-hint="profile picture" />
-                <AvatarFallback>AD</AvatarFallback>
+                <AvatarFallback>{currentUser.fallback}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col overflow-hidden">
-                <span className="text-sm font-semibold truncate">Admin User</span>
+                <span className="text-sm font-semibold truncate">{currentUser.name}</span>
                 <span className="text-xs text-muted-foreground truncate">
-                  admin@bluestar.com
+                  {currentUser.email}
                 </span>
               </div>
             </div>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <Link href="/">
-                  <SidebarMenuButton tooltip={{ children: "Log Out" }}>
-                    <LogOut className="shrink-0" />
-                    <span>Log Out</span>
-                  </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <Link href="/">
+                      <SidebarMenuButton tooltip={{ children: "Log Out" }}>
+                        <LogOut className="shrink-0" />
+                        <span>Log Out</span>
+                      </SidebarMenuButton>
+                    </Link>
+                </SidebarMenuItem>
             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
@@ -104,7 +126,7 @@ export default function DashboardLayout({
             <div className="flex items-center gap-2">
                 <SidebarTrigger className="md:hidden" />
                 <h2 className="text-lg font-semibold md:text-xl">
-                    {navItems.find(item => pathname.startsWith(item.href))?.label || 'Dashboard'}
+                    {dashboardLabel}
                 </h2>
             </div>
             <div className="flex items-center gap-2">
