@@ -76,6 +76,10 @@ export default function DashboardLayout({
   const [isRegisterSalesOpen, setIsRegisterSalesOpen] = React.useState(false);
   const [newSales, setNewSales] = React.useState({ name: "", email: "", phone: "" });
 
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = React.useState(false);
+  const [passwordFields, setPasswordFields] = React.useState({ current: "", new: "", confirm: "" });
+
+
   const getRole = () => {
     if (pathname.startsWith('/dashboard/admin')) return 'admin';
     if (pathname.startsWith('/dashboard/technician')) return 'technician';
@@ -140,6 +144,20 @@ export default function DashboardLayout({
     setIsRegisterSalesOpen(false);
     setNewSales({ name: "", email: "", phone: "" });
   }
+
+  const handleChangePassword = () => {
+    if (!passwordFields.current || !passwordFields.new || !passwordFields.confirm) {
+      toast({ variant: "destructive", title: "Missing fields", description: "Please fill all password fields." });
+      return;
+    }
+    if (passwordFields.new !== passwordFields.confirm) {
+      toast({ variant: "destructive", title: "Passwords do not match", description: "The new password and confirmation do not match." });
+      return;
+    }
+    toast({ title: "Password Updated", description: "Your password has been changed successfully." });
+    setIsChangePasswordOpen(false);
+    setPasswordFields({ current: "", new: "", confirm: "" });
+  };
 
   const currentRole = getRole();
   const navItems = allNavItems.filter(item => item.roles.includes(currentRole));
@@ -249,7 +267,7 @@ export default function DashboardLayout({
                 <Bell className="h-5 w-5" />
                 <span className="sr-only">Notifications</span>
               </Button>
-              <Button variant="ghost" size="icon" className="rounded-full">
+              <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setIsChangePasswordOpen(true)}>
                 <Settings className="h-5 w-5" />
                 <span className="sr-only">Settings</span>
               </Button>
@@ -360,8 +378,36 @@ export default function DashboardLayout({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <Dialog open={isChangePasswordOpen} onOpenChange={setIsChangePasswordOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+            <DialogDescription>
+              Update your password here. After saving, you will be logged out and need to sign in again.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="current-password">Current Password</Label>
+              <Input id="current-password" type="password" value={passwordFields.current} onChange={(e) => setPasswordFields({...passwordFields, current: e.target.value})} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+              <Input id="new-password" type="password" value={passwordFields.new} onChange={(e) => setPasswordFields({...passwordFields, new: e.target.value})} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm New Password</Label>
+              <Input id="confirm-password" type="password" value={passwordFields.confirm} onChange={(e) => setPasswordFields({...passwordFields, confirm: e.target.value})} />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button onClick={handleChangePassword}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 }
-
-    
