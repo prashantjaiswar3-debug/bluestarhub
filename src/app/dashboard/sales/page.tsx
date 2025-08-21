@@ -200,15 +200,32 @@ export default function SalesDashboard() {
                 backgroundColor: null, 
             });
             const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'px', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
             
-            const margin = 20;
-            const contentWidth = pdfWidth - (margin * 2);
-            const contentHeight = pdfHeight - (margin * 2);
+            // A4 size in points: 595.28 x 841.89
+            const pdf = new jsPDF('p', 'pt', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            const canvasAspectRatio = canvasWidth / canvasHeight;
+            
+            let finalWidth, finalHeight;
+            
+            // Fit to width
+            finalWidth = pdfWidth;
+            finalHeight = finalWidth / canvasAspectRatio;
 
-            pdf.addImage(imgData, 'PNG', margin, margin, contentWidth, contentHeight);
+            if (finalHeight > pdfHeight) {
+                // If height is too big after fitting to width, fit to height instead
+                finalHeight = pdfHeight;
+                finalWidth = finalHeight * canvasAspectRatio;
+            }
+
+            const xPos = (pdfWidth - finalWidth) / 2;
+            const yPos = (pdfHeight - finalHeight) / 2;
+
+            pdf.addImage(imgData, 'PNG', xPos, yPos, finalWidth, finalHeight);
             pdf.save(`quotation-${selectedQuote?.quoteId}.pdf`);
             toast({
                 title: "Download Started",
@@ -370,7 +387,7 @@ export default function SalesDashboard() {
                     const formatDate = (date: Date) => date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
 
                     return (
-                        <div style={{ fontFamily: 'Arial, sans-serif', color: '#333' }}>
+                        <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '210mm', height: '297mm', padding: '40px', boxSizing: 'border-box' }}>
                             {/* Header */}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '20px' }}>
                                 <div style={{ flex: '1' }}>
