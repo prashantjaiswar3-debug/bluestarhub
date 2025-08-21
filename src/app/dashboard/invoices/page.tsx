@@ -56,7 +56,7 @@ const initialInvoices: Invoice[] = [
     {
         invoiceId: "INV-2023-0012",
         customer: { name: "Green Valley Apartments", email: "manager@gva.com", address: "456 Park Ave, Residence City", contactPerson: "Mr. Sharma" },
-        items: [{ id: "item-1", description: "16-Channel NVR System", quantity: 1, price: 80000, gstRate: 18 }, { id: "item-2", description: "12x Bullet Cameras", quantity: 1, price: 40000, gstRate: 18 }],
+        items: [{ id: "item-1", description: "16-Channel NVR System", quantity: 1, unit: "nos", price: 80000, gstRate: 18 }, { id: "item-2", description: "12x Bullet Cameras", quantity: 1, unit: "nos", price: 40000, gstRate: 18 }],
         laborCost: 20000,
         discount: 5,
         totalAmount: 157528,
@@ -70,7 +70,7 @@ const initialInvoices: Invoice[] = [
     {
         invoiceId: "INV-2023-0015",
         customer: { name: "ABC Corporation", email: "contact@abc.com", address: "123 Business Rd, Corp Town", contactPerson: "Ms. Priya" },
-        items: [{ id: "item-1", description: "4x Hikvision 5MP Dome Cameras", quantity: 1, price: 18000, gstRate: 18 }],
+        items: [{ id: "item-1", description: "4x Hikvision 5MP Dome Cameras", quantity: 1, unit: "nos", price: 18000, gstRate: 18 }],
         laborCost: 5000,
         discount: 10,
         totalAmount: 24780,
@@ -95,7 +95,7 @@ export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
   const [newInvoice, setNewInvoice] = useState({
     customer: { name: "", email: "", address: "" },
-    items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, price: 0, gstRate: 18 }],
+    items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18 }],
     laborCost: 0,
     discount: 0,
     quoteId: "",
@@ -157,7 +157,7 @@ export default function InvoicesPage() {
     setNewInvoice(prev => ({
       ...prev,
       items: prev.items.map(item =>
-        item.id === id ? { ...item, [field]: typeof value === 'string' && field !== 'description' ? parseFloat(value) || 0 : value } : item
+        item.id === id ? { ...item, [field]: typeof value === 'string' && (field !== 'description' && field !== 'unit') ? parseFloat(value) || 0 : value } : item
       ),
     }));
   };
@@ -165,7 +165,7 @@ export default function InvoicesPage() {
   const addItem = () => {
     setNewInvoice(prev => ({
       ...prev,
-      items: [...prev.items, { id: `item-${Date.now()}`, description: "", quantity: 1, price: 0, gstRate: 18 }],
+      items: [...prev.items, { id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18 }],
     }));
   };
 
@@ -179,7 +179,7 @@ export default function InvoicesPage() {
   const resetForm = () => {
       setNewInvoice({
         customer: { name: "", email: "", address: "" },
-        items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, price: 0, gstRate: 18 }],
+        items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18 }],
         laborCost: 0,
         discount: 0,
         quoteId: "",
@@ -430,10 +430,14 @@ export default function InvoicesPage() {
                   <Label htmlFor={`item-desc-${index}`}>Description</Label>
                   <Textarea id={`item-desc-${index}`} placeholder="e.g., 4x Dome Cameras, 1x 8-Channel DVR..." value={item.description} onChange={(e) => handleItemChange(item.id, 'description', e.target.value)} />
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                    <div className="space-y-2">
                       <Label htmlFor={`item-qty-${index}`}>Quantity</Label>
                       <Input id={`item-qty-${index}`} type="number" placeholder="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value, 10) || 1)} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor={`item-unit-${index}`}>Unit</Label>
+                        <Input id={`item-unit-${index}`} placeholder="nos" value={item.unit} onChange={(e) => handleItemChange(item.id, 'unit', e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor={`item-price-${index}`}>Price (₹)</Label>
@@ -601,7 +605,7 @@ export default function InvoicesPage() {
                                             <td style={{ padding: '10px' }}>{index + 1}</td>
                                             <td style={{ padding: '10px', maxWidth: '300px' }}>{item.description}</td>
                                             <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
-                                            <td style={{ padding: '10px', textAlign: 'right' }}>{item.quantity}</td>
+                                            <td style={{ padding: '10px', textAlign: 'right' }}>{item.quantity} {item.unit}</td>
                                             <td style={{ padding: '10px', textAlign: 'right' }}>{item.gstRate}%</td>
                                             <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.quantity * item.price)}</td>
                                         </tr>
@@ -738,4 +742,5 @@ export default function InvoicesPage() {
     
 
     
+
 

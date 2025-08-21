@@ -35,6 +35,7 @@ export type QuotationItem = {
   id: string;
   description: string;
   quantity: number;
+  unit: string;
   price: number;
   gstRate: number; // Percentage
 };

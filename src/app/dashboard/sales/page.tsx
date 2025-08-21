@@ -64,7 +64,7 @@ export default function SalesDashboard() {
   const [quotations, setQuotations] = useState<Quotation[]>(initialQuotations);
   const [newQuote, setNewQuote] = useState({
     customer: { name: "", email: "", address: "", phone: "" },
-    items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, price: 0, gstRate: 18 }],
+    items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18 }],
     laborCost: 0,
     discount: 0,
     poNumber: "",
@@ -102,7 +102,7 @@ export default function SalesDashboard() {
     setNewQuote(prev => ({
       ...prev,
       items: prev.items.map(item =>
-        item.id === id ? { ...item, [field]: typeof value === 'string' && field !== 'description' ? parseFloat(value) || 0 : value } : item
+        item.id === id ? { ...item, [field]: typeof value === 'string' && (field !== 'description' && field !== 'unit') ? parseFloat(value) || 0 : value } : item
       ),
     }));
   };
@@ -110,7 +110,7 @@ export default function SalesDashboard() {
   const addItem = () => {
     setNewQuote(prev => ({
       ...prev,
-      items: [...prev.items, { id: `item-${Date.now()}`, description: "", quantity: 1, price: 0, gstRate: 18 }],
+      items: [...prev.items, { id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18 }],
     }));
   };
 
@@ -124,7 +124,7 @@ export default function SalesDashboard() {
   const resetForm = () => {
       setNewQuote({
         customer: { name: "", email: "", address: "", phone: "" },
-        items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, price: 0, gstRate: 18 }],
+        items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18 }],
         laborCost: 0,
         discount: 0,
         poNumber: "",
@@ -240,6 +240,7 @@ export default function SalesDashboard() {
       date: new Date().toISOString().split('T')[0],
       quoteId: quote.quoteId,
       poNumber: quote.poNumber,
+      payments: [],
     };
     
     const existingInvoicesStr = localStorage.getItem('invoices');
@@ -307,10 +308,14 @@ export default function SalesDashboard() {
                   <Label htmlFor={`item-desc-${index}`}>Description</Label>
                   <Textarea id={`item-desc-${index}`} placeholder="e.g., 4x Dome Cameras, 1x 8-Channel DVR..." value={item.description} onChange={(e) => handleItemChange(item.id, 'description', e.target.value)} />
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                    <div className="space-y-2">
                       <Label htmlFor={`item-qty-${index}`}>Quantity</Label>
                       <Input id={`item-qty-${index}`} type="number" placeholder="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value, 10) || 1)} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor={`item-unit-${index}`}>Unit</Label>
+                        <Input id={`item-unit-${index}`} placeholder="nos" value={item.unit} onChange={(e) => handleItemChange(item.id, 'unit', e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor={`item-price-${index}`}>Price (₹)</Label>
@@ -451,6 +456,7 @@ export default function SalesDashboard() {
                                       {selectedQuote.customer.contactPerson && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>Attn: {selectedQuote.customer.contactPerson}</p>}
                                       <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.address}</p>
                                       <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>Email:</strong> {selectedQuote.customer.email}</p>
+                                      {selectedQuote.customer.phone && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>Contact:</strong> {selectedQuote.customer.phone}</p>}
                                   </div>
                                   <div style={{ width: '220px' }}>
                                       <div style={{ fontSize: '12px', textAlign: 'right' }}>
@@ -479,7 +485,7 @@ export default function SalesDashboard() {
                                               <td style={{ padding: '10px' }}>{index + 1}</td>
                                               <td style={{ padding: '10px', maxWidth: '300px' }}>{item.description}</td>
                                               <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
-                                              <td style={{ padding: '10px', textAlign: 'right' }}>{item.quantity}</td>
+                                              <td style={{ padding: '10px', textAlign: 'right' }}>{item.quantity} {item.unit}</td>
                                                <td style={{ padding: '10px', textAlign: 'right' }}>{item.gstRate}%</td>
                                               <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.quantity * item.price)}</td>
                                           </tr>
