@@ -40,4 +40,5 @@ export type Job = {
   address: string;
   issue: string;
   priority: "High" | "Medium" | "Low";
+  phone: string;
 };
