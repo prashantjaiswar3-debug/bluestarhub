@@ -387,21 +387,26 @@ export default function SalesDashboard() {
                     const formatDate = (date: Date) => date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
 
                     return (
-                        <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '210mm', height: '297mm', padding: '40px', boxSizing: 'border-box' }}>
+                        <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '210mm', height: '297mm', padding: '40px', boxSizing: 'border-box', position: 'relative', overflow: 'hidden' }}>
                             {/* Header */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '20px' }}>
-                                <div style={{ flex: '1' }}>
+                            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', zIndex: 0 }}>
+                                <svg viewBox="0 0 595 120" preserveAspectRatio="none" style={{ width: '100%', height: 'auto' }}>
+                                    <path d="M0 0 H 595 V 80 L 0 120 Z" fill="#1E293B" />
+                                    <path d="M0 0 H 400 V 60 L 0 90 Z" fill="#f97316" />
+                                </svg>
+                            </div>
+                            <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '20px' }}>
+                                <div style={{ flex: '1', paddingTop: '10px' }}>
                                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <Gem style={{ height: '40px', width: '40px', color: '#f97316' }} />
+                                        <Gem style={{ height: '40px', width: '40px', color: '#ffffff' }} />
                                         <div>
-                                            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1E293B', margin: 0 }}>Bluestar Hub</h1>
-                                            <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>by Bluestar Electronics</p>
+                                            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff', margin: 0 }}>Bluestar Hub</h1>
+                                            <p style={{ fontSize: '12px', color: '#E2E8F0', margin: 0 }}>by Bluestar Electronics</p>
                                         </div>
                                     </div>
                                 </div>
-                                <div style={{ position: 'absolute', top: 0, right: 0, height: '120px', width: '60%', backgroundColor: '#1E293B', zIndex: 0 }}></div>
-                                <div style={{ position: 'absolute', top: '10px', right: '10px', height: '100px', width: '55%', backgroundColor: '#f97316', zIndex: 1 }}></div>
                             </div>
+                            
 
                             {/* Billed To and Invoice Details */}
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '40px', paddingBottom: '20px' }}>
@@ -474,14 +479,19 @@ export default function SalesDashboard() {
                             </div>
 
                              {/* Footer Bar */}
-                            <div style={{ position: 'relative', height: '60px', marginTop: '40px', bottom: '-32px', left: '-32px', right: '-32px' }}>
-                                 <div style={{ position: 'absolute', bottom: 0, left: 0, height: '100%', width: '100%', backgroundColor: '#1E293B' }}></div>
-                                 <div style={{ position: 'absolute', bottom: 0, left: 0, height: '100%', width: '60%', backgroundColor: '#f97316', clipPath: 'polygon(0 0, 100% 0, 85% 100%, 0% 100%)' }}></div>
-                                 <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: '100%', color: 'white', fontSize: '12px' }}>
-                                    <span>info@bluestarhub.com</span>
-                                    <span>+91 12345 67890</span>
-                                    <span>www.bluestarhub.com</span>
-                                 </div>
+                            <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', zIndex: 0 }}>
+                                <svg viewBox="0 0 595 100" preserveAspectRatio="none" style={{ width: '100%', height: 'auto' }}>
+                                    <path d="M0 30 C 150 80, 450 -20, 595 30 V 100 H 0 Z" fill="#1E293B" />
+                                    <path d="M0 40 C 150 90, 450 -10, 595 40 V 100 H 0 Z" fill="#f97316" />
+                                </svg>
+                            </div>
+                             <div style={{ position: 'absolute', zIndex: 2, display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: '60px', color: 'white', fontSize: '12px', bottom: 0, left: 0, right: 0, paddingBottom: '10px' }}>
+                                <span>info@bluestarhub.com</span>
+                                <span>+91 12345 67890</span>
+                                <span>www.bluestarhub.com</span>
+                            </div>
+                             <div style={{ position: 'absolute', bottom: '5px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: '#E2E8F0' }}>
+                                <p>Created on Bluestar Hub</p>
                             </div>
                         </div>
                     );
@@ -508,5 +518,3 @@ export default function SalesDashboard() {
     </div>
   );
 }
-
-    
