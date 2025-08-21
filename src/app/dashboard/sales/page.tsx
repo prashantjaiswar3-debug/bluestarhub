@@ -258,7 +258,7 @@ export default function SalesDashboard() {
            </div>
         </CardContent>
         <CardFooter className="flex justify-end">
-            <Button onClick={handleCreateQuote}>
+            <Button onClick={handleCreateQuote} variant="secondary">
                 <Send className="mr-2 h-4 w-4" />
                 Create Quote
             </Button>
@@ -306,16 +306,16 @@ export default function SalesDashboard() {
       
       <Dialog open={!!selectedQuote} onOpenChange={(isOpen) => !isOpen && setSelectedQuote(null)}>
         <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Quotation Details</DialogTitle>
-            <DialogDescription>
+          <DialogHeader className="bg-accent p-4 rounded-t-lg">
+            <DialogTitle className="text-accent-foreground">Quotation Details</DialogTitle>
+            <DialogDescription className="text-accent-foreground/80">
               A detailed view of quote <span className="font-semibold">{selectedQuote?.quoteId}</span> for {selectedQuote?.customer.name}.
             </DialogDescription>
           </DialogHeader>
           {selectedQuote && (() => {
             const { subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
             return (
-              <div className="grid gap-4 py-4">
+              <div className="grid gap-4 py-4 px-6">
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <h4 className="font-semibold">Billed To:</h4>
@@ -362,7 +362,7 @@ export default function SalesDashboard() {
                             <TableCell colSpan={3} className="text-right font-medium">GST ({selectedQuote.gst}%)</TableCell>
                             <TableCell className="text-right">{formatCurrency(gstAmount)}</TableCell>
                         </TableRow>
-                         <TableRow className="font-bold text-lg">
+                         <TableRow className="font-bold text-lg bg-muted/50">
                             <TableCell colSpan={3} className="text-right">Grand Total (Rounded)</TableCell>
                             <TableCell className="text-right">{formatCurrency(grandTotal)}</TableCell>
                         </TableRow>
@@ -375,7 +375,7 @@ export default function SalesDashboard() {
               </div>
             )
           })()}
-          <DialogFooter>
+          <DialogFooter className="px-6 pb-4">
             <DialogClose asChild>
                 <Button variant="outline">Close</Button>
             </DialogClose>
