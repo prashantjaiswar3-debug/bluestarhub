@@ -439,16 +439,16 @@ export default function DashboardLayout({
         </DialogContent>
       </Dialog>
       <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
-        <DialogContent className="max-w-md">
-            <DialogHeader>
+        <DialogContent className="max-w-md sm:max-w-md w-full h-full sm:h-auto sm:w-auto p-0 sm:p-6">
+            <DialogHeader className="p-6 pb-0 sm:pb-6 sm:p-0">
                 <DialogTitle>My Profile</DialogTitle>
                 <DialogDescription>
                     Review your account details below.
                 </DialogDescription>
             </DialogHeader>
-            <div className="py-4">
+            <div className="py-4 h-full sm:h-auto">
                 {['technician', 'sales'].includes(currentRole) ? (
-                    <div className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-sm mx-auto">
+                    <div className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-sm mx-auto h-full flex flex-col">
                         <div className="p-6 flex flex-col items-center gap-4 bg-primary text-primary-foreground rounded-t-lg">
                            <div className="flex items-center gap-2">
                              <Gem className="h-6 w-6" />
@@ -459,7 +459,7 @@ export default function DashboardLayout({
                                <AvatarFallback>{currentUser.fallback}</AvatarFallback>
                            </Avatar>
                         </div>
-                        <div className="p-6 space-y-4 text-center">
+                        <div className="p-6 space-y-4 text-center flex-1 flex flex-col justify-between">
                             <div>
                                <h2 className="text-2xl font-bold">{currentUser.name}</h2>
                                <p className="text-sm text-muted-foreground uppercase font-semibold">{currentRole}</p>
@@ -479,7 +479,7 @@ export default function DashboardLayout({
                         </div>
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center gap-4">
+                    <div className="flex flex-col items-center gap-4 p-6">
                         <Avatar className="h-24 w-24">
                             <AvatarImage src="https://placehold.co/100x100.png" alt="@user" data-ai-hint="profile picture" />
                             <AvatarFallback>{currentUser.fallback}</AvatarFallback>
@@ -491,9 +491,9 @@ export default function DashboardLayout({
                     </div>
                 )}
             </div>
-             <DialogFooter>
+             <DialogFooter className="p-6 pt-0 sm:pt-6 sm:p-0">
                 <DialogClose asChild>
-                    <Button variant="outline">Close</Button>
+                    <Button variant="outline" className="w-full sm:w-auto">Close</Button>
                 </DialogClose>
             </DialogFooter>
         </DialogContent>
@@ -501,3 +501,5 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
+
+    
