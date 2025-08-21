@@ -15,6 +15,8 @@ import {
   Settings,
   Bell,
   UserPlus,
+  ShieldCheck,
+  ScanLine,
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -53,11 +55,11 @@ const allNavItems = [
 ];
 
 const roleInfo = {
-    admin: { name: "Admin User", email: "admin@bluestar.com", fallback: "AD" },
-    technician: { name: "Technician User", email: "tech@bluestar.com", fallback: "TU" },
-    customer: { name: "Customer User", email: "customer@bluestar.com", fallback: "CU" },
-    sales: { name: "Sales User", email: "sales@bluestar.com", fallback: "SU" },
-    default: { name: "Demo User", email: "user@bluestar.com", fallback: "DU" },
+    admin: { name: "Admin User", email: "admin@bluestar.com", fallback: "AD", id: "ADM-001" },
+    technician: { name: "Technician User", email: "tech@bluestar.com", fallback: "TU", id: "TECH-007" },
+    customer: { name: "Customer User", email: "customer@bluestar.com", fallback: "CU", id: "CUST-101" },
+    sales: { name: "Sales User", email: "sales@bluestar.com", fallback: "SU", id: "SALES-003" },
+    default: { name: "Demo User", email: "user@bluestar.com", fallback: "DU", id: "USER-000" },
 };
 
 export default function DashboardLayout({
@@ -411,22 +413,57 @@ export default function DashboardLayout({
         </DialogContent>
       </Dialog>
       <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
             <DialogHeader>
                 <DialogTitle>My Profile</DialogTitle>
                 <DialogDescription>
                     Review your account details below.
                 </DialogDescription>
             </DialogHeader>
-            <div className="py-4 flex flex-col items-center gap-4">
-                <Avatar className="h-24 w-24">
-                    <AvatarImage src="https://placehold.co/100x100.png" alt="@user" data-ai-hint="profile picture" />
-                    <AvatarFallback>{currentUser.fallback}</AvatarFallback>
-                </Avatar>
-                <div className="text-center">
-                    <h2 className="text-xl font-bold">{currentUser.name}</h2>
-                    <p className="text-muted-foreground">{currentUser.email}</p>
-                </div>
+            <div className="py-4">
+                {['technician', 'sales'].includes(currentRole) ? (
+                    <div className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-sm mx-auto">
+                        <div className="p-6 flex flex-col items-center gap-4 bg-primary text-primary-foreground rounded-t-lg">
+                           <div className="flex items-center gap-2">
+                             <Gem className="h-6 w-6" />
+                             <h3 className="text-lg font-bold">Bluestar Hub</h3>
+                           </div>
+                           <Avatar className="h-24 w-24 border-4 border-background">
+                               <AvatarImage src="https://placehold.co/100x100.png" alt="@user" data-ai-hint="profile picture" />
+                               <AvatarFallback>{currentUser.fallback}</AvatarFallback>
+                           </Avatar>
+                        </div>
+                        <div className="p-6 space-y-4 text-center">
+                            <div>
+                               <h2 className="text-2xl font-bold">{currentUser.name}</h2>
+                               <p className="text-sm text-muted-foreground uppercase font-semibold">{currentRole}</p>
+                            </div>
+                            <div className="flex justify-between items-center text-sm bg-muted p-2 rounded-md">
+                                <span className="text-muted-foreground">Employee ID</span>
+                                <span className="font-mono font-semibold">{currentUser.id}</span>
+                            </div>
+                            <div className="flex justify-center pt-2">
+                                <ScanLine className="h-20 w-20 text-muted-foreground" data-ai-hint="qr code" />
+                            </div>
+                            <p className="text-xs text-muted-foreground">This card is the property of Bluestar Hub. If found, please return to the nearest office.</p>
+                        </div>
+                         <div className="px-6 py-4 border-t flex items-center justify-center gap-2 text-primary">
+                            <ShieldCheck className="h-5 w-5"/>
+                            <span className="font-semibold text-sm">Verified Employee</span>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center gap-4">
+                        <Avatar className="h-24 w-24">
+                            <AvatarImage src="https://placehold.co/100x100.png" alt="@user" data-ai-hint="profile picture" />
+                            <AvatarFallback>{currentUser.fallback}</AvatarFallback>
+                        </Avatar>
+                        <div className="text-center">
+                            <h2 className="text-xl font-bold">{currentUser.name}</h2>
+                            <p className="text-muted-foreground">{currentUser.email}</p>
+                        </div>
+                    </div>
+                )}
             </div>
              <DialogFooter>
                 <DialogClose asChild>
