@@ -391,15 +391,15 @@ export default function SalesDashboard() {
                             {/* Header */}
                             <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', zIndex: 0 }}>
                                <svg viewBox="0 0 595 100" preserveAspectRatio="none" style={{ width: '100%', height: 'auto' }}>
-                                    <path d="M0 0 H 150 L 120 100 H 0 Z" fill="#1E293B" />
-                                    <path d="M120 0 H 220 L 190 100 H 90 Z" fill="#f97316" />
+                                    <path d="M0 0 H 150 L 120 100 H 0 Z" fill="#30475E" />
+                                    <path d="M120 0 H 220 L 190 100 H 90 Z" fill="#9CA3AF" />
                                 </svg>
                             </div>
                             <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '20px' }}>
                                 <div style={{ flex: '1', paddingTop: '10px' }}>
                                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z" fill="#f97316"/>
+                                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z" fill="#9CA3AF"/>
                                           <path d="M12 17.27L5.82 21l1.64-7.03L2 9.24l7.19-.61L12 2v15.27z" fill="#ffffff"/>
                                         </svg>
                                         <div>
@@ -413,13 +413,13 @@ export default function SalesDashboard() {
                               {/* Billed To and Invoice Details */}
                               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '40px', paddingBottom: '20px' }}>
                                   <div>
-                                      <h2 style={{ fontSize: '14px', fontWeight: 'bold', color: '#1E293B', marginBottom: '8px' }}>Billed To:</h2>
+                                      <h2 style={{ fontSize: '14px', fontWeight: 'bold', color: '#30475E', marginBottom: '8px' }}>Billed To:</h2>
                                       <p style={{ margin: 0, fontSize: '12px' }}>{selectedQuote.customer.name}</p>
                                       <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.address}</p>
                                       <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.email}</p>
                                   </div>
                                   <div style={{ width: '220px', backgroundColor: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '10px' }}>
-                                      <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 10px 0', textAlign: 'center', color: '#1E293B', borderBottom: '1px solid #E2E8F0', paddingBottom: '5px' }}>QUOTATION</h2>
+                                      <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 10px 0', textAlign: 'center', color: '#30475E', borderBottom: '1px solid #E2E8F0', paddingBottom: '5px' }}>QUOTATION</h2>
                                       <div style={{ fontSize: '12px' }}>
                                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}><strong>Quote No:</strong><span>{selectedQuote.quoteId}</span></div>
                                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}><strong>Quote Date:</strong><span>{formatDate(quoteDate)}</span></div>
@@ -431,7 +431,7 @@ export default function SalesDashboard() {
                               {/* Items Table */}
                               <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px', fontSize: '12px' }}>
                                   <thead>
-                                      <tr style={{ backgroundColor: '#1E293B', color: 'white' }}>
+                                      <tr style={{ backgroundColor: '#30475E', color: 'white' }}>
                                           <th style={{ padding: '10px', textAlign: 'left' }}>S.No.</th>
                                           <th style={{ padding: '10px', textAlign: 'left' }}>DESCRIPTION</th>
                                           <th style={{ padding: '10px', textAlign: 'right' }}>PRICE</th>
@@ -464,7 +464,7 @@ export default function SalesDashboard() {
                                       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Sub Total:</span><span>{formatCurrency(subTotal)}</span></div>
                                       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Discount ({selectedQuote.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>
                                       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>GST ({selectedQuote.gst}%):</span><span>{formatCurrency(gstAmount)}</span></div>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #1E293B', fontWeight: 'bold', fontSize: '16px' }}><span>TOTAL:</span><span>{formatCurrency(grandTotal)}</span></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px' }}><span>TOTAL:</span><span>{formatCurrency(grandTotal)}</span></div>
                                   </div>
                               </div>
                             </div>
@@ -484,8 +484,8 @@ export default function SalesDashboard() {
                              {/* Footer Bar */}
                             <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', zIndex: 0 }}>
                                 <svg viewBox="0 0 595 100" preserveAspectRatio="none" style={{ width: '100%', height: 'auto' }}>
-                                    <path d="M0 30 C 150 80, 450 -20, 595 30 V 100 H 0 Z" fill="#1E293B" />
-                                    <path d="M0 40 C 150 90, 450 -10, 595 40 V 100 H 0 Z" fill="#f97316" />
+                                    <path d="M0 30 C 150 80, 450 -20, 595 30 V 100 H 0 Z" fill="#30475E" />
+                                    <path d="M0 40 C 150 90, 450 -10, 595 40 V 100 H 0 Z" fill="#9CA3AF" />
                                 </svg>
                             </div>
                              <div style={{ position: 'absolute', zIndex: 2, display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: '60px', color: 'white', fontSize: '12px', bottom: 0, left: 0, right: 0, paddingBottom: '10px' }}>
