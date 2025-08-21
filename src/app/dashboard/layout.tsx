@@ -23,6 +23,8 @@ import {
   Mail,
   FilePlus2,
   Trash2,
+  Edit,
+  Upload,
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -64,12 +66,12 @@ const allNavItems = [
   { href: "/dashboard/invoices", icon: FilePlus2, label: "Invoices", roles: ['admin', 'sales'] },
 ];
 
-const roleInfo = {
-    admin: { name: "Admin User", email: "admin@bluestar.com", fallback: "AD", id: "ADM-001" },
-    technician: { name: "Technician User", email: "tech@bluestar.com", fallback: "TU", id: "TECH-007" },
-    customer: { name: "Customer User", email: "customer@bluestar.com", fallback: "CU", id: "CUST-101" },
-    sales: { name: "Sales User", email: "sales@bluestar.com", fallback: "SU", id: "SALES-003" },
-    default: { name: "Demo User", email: "user@bluestar.com", fallback: "DU", id: "USER-000" },
+const initialRoleInfo = {
+    admin: { name: "Admin User", email: "admin@bluestar.com", fallback: "AD", id: "ADM-001", avatar: "https://placehold.co/100x100.png" },
+    technician: { name: "Technician User", email: "tech@bluestar.com", fallback: "TU", id: "TECH-007", avatar: "https://placehold.co/100x100.png" },
+    customer: { name: "Customer User", email: "customer@bluestar.com", fallback: "CU", id: "CUST-101", avatar: "https://placehold.co/100x100.png" },
+    sales: { name: "Sales User", email: "sales@bluestar.com", fallback: "SU", id: "SALES-003", avatar: "https://placehold.co/100x100.png" },
+    default: { name: "Demo User", email: "user@bluestar.com", fallback: "DU", id: "USER-000", avatar: "https://placehold.co/100x100.png" },
 };
 
 export default function DashboardLayout({
@@ -79,6 +81,8 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const { toast } = useToast();
+  const [roleInfo, setRoleInfo] = React.useState(initialRoleInfo);
+
   const [isRegisterCustomerOpen, setIsRegisterCustomerOpen] = React.useState(false);
   const [newCustomer, setNewCustomer] = React.useState({
     name: "",
@@ -99,6 +103,9 @@ export default function DashboardLayout({
   const [passwordFields, setPasswordFields] = React.useState({ current: "", new: "", confirm: "" });
 
   const [isProfileOpen, setIsProfileOpen] = React.useState(false);
+  const [isEditingProfile, setIsEditingProfile] = React.useState(false);
+  const [newAvatar, setNewAvatar] = React.useState<string | null>(null);
+  const avatarInputRef = React.useRef<HTMLInputElement>(null);
 
   const [isManageOffersOpen, setIsManageOffersOpen] = React.useState(false);
 
@@ -183,11 +190,33 @@ export default function DashboardLayout({
     setPasswordFields({ current: "", new: "", confirm: "" });
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setNewAvatar(event.target?.result as string);
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
+  const handleProfileSave = () => {
+    if (newAvatar) {
+        setRoleInfo(prev => ({
+            ...prev,
+            [currentRole]: { ...prev[currentRole as keyof typeof prev], avatar: newAvatar }
+        }));
+    }
+    toast({ title: "Profile Updated", description: "Your profile has been successfully updated." });
+    setIsEditingProfile(false);
+    setNewAvatar(null);
+  }
+
   const currentRole = getRole();
   const navItems = allNavItems.filter(item => item.roles.includes(currentRole));
 
   const dashboardLabel = navItems.find(item => pathname.startsWith(item.href))?.label || 'Dashboard';
-  const currentUser = roleInfo[currentRole] || roleInfo.default;
+  const currentUser = roleInfo[currentRole as keyof typeof roleInfo] || roleInfo.default;
 
 
   return (
@@ -262,7 +291,7 @@ export default function DashboardLayout({
           <SidebarFooter className="p-2">
             <div className="flex items-center gap-3 p-2 rounded-md transition-colors hover:bg-sidebar-accent">
               <Avatar className="h-9 w-9">
-                <AvatarImage src="https://placehold.co/100x100.png" alt="@user" data-ai-hint="profile picture" />
+                <AvatarImage src={currentUser.avatar} alt="@user" data-ai-hint="profile picture" />
                 <AvatarFallback>{currentUser.fallback}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col overflow-hidden">
@@ -524,16 +553,36 @@ export default function DashboardLayout({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
+      <Dialog open={isProfileOpen} onOpenChange={(open) => { setIsProfileOpen(open); if (!open) { setIsEditingProfile(false); setNewAvatar(null); } }}>
         <DialogContent className="sm:max-w-md w-full h-full sm:h-auto p-0 sm:p-6">
-            <DialogHeader className="p-6 pb-0 sm:p-0 sm:pb-6">
-                <DialogTitle>My Profile</DialogTitle>
-                <DialogDescription>
-                    Review your account details below.
-                </DialogDescription>
+            <DialogHeader className="p-6 pb-0 sm:p-0 sm:pb-6 flex-row items-center justify-between">
+                <div>
+                    <DialogTitle>My Profile</DialogTitle>
+                    <DialogDescription>
+                        {isEditingProfile ? "Update your profile picture." : "Review your account details below."}
+                    </DialogDescription>
+                </div>
+                 {!isEditingProfile && (
+                    <Button variant="outline" size="sm" onClick={() => setIsEditingProfile(true)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit Profile
+                    </Button>
+                )}
             </DialogHeader>
             <div className="py-4 h-full sm:h-auto">
-                {['technician', 'sales'].includes(currentRole) ? (
+                {isEditingProfile ? (
+                    <div className="flex flex-col items-center gap-4 px-6">
+                         <input type="file" ref={avatarInputRef} onChange={handleAvatarChange} accept="image/*" className="hidden" />
+                         <Avatar className="h-32 w-32 cursor-pointer" onClick={() => avatarInputRef.current?.click()}>
+                            <AvatarImage src={newAvatar || currentUser.avatar} alt="@user" />
+                            <AvatarFallback>{currentUser.fallback}</AvatarFallback>
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity">
+                                <Upload className="h-8 w-8"/>
+                            </div>
+                        </Avatar>
+                        <p className="text-sm text-muted-foreground">Click the image to upload a new one.</p>
+                    </div>
+                ) : ['technician', 'sales'].includes(currentRole) ? (
                     <div className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-sm mx-auto h-full flex flex-col">
                         <div className="p-6 flex flex-col items-center gap-4 bg-primary text-primary-foreground rounded-t-lg">
                            <div className="flex items-center gap-2">
@@ -541,7 +590,7 @@ export default function DashboardLayout({
                              <h3 className="text-lg font-bold">Bluestar Hub</h3>
                            </div>
                            <Avatar className="h-24 w-24 border-4 border-background">
-                               <AvatarImage src="https://placehold.co/100x100.png" alt="@user" data-ai-hint="profile picture" />
+                               <AvatarImage src={currentUser.avatar} alt="@user" />
                                <AvatarFallback>{currentUser.fallback}</AvatarFallback>
                            </Avatar>
                         </div>
@@ -567,7 +616,7 @@ export default function DashboardLayout({
                 ) : (
                     <div className="flex flex-col items-center gap-4 p-6">
                         <Avatar className="h-24 w-24">
-                            <AvatarImage src="https://placehold.co/100x100.png" alt="@user" data-ai-hint="profile picture" />
+                            <AvatarImage src={currentUser.avatar} alt="@user" />
                             <AvatarFallback>{currentUser.fallback}</AvatarFallback>
                         </Avatar>
                         <div className="text-center">
@@ -578,9 +627,16 @@ export default function DashboardLayout({
                 )}
             </div>
              <DialogFooter className="p-6 pt-0 sm:pt-6 sm:p-0 sm:border-t">
-                <DialogClose asChild>
-                    <Button variant="outline" className="w-full sm:w-auto">Close</Button>
-                </DialogClose>
+                {isEditingProfile ? (
+                     <div className="flex justify-end gap-2 w-full">
+                        <Button variant="outline" onClick={() => { setIsEditingProfile(false); setNewAvatar(null); }}>Cancel</Button>
+                        <Button onClick={handleProfileSave}>Save</Button>
+                    </div>
+                ) : (
+                    <DialogClose asChild>
+                        <Button variant="outline" className="w-full sm:w-auto">Close</Button>
+                    </DialogClose>
+                )}
             </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -607,5 +663,7 @@ export default function DashboardLayout({
 
 
 
+
+    
 
     
