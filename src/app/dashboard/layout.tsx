@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
+import Image from "next/image";
 import {
   Gem,
   LayoutGrid,
@@ -20,7 +21,6 @@ import {
   Gift,
   Phone,
   Mail,
-  Building,
   FilePlus2,
 } from "lucide-react";
 import {
@@ -282,12 +282,7 @@ export default function DashboardLayout({
             <div className="p-2 text-xs text-sidebar-foreground/70 space-y-3 flex flex-col items-center">
                 <div className="font-semibold">Developed by -</div>
                 <div className="w-24 h-auto text-foreground">
-                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-                        <path d="M142.3,60.5l-20.8,36.1c0,0-1.2,2.6-2.6,2.6s-2.6-2.6-2.6-2.6l-10.4-18.2l-10.4,18.2c0,0-1.2,2.6-2.6,2.6s-2.6-2.6-2.6-2.6L70,60.5L50,96.6V42.4L96.1,24.1l46.2,18.3V96.6L142.3,60.5z M96.1,30.3L78.6,37.3l-5.2-9.1l22.8-9.1L96.1,30.3z M113.6,37.3l17.5-6.9l-22.8,9.1l-5.2,9.1L113.6,37.3z"/>
-                        <path d="M165.4,34.9L99.8,9.2c-1.2-0.5-2.6-0.5-3.8,0L30.5,34.9c-1.2,0.5-2.1,1.5-2.1,2.9v116.5c0,1.4,0.9,2.5,2.1,2.9l65.6,25.7c0.6,0.2,1.2,0.4,1.9,0.4s1.2-0.1,1.9-0.4l65.6-25.7c1.2-0.5,2.1-1.5,2.1-2.9V37.8C167.5,36.4,166.6,35.3,165.4,34.9z M161.5,152.2l-61.6,24.1l-61.6-24.1V39.7l61.6-24.1l61.6,24.1V152.2z"/>
-                        <text x="97" y="145" textAnchor="middle" fontSize="16" fontFamily="sans-serif" fontWeight="bold" fill="currentColor">DIGITAL FOX</text>
-                        <text x="97" y="165" textAnchor="middle" fontSize="12" fontFamily="sans-serif" letterSpacing="0.1em" fill="currentColor">STUDIO</text>
-                    </svg>
+                   <Image src="https://placehold.co/200x200.png" alt="Digital Fox Studio" width={200} height={200} data-ai-hint="digital fox studio" />
                 </div>
                 <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4" />
@@ -528,6 +523,7 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
+    
 
     
 
