@@ -284,6 +284,7 @@ export default function DashboardLayout({
                 <div className="w-24 h-auto text-foreground">
                    <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/main/logo.png" alt="Digital Fox Studio" width={200} height={200} data-ai-hint="digital fox studio" />
                 </div>
+                <div className="font-bold text-sm text-foreground">DIGITAL FOX STUDIO</div>
                 <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4" />
                     <a href="tel:+919569737176" className="hover:underline">+91 9569737176</a>
@@ -540,3 +541,4 @@ export default function DashboardLayout({
     
 
     
+
