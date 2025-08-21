@@ -391,8 +391,8 @@ export default function SalesDashboard() {
                             <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '20px' }}>
                                 <div style={{ flex: '1', paddingTop: '10px' }}>
                                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                                            <path fill="#2563EB" d="M100 0L122.45 69.098H195.11L136.33 111.803L158.78 180.902L100 138.197L41.22 180.902L63.67 111.803L4.89 69.098H77.55L100 0Z" />
+                                        <svg width="40" height="40" viewBox="0 0 165 165" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill="#2563EB" d="M82.5,12.5 C105.52,12.5 110,16.98 110,22.5 L110,62.5 L142.5,45 C147.2,42.12 153.21,43.87 156.08,48.58 C158.96,53.28 157.21,59.29 152.5,62.17 L115,82.5 L152.5,102.83 C157.21,105.71 158.96,111.72 156.08,116.42 C153.21,121.13 147.2,122.88 142.5,120 L110,102.5 L110,142.5 C110,148.02 105.52,152.5 82.5,152.5 C76.98,152.5 72.5,148.02 72.5,142.5 L72.5,102.5 L40,120 C35.3,122.88 29.29,121.13 26.42,116.42 C23.54,111.72 25.29,105.71 30,102.83 L67.5,82.5 L30,62.17 C25.29,59.29 23.54,53.28 26.42,48.58 C29.29,43.87 35.3,42.12 40,45 L72.5,62.5 L72.5,22.5 C72.5,16.98 76.98,12.5 82.5,12.5 Z" />
                                         </svg>
                                         <div>
                                             <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#2563EB', margin: 0 }}>Bluestar Electronics</h1>
