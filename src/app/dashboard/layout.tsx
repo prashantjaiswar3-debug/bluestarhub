@@ -70,6 +70,12 @@ export default function DashboardLayout({
   const [isRegisterCustomerOpen, setIsRegisterCustomerOpen] = React.useState(false);
   const [newCustomer, setNewCustomer] = React.useState({ name: "", email: "", phone: "", address: "" });
 
+  const [isRegisterTechnicianOpen, setIsRegisterTechnicianOpen] = React.useState(false);
+  const [newTechnician, setNewTechnician] = React.useState({ name: "", email: "", phone: "", skills: "" });
+  
+  const [isRegisterSalesOpen, setIsRegisterSalesOpen] = React.useState(false);
+  const [newSales, setNewSales] = React.useState({ name: "", email: "", phone: "" });
+
   const getRole = () => {
     if (pathname.startsWith('/dashboard/admin')) return 'admin';
     if (pathname.startsWith('/dashboard/technician')) return 'technician';
@@ -79,7 +85,7 @@ export default function DashboardLayout({
   }
   
   const handleRegisterCustomer = () => {
-    if(!newCustomer.name || !newCustomer.email || !newCusto_mer.phone || !newCustomer.address) {
+    if(!newCustomer.name || !newCustomer.email || !newCustomer.phone || !newCustomer.address) {
          toast({
             variant: "destructive",
             title: "Missing Information",
@@ -95,6 +101,44 @@ export default function DashboardLayout({
     });
     setIsRegisterCustomerOpen(false);
     setNewCustomer({ name: "", email: "", phone: "", address: "" });
+  }
+
+  const handleRegisterTechnician = () => {
+    if(!newTechnician.name || !newTechnician.email || !newTechnician.phone || !newTechnician.skills) {
+         toast({
+            variant: "destructive",
+            title: "Missing Information",
+            description: "Please fill out all fields to register a new technician.",
+        });
+        return;
+    }
+    const generatedPassword = Math.random().toString(36).slice(-8);
+    toast({
+      title: "Technician Registered",
+      description: `Technician ${newTechnician.name} created. Email: ${newTechnician.email}, Password: ${generatedPassword}`,
+      duration: 9000,
+    });
+    setIsRegisterTechnicianOpen(false);
+    setNewTechnician({ name: "", email: "", phone: "", skills: "" });
+  }
+
+  const handleRegisterSales = () => {
+    if(!newSales.name || !newSales.email || !newSales.phone) {
+         toast({
+            variant: "destructive",
+            title: "Missing Information",
+            description: "Please fill out all fields to register a new sales user.",
+        });
+        return;
+    }
+    const generatedPassword = Math.random().toString(36).slice(-8);
+    toast({
+      title: "Sales User Registered",
+      description: `Sales user ${newSales.name} created. Email: ${newSales.email}, Password: ${generatedPassword}`,
+      duration: 9000,
+    });
+    setIsRegisterSalesOpen(false);
+    setNewSales({ name: "", email: "", phone: "" });
   }
 
   const currentRole = getRole();
@@ -142,6 +186,28 @@ export default function DashboardLayout({
                     <span>Register Customer</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+              )}
+               {currentRole === 'admin' && (
+                <>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => setIsRegisterCustomerOpen(true)} tooltip={{ children: "Register Customer" }}>
+                      <UserPlus className="shrink-0" />
+                      <span>Register Customer</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => setIsRegisterTechnicianOpen(true)} tooltip={{ children: "Register Technician" }}>
+                      <UserPlus className="shrink-0" />
+                      <span>Register Technician</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => setIsRegisterSalesOpen(true)} tooltip={{ children: "Register Sales" }}>
+                      <UserPlus className="shrink-0" />
+                      <span>Register Sales</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </>
               )}
             </SidebarMenu>
           </SidebarContent>
@@ -230,6 +296,72 @@ export default function DashboardLayout({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <Dialog open={isRegisterTechnicianOpen} onOpenChange={setIsRegisterTechnicianOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Register New Technician</DialogTitle>
+            <DialogDescription>
+              Enter the technician's details below to create a new account.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="tech-name">Full Name</Label>
+              <Input id="tech-name" value={newTechnician.name} onChange={(e) => setNewTechnician({...newTechnician, name: e.target.value})} placeholder="e.g., Raj Patel" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tech-email">Email Address</Label>
+              <Input id="tech-email" type="email" value={newTechnician.email} onChange={(e) => setNewTechnician({...newTechnician, email: e.target.value})} placeholder="e.g., raj.patel@bluestar.com" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tech-phone">Phone Number</Label>
+              <Input id="tech-phone" value={newTechnician.phone} onChange={(e) => setNewTechnician({...newTechnician, phone: e.target.value})} placeholder="e.g., 9876543210" />
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="tech-skills">Skills</Label>
+              <Input id="tech-skills" value={newTechnician.skills} onChange={(e) => setNewTechnician({...newTechnician, skills: e.target.value})} placeholder="e.g., Installation, Repair" />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button onClick={handleRegisterTechnician}>Register Technician</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+       <Dialog open={isRegisterSalesOpen} onOpenChange={setIsRegisterSalesOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Register New Sales User</DialogTitle>
+            <DialogDescription>
+              Enter the sales user's details below to create a new account.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="sales-name">Full Name</Label>
+              <Input id="sales-name" value={newSales.name} onChange={(e) => setNewSales({...newSales, name: e.target.value})} placeholder="e.g., Priya Sharma" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sales-email">Email Address</Label>
+              <Input id="sales-email" type="email" value={newSales.email} onChange={(e) => setNewSales({...newSales, email: e.target.value})} placeholder="e.g., priya.sharma@bluestar.com" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sales-phone">Phone Number</Label>
+              <Input id="sales-phone" value={newSales.phone} onChange={(e) => setNewSales({...newSales, phone: e.target.value})} placeholder="e.g., 9876543210" />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button onClick={handleRegisterSales}>Register Sales User</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 }
+
+    
