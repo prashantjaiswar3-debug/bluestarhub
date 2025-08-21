@@ -26,10 +26,23 @@ export type Invoice = {
   date: string;
 };
 
+export type QuotationItem = {
+  id: string;
+  description: string;
+  quantity: number;
+  price: number;
+};
+
 export type Quotation = {
   quoteId: string;
-  customer: string;
-  amount: number;
+  customer: {
+    name: string;
+    email: string;
+    address: string;
+  };
+  items: QuotationItem[];
+  laborCost: number;
+  totalAmount: number;
   status: "Draft" | "Sent" | "Approved" | "Rejected";
   date: string;
 };
