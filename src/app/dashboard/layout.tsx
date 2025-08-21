@@ -182,7 +182,6 @@ export default function DashboardLayout({
   const currentRole = getRole();
   const navItems = allNavItems.filter(item => item.roles.includes(currentRole));
 
-  const currentUser = roleInfo[currentRole] || roleInfo.default;
   const dashboardLabel = navItems.find(item => pathname.startsWith(item.href))?.label || 'Dashboard';
 
 
@@ -282,7 +281,7 @@ export default function DashboardLayout({
             <div className="p-2 text-xs text-sidebar-foreground/70 space-y-3 flex flex-col items-center">
                 <div className="font-semibold">Developed by -</div>
                 <div className="w-24 h-auto text-foreground">
-                   <Image src="/images/e45b85a2-3b8c-4f7f-a65c-3f9f9b541315.png" alt="Digital Fox Studio" width={200} height={200} data-ai-hint="digital fox studio" />
+                   <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/main/logo.png" alt="Digital Fox Studio" width={200} height={200} data-ai-hint="digital fox studio" />
                 </div>
                 <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4" />
