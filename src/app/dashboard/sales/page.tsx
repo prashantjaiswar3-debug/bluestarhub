@@ -32,7 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Send, Eye, PlusCircle, Trash2, Gem, Download } from "lucide-react";
+import { Send, Eye, PlusCircle, Trash2, Gem, Download, Share2 } from "lucide-react";
 import type { Quotation, QuotationItem } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
@@ -177,12 +177,13 @@ export default function SalesDashboard() {
   }
 
   const calculateQuoteTotals = (quote: Quotation) => {
-    const subTotal = quote.items.reduce((sum, item) => sum + item.quantity * item.price, 0) + quote.laborCost;
+    const itemsTotal = quote.items.reduce((sum, item) => sum + item.quantity * item.price, 0);
+    const subTotal = itemsTotal + quote.laborCost;
     const discountAmount = subTotal * (quote.discount / 100);
     const totalAfterDiscount = subTotal - discountAmount;
     const gstAmount = totalAfterDiscount * (quote.gst / 100);
     const grandTotal = Math.round(totalAfterDiscount + gstAmount);
-    return { subTotal, discountAmount, gstAmount, grandTotal };
+    return { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal };
   }
 
   const handleDownloadPdf = async () => {
@@ -193,12 +194,21 @@ export default function SalesDashboard() {
               import('jspdf'),
               import('html2canvas'),
             ]);
-            const canvas = await html2canvas(quoteContent, { scale: 2 });
+            const canvas = await html2canvas(quoteContent, { 
+                scale: 3, 
+                useCORS: true,
+                backgroundColor: null, 
+            });
             const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdf = new jsPDF('p', 'px', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            
+            const margin = 20;
+            const contentWidth = pdfWidth - (margin * 2);
+            const contentHeight = pdfHeight - (margin * 2);
+
+            pdf.addImage(imgData, 'PNG', margin, margin, contentWidth, contentHeight);
             pdf.save(`quotation-${selectedQuote?.quoteId}.pdf`);
             toast({
                 title: "Download Started",
@@ -294,7 +304,7 @@ export default function SalesDashboard() {
            </div>
         </CardContent>
         <CardFooter className="flex justify-end">
-            <Button onClick={handleCreateQuote} variant="secondary">
+            <Button onClick={handleCreateQuote} className="bg-[#fb923c] hover:bg-[#fb923c]/90 text-white">
                 <Send className="mr-2 h-4 w-4" />
                 Create Quote
             </Button>
@@ -341,83 +351,137 @@ export default function SalesDashboard() {
       </Card>
       
       <Dialog open={!!selectedQuote} onOpenChange={(isOpen) => !isOpen && setSelectedQuote(null)}>
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader className="bg-accent p-4 rounded-t-lg">
-            <DialogTitle className="text-accent-foreground">Quotation Details</DialogTitle>
-            <DialogDescription className="text-accent-foreground/80">
-              A detailed view of quote <span className="font-semibold">{selectedQuote?.quoteId}</span> for {selectedQuote?.customer.name}.
-            </DialogDescription>
-          </DialogHeader>
-           <div ref={quoteRef}>
-              {selectedQuote && (() => {
-                const { subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
-                return (
-                  <div className="grid gap-4 py-4 px-6">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <h4 className="font-semibold">Billed To:</h4>
-                            <p>{selectedQuote.customer.name}</p>
-                            <p className="text-sm text-muted-foreground">{selectedQuote.customer.email}</p>
-                            <p className="text-sm text-muted-foreground">{selectedQuote.customer.address}</p>
+        <DialogContent className="sm:max-w-4xl p-0" data-slot="header-plain">
+            <div className="p-6">
+                <DialogHeader>
+                    <DialogTitle>Quotation Details</DialogTitle>
+                    <DialogDescription>
+                    A detailed view of quote <span className="font-semibold">{selectedQuote?.quoteId}</span> for {selectedQuote?.customer.name}.
+                    </DialogDescription>
+                </DialogHeader>
+            </div>
+            <div className="max-h-[70vh] overflow-y-auto px-6 pb-6">
+                <div ref={quoteRef} className="bg-white text-black p-8 font-sans">
+                {selectedQuote && (() => {
+                    const { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
+                    const quoteDate = new Date(selectedQuote.date);
+                    const dueDate = new Date(quoteDate);
+                    dueDate.setDate(quoteDate.getDate() + 15);
+                    const formatDate = (date: Date) => date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+
+                    return (
+                        <div style={{ fontFamily: 'Arial, sans-serif', color: '#333' }}>
+                            {/* Header */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '20px' }}>
+                                <div style={{ flex: '1' }}>
+                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <Gem style={{ height: '40px', width: '40px', color: '#f97316' }} />
+                                        <div>
+                                            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1E293B', margin: 0 }}>Bluestar Hub</h1>
+                                            <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>by Bluestar Electronics</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style={{ position: 'absolute', top: 0, right: 0, height: '120px', width: '60%', backgroundColor: '#1E293B', zIndex: 0 }}></div>
+                                <div style={{ position: 'absolute', top: '10px', right: '10px', height: '100px', width: '55%', backgroundColor: '#f97316', zIndex: 1 }}></div>
+                            </div>
+
+                            {/* Billed To and Invoice Details */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '40px', paddingBottom: '20px' }}>
+                                <div>
+                                    <h2 style={{ fontSize: '14px', fontWeight: 'bold', color: '#1E293B', marginBottom: '8px' }}>Billed To:</h2>
+                                    <p style={{ margin: 0, fontSize: '12px' }}>{selectedQuote.customer.name}</p>
+                                    <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.address}</p>
+                                    <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.email}</p>
+                                </div>
+                                <div style={{ width: '220px', backgroundColor: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '10px' }}>
+                                    <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 10px 0', textAlign: 'center', color: '#1E293B', borderBottom: '1px solid #E2E8F0', paddingBottom: '5px' }}>QUOTATION</h2>
+                                    <div style={{ fontSize: '12px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}><strong>Quote No:</strong><span>{selectedQuote.quoteId}</span></div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}><strong>Quote Date:</strong><span>{formatDate(quoteDate)}</span></div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}><strong>Due Date:</strong><span>{formatDate(dueDate)}</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Items Table */}
+                            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px', fontSize: '12px' }}>
+                                <thead>
+                                    <tr style={{ backgroundColor: '#1E293B', color: 'white' }}>
+                                        <th style={{ padding: '10px', textAlign: 'left' }}>S.No.</th>
+                                        <th style={{ padding: '10px', textAlign: 'left' }}>DESCRIPTION</th>
+                                        <th style={{ padding: '10px', textAlign: 'right' }}>PRICE</th>
+                                        <th style={{ padding: '10px', textAlign: 'right' }}>QTY</th>
+                                        <th style={{ padding: '10px', textAlign: 'right' }}>TOTAL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {selectedQuote.items.map((item, index) => (
+                                        <tr key={item.id} style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: index % 2 === 0 ? '#F8FAFC' : 'white' }}>
+                                            <td style={{ padding: '10px' }}>{index + 1}</td>
+                                            <td style={{ padding: '10px', maxWidth: '300px' }}>{item.description}</td>
+                                            <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
+                                            <td style={{ padding: '10px', textAlign: 'right' }}>{item.quantity}</td>
+                                            <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.quantity * item.price)}</td>
+                                        </tr>
+                                    ))}
+                                    {selectedQuote.laborCost > 0 && (
+                                        <tr style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: selectedQuote.items.length % 2 === 0 ? '#F8FAFC' : 'white' }}>
+                                            <td colSpan={4} style={{ padding: '10px', textAlign: 'right' }}>Labor Cost</td>
+                                            <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(selectedQuote.laborCost)}</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+
+                            {/* Totals */}
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                                <div style={{ width: '250px', fontSize: '12px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Sub Total:</span><span>{formatCurrency(subTotal)}</span></div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Discount ({selectedQuote.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>GST ({selectedQuote.gst}%):</span><span>{formatCurrency(gstAmount)}</span></div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #1E293B', fontWeight: 'bold', fontSize: '16px' }}><span>TOTAL:</span><span>{formatCurrency(grandTotal)}</span></div>
+                                </div>
+                            </div>
+                            
+                             {/* Signature and Terms */}
+                            <div style={{ marginTop: '50px', display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                                <div>
+                                    <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Terms and Conditions:</h3>
+                                    <p style={{ color: '#64748B', maxWidth: '300px' }}>Payment is due within 15 days. All products are subject to standard warranty. Thank you for your business!</p>
+                                </div>
+                                <div style={{ textAlign: 'center' }}>
+                                    <p style={{ borderTop: '1px solid #64748B', paddingTop: '5px' }}>Authorized Signature</p>
+                                    <p style={{ fontWeight: 'bold', marginTop: '5px' }}>Bluestar Electronics</p>
+                                </div>
+                            </div>
+
+                             {/* Footer Bar */}
+                            <div style={{ position: 'relative', height: '60px', marginTop: '40px', bottom: '-32px', left: '-32px', right: '-32px' }}>
+                                 <div style={{ position: 'absolute', bottom: 0, left: 0, height: '100%', width: '100%', backgroundColor: '#1E293B' }}></div>
+                                 <div style={{ position: 'absolute', bottom: 0, left: 0, height: '100%', width: '60%', backgroundColor: '#f97316', clipPath: 'polygon(0 0, 100% 0, 85% 100%, 0% 100%)' }}></div>
+                                 <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: '100%', color: 'white', fontSize: '12px' }}>
+                                    <span>info@bluestarhub.com</span>
+                                    <span>+91 12345 67890</span>
+                                    <span>www.bluestarhub.com</span>
+                                 </div>
+                            </div>
                         </div>
-                         <div className="text-right">
-                            <h4 className="font-semibold">Quote ID: {selectedQuote.quoteId}</h4>
-                            <p className="text-sm text-muted-foreground">Date: {new Date(selectedQuote.date).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
-                         </div>
-                    </div>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Description</TableHead>
-                                <TableHead className="text-center">Quantity</TableHead>
-                                <TableHead className="text-right">Price</TableHead>
-                                <TableHead className="text-right">Total</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {selectedQuote.items.map(item => (
-                                <TableRow key={item.id}>
-                                    <TableCell>{item.description}</TableCell>
-                                    <TableCell className="text-center">{item.quantity}</TableCell>
-                                    <TableCell className="text-right">{formatCurrency(item.price)}</TableCell>
-                                    <TableCell className="text-right">{formatCurrency(item.quantity * item.price)}</TableCell>
-                                </TableRow>
-                            ))}
-                             <TableRow>
-                                <TableCell colSpan={3} className="text-right font-medium">Labor Cost</TableCell>
-                                <TableCell className="text-right">{formatCurrency(selectedQuote.laborCost)}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell colSpan={3} className="text-right font-medium">Subtotal</TableCell>
-                                <TableCell className="text-right">{formatCurrency(subTotal)}</TableCell>
-                            </TableRow>
-                             <TableRow>
-                                <TableCell colSpan={3} className="text-right font-medium">Discount ({selectedQuote.discount}%)</TableCell>
-                                <TableCell className="text-right text-destructive">-{formatCurrency(discountAmount)}</TableCell>
-                            </TableRow>
-                             <TableRow>
-                                <TableCell colSpan={3} className="text-right font-medium">GST ({selectedQuote.gst}%)</TableCell>
-                                <TableCell className="text-right">{formatCurrency(gstAmount)}</TableCell>
-                            </TableRow>
-                             <TableRow className="font-bold text-lg bg-muted/50">
-                                <TableCell colSpan={3} className="text-right">Grand Total (Rounded)</TableCell>
-                                <TableCell className="text-right">{formatCurrency(grandTotal)}</TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-                    <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                        <Gem className="h-3 w-3" />
-                        <span>Created on Bluestar Hub</span>
-                    </div>
-                  </div>
-                )
-              })()}
-          </div>
-          <DialogFooter className="px-6 pb-4 flex justify-between w-full">
-            <Button variant="secondary" onClick={handleDownloadPdf}>
-                <Download className="mr-2 h-4 w-4" />
-                Download PDF
-            </Button>
+                    );
+                })()}
+                </div>
+            </div>
+          <DialogFooter className="px-6 py-4 flex-row justify-between w-full border-t">
+            <div className="flex gap-2">
+                <Button variant="secondary" onClick={handleDownloadPdf}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Download PDF
+                </Button>
+                 <Button variant="outline">
+                    <Share2 className="mr-2 h-4 w-4" />
+                    Send Quote
+                </Button>
+            </div>
             <DialogClose asChild>
                 <Button variant="outline">Close</Button>
             </DialogClose>
