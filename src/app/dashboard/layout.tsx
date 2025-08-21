@@ -18,6 +18,9 @@ import {
   ShieldCheck,
   ScanLine,
   Gift,
+  Phone,
+  Mail,
+  Building,
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -30,6 +33,7 @@ import {
   SidebarFooter,
   SidebarTrigger,
   SidebarInset,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -263,6 +267,21 @@ export default function DashboardLayout({
                     </Link>
                 </SidebarMenuItem>
             </SidebarMenu>
+            <SidebarSeparator />
+            <div className="p-2 text-xs text-sidebar-foreground/70 space-y-2">
+                <div className="flex items-center gap-2">
+                    <Building className="h-4 w-4" />
+                    <span>The Fox Creations</span>
+                </div>
+                 <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    <a href="tel:+919569737176" className="hover:underline">+91 9569737176</a>
+                </div>
+                 <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    <a href="mailto:thefoxcreations3@gmail.com" className="hover:underline truncate">thefoxcreations3@gmail.com</a>
+                </div>
+            </div>
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
@@ -482,5 +501,3 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
-
-    
