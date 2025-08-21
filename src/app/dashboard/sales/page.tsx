@@ -32,11 +32,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Send, Eye, PlusCircle, Trash2, Download, Share2, FileText } from "lucide-react";
-import type { Quotation, QuotationItem } from "@/lib/types";
+import type { Quotation, QuotationItem, Customer } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
 import type html2canvas from 'html2canvas';
+
+const registeredCustomers: Customer[] = [
+    { id: "CUST-001", name: "Green Valley Apartments", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City" },
+    { id: "CUST-002", name: "ABC Corporation", email: "contact@abc.com", phone: "555-0102", address: "123 Business Rd, Corp Town" },
+    { id: "CUST-003", name: "John Doe", email: "john.doe@example.com", phone: "555-0103", address: "789 Pine Ln, Sometown" },
+];
 
 
 const initialQuotations: Quotation[] = [
@@ -169,6 +182,20 @@ export default function SalesDashboard() {
     });
   }
 
+  const handleCustomerSelect = (customerId: string) => {
+    const customer = registeredCustomers.find(c => c.id === customerId);
+    if (customer) {
+        setNewQuote(prev => ({
+            ...prev,
+            customer: {
+                name: customer.name,
+                email: customer.email,
+                address: customer.address
+            }
+        }));
+    }
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
         style: 'currency',
@@ -194,35 +221,15 @@ export default function SalesDashboard() {
               import('jspdf'),
               import('html2canvas'),
             ]);
-            const canvas = await html2canvas(quoteContent, { 
-                scale: 3, 
-                useCORS: true,
-                backgroundColor: null, 
-            });
+            
+            const canvas = await html2canvas(quoteContent, { scale: 2 });
             const imgData = canvas.toDataURL('image/png');
             
-            const pdf = new jsPDF('p', 'pt', 'a4');
+            const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            
-            const canvasWidth = canvas.width;
-            const canvasHeight = canvas.height;
-            const canvasAspectRatio = canvasWidth / canvasHeight;
-            
-            let finalWidth, finalHeight;
-            
-            finalWidth = pdfWidth;
-            finalHeight = finalWidth / canvasAspectRatio;
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-            if (finalHeight > pdfHeight) {
-                finalHeight = pdfHeight;
-                finalWidth = finalHeight * canvasAspectRatio;
-            }
-
-            const xPos = (pdfWidth - finalWidth) / 2;
-            const yPos = (pdfHeight - finalHeight) / 2;
-
-            pdf.addImage(imgData, 'PNG', xPos, yPos, finalWidth, finalHeight);
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
             pdf.save(`quotation-${selectedQuote?.quoteId}.pdf`);
             toast({
                 title: "Download Started",
@@ -257,6 +264,19 @@ export default function SalesDashboard() {
         <CardContent className="grid gap-6">
           <div className="space-y-4 rounded-md border p-4">
              <h4 className="text-sm font-medium">Customer Details</h4>
+              <div className="space-y-2">
+                <Label>Select Registered Customer</Label>
+                <Select onValueChange={handleCustomerSelect}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select a customer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {registeredCustomers.map((customer) => (
+                            <SelectItem key={customer.id} value={customer.id}>{customer.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+              </div>
              <div className="space-y-2">
                 <Label htmlFor="customer-name">Full Name</Label>
                 <Input id="customer-name" placeholder="e.g., ABC Corporation" value={newQuote.customer.name} onChange={(e) => setNewQuote(prev => ({...prev, customer: {...prev.customer, name: e.target.value}}))}/>
@@ -390,7 +410,7 @@ export default function SalesDashboard() {
                 </DialogHeader>
             </div>
             <div className="max-h-[70vh] overflow-y-auto px-6 pb-6">
-                <div ref={quoteRef} className="bg-white text-black p-8 font-sans">
+                <div ref={quoteRef} className="bg-white text-black p-8 font-sans w-[210mm]">
                 {selectedQuote && (() => {
                     const { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
                     const quoteDate = new Date(selectedQuote.date);
@@ -399,19 +419,16 @@ export default function SalesDashboard() {
                     const formatDate = (date: Date) => date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
 
                     return (
-                        <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '210mm', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
-                            <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '20px' }}>
-                                <div style={{ flex: '1', paddingTop: '10px' }}>
-                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                                          <path fill="#2563EB" d="M100,12.5 C105.52,12.5 110,16.98 110,22.5 L110,62.5 L142.5,45 C147.2,42.12 153.21,43.87 156.08,48.58 C158.96,53.28 157.21,59.29 152.5,62.17 L115,82.5 L152.5,102.83 C157.21,105.71 158.96,111.72 156.08,116.42 C153.21,121.13 147.2,122.88 142.5,120 L110,102.5 L110,142.5 C110,148.02 105.52,152.5 100,152.5 C94.48,152.5 90,148.02 90,142.5 L90,102.5 L57.5,120 C52.8,122.88 46.79,121.13 43.92,116.42 C41.04,111.72 42.79,105.71 47.5,102.83 L85,82.5 L47.5,62.17 C42.79,59.29 41.04,53.28 43.92,48.58 C46.79,43.87 52.8,42.12 57.5,45 L90,62.5 L90,22.5 C90,16.98 94.48,12.5 100,12.5 Z" />
-                                          <path fill="#808080" d="M100,12.5 C105.52,12.5 110,16.98 110,22.5 L110,62.5 L142.5,45 C147.2,42.12 153.21,43.87 156.08,48.58 C158.96,53.28 157.21,59.29 152.5,62.17 L115,82.5 L152.5,102.83 C157.21,105.71 158.96,111.72 156.08,116.42 C153.21,121.13 147.2,122.88 142.5,120 L110,102.5 L110,142.5 C110,148.02 105.52,152.5 100,152.5 C94.48,152.5 90,148.02 90,142.5 L90,102.5 L57.5,120 C52.8,122.88 46.79,121.13 43.92,116.42 C41.04,111.72 42.79,105.71 47.5,102.83 L85,82.5 L47.5,62.17 C42.79,59.29 41.04,53.28 43.92,48.58 C46.79,43.87 52.8,42.12 57.5,45 L90,62.5 L90,22.5 C90,16.98 94.48,12.5 100,12.5 Z" />
-                                        </svg>
-                                        <div>
-                                            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#2563EB', margin: 0 }}>Bluestar Electronics</h1>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '100%', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '20px' }}>
+                              <div>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                      <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill="#2563EB" d="M100,12.5 C105.52,12.5 110,16.98 110,22.5 L110,62.5 L142.5,45 C147.2,42.12 153.21,43.87 156.08,48.58 C158.96,53.28 157.21,59.29 152.5,62.17 L115,82.5 L152.5,102.83 C157.21,105.71 158.96,111.72 156.08,116.42 C153.21,121.13 147.2,122.88 142.5,120 L110,102.5 L110,142.5 C110,148.02 105.52,152.5 100,152.5 C94.48,152.5 90,148.02 90,142.5 L90,102.5 L57.5,120 C52.8,122.88 46.79,121.13 43.92,116.42 C41.04,111.72 42.79,105.71 47.5,102.83 L85,82.5 L47.5,62.17 C42.79,59.29 41.04,53.28 43.92,48.58 C46.79,43.87 52.8,42.12 57.5,45 L90,62.5 L90,22.5 C90,16.98 94.48,12.5 100,12.5 Z" />
+                                      </svg>
+                                      <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#2563EB' }}>Bluestar Electronics</h1>
+                                  </div>
+                              </div>
                             </div>
                             
                             <div style={{ flexGrow: 1}}>
@@ -486,8 +503,10 @@ export default function SalesDashboard() {
                                 </div>
                             </div>
                             
-                             <div style={{ position: 'absolute', bottom: '10px', left: '0', right: '0', textAlign: 'center', fontSize: '10px', color: '#A0AEC0' }}>
-                                <p>Created on Bluestar Hub</p>
+                            <div style={{ marginTop: '50px', paddingTop: '20px', borderTop: '1px solid #eee', textAlign: 'center', fontSize: '12px', color: '#888' }}>
+                                <p>Thank you for your business!</p>
+                                <p>bluestar.elec@gmail.com | +91 9766661333</p>
+                                <p style={{marginTop: '10px', fontWeight: 'bold'}}>Created on Bluestar Hub</p>
                             </div>
                         </div>
                     );
@@ -514,5 +533,3 @@ export default function SalesDashboard() {
     </div>
   );
 }
-
-    

@@ -1,3 +1,4 @@
+
 export type Complaint = {
   ticketId: string;
   customer: {
@@ -17,6 +18,14 @@ export type Technician = {
   skills: string[];
   load: number;
   location: string;
+};
+
+export type Customer = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
 };
 
 export type QuotationItem = {

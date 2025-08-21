@@ -32,11 +32,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Send, Eye, PlusCircle, Trash2, Download, Share2, CreditCard } from "lucide-react";
-import type { Invoice, QuotationItem } from "@/lib/types";
+import type { Invoice, QuotationItem, Customer } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
 import type html2canvas from 'html2canvas';
+
+const registeredCustomers: Customer[] = [
+    { id: "CUST-001", name: "Green Valley Apartments", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City" },
+    { id: "CUST-002", name: "ABC Corporation", email: "contact@abc.com", phone: "555-0102", address: "123 Business Rd, Corp Town" },
+    { id: "CUST-003", name: "John Doe", email: "john.doe@example.com", phone: "555-0103", address: "789 Pine Ln, Sometown" },
+];
 
 const initialInvoices: Invoice[] = [
     {
@@ -165,6 +178,20 @@ export default function InvoicesPage() {
         description: `Invoice for ${newInvoiceData.customer.name} has been created.`,
     });
   }
+  
+    const handleCustomerSelect = (customerId: string) => {
+        const customer = registeredCustomers.find(c => c.id === customerId);
+        if (customer) {
+            setNewInvoice(prev => ({
+                ...prev,
+                customer: {
+                    name: customer.name,
+                    email: customer.email,
+                    address: customer.address
+                }
+            }));
+        }
+    };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -224,6 +251,19 @@ export default function InvoicesPage() {
         <CardContent className="grid gap-6">
           <div className="space-y-4 rounded-md border p-4">
              <h4 className="text-sm font-medium">Customer Details</h4>
+              <div className="space-y-2">
+                  <Label>Select Registered Customer</Label>
+                   <Select onValueChange={handleCustomerSelect}>
+                      <SelectTrigger>
+                          <SelectValue placeholder="Select a customer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          {registeredCustomers.map((customer) => (
+                              <SelectItem key={customer.id} value={customer.id}>{customer.name}</SelectItem>
+                          ))}
+                      </SelectContent>
+                  </Select>
+              </div>
              <div className="space-y-2">
                 <Label htmlFor="customer-name">Full Name</Label>
                 <Input id="customer-name" placeholder="e.g., ABC Corporation" value={newInvoice.customer.name} onChange={(e) => setNewInvoice(prev => ({...prev, customer: {...prev.customer, name: e.target.value}}))}/>
@@ -474,5 +514,3 @@ export default function InvoicesPage() {
     </div>
   );
 }
-
-    
