@@ -3,7 +3,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: "Bluestar Hub",
+  title: "Bluestar Hub by Star Electronics",
   description: "Streamlining operations for Bluestar Electronics",
 };
 

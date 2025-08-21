@@ -33,7 +33,7 @@ export default function LoginPage() {
               Bluestar Hub
             </CardTitle>
             <CardDescription>
-              Enter your credentials to access your dashboard
+              by Star Electronics
             </CardDescription>
           </CardHeader>
           <CardContent>
