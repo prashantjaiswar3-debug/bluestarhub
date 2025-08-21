@@ -32,7 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Send, Eye, PlusCircle, Trash2, Download, Share2 } from "lucide-react";
+import { Send, Eye, PlusCircle, Trash2, Download, Share2, FileText } from "lucide-react";
 import type { Quotation, QuotationItem } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
@@ -201,7 +201,6 @@ export default function SalesDashboard() {
             });
             const imgData = canvas.toDataURL('image/png');
             
-            // A4 size in points: 595.28 x 841.89
             const pdf = new jsPDF('p', 'pt', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
@@ -212,12 +211,10 @@ export default function SalesDashboard() {
             
             let finalWidth, finalHeight;
             
-            // Fit to width
             finalWidth = pdfWidth;
             finalHeight = finalWidth / canvasAspectRatio;
 
             if (finalHeight > pdfHeight) {
-                // If height is too big after fitting to width, fit to height instead
                 finalHeight = pdfHeight;
                 finalWidth = finalHeight * canvasAspectRatio;
             }
@@ -241,6 +238,13 @@ export default function SalesDashboard() {
         }
     }
   };
+
+  const handleGenerateInvoice = (quote: Quotation) => {
+    toast({
+        title: "Invoice Generated",
+        description: `Invoice for quote ${quote.quoteId} has been created.`,
+    });
+  }
 
 
   return (
@@ -321,7 +325,7 @@ export default function SalesDashboard() {
            </div>
         </CardContent>
         <CardFooter className="flex justify-end">
-            <Button onClick={handleCreateQuote} className="bg-[#2563EB] hover:bg-[#2563EB]/90 text-white">
+            <Button onClick={handleCreateQuote} className="bg-[#30475E] hover:bg-[#30475E]/90 text-white">
                 <Send className="mr-2 h-4 w-4" />
                 Create Quote
             </Button>
@@ -355,10 +359,18 @@ export default function SalesDashboard() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => setSelectedQuote(quote)}>
-                        <Eye className="h-4 w-4" />
-                        <span className="sr-only">View</span>
-                    </Button>
+                    <div className="flex items-center justify-end gap-2">
+                        {quote.status === "Approved" && (
+                            <Button variant="outline" size="sm" onClick={() => handleGenerateInvoice(quote)}>
+                                <FileText className="mr-2 h-4 w-4" />
+                                Generate Invoice
+                            </Button>
+                        )}
+                        <Button variant="ghost" size="icon" onClick={() => setSelectedQuote(quote)}>
+                            <Eye className="h-4 w-4" />
+                            <span className="sr-only">View</span>
+                        </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -387,12 +399,13 @@ export default function SalesDashboard() {
                     const formatDate = (date: Date) => date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
 
                     return (
-                        <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '210mm', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '210mm', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
                             <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '20px' }}>
                                 <div style={{ flex: '1', paddingTop: '10px' }}>
                                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <svg width="40" height="40" viewBox="0 0 165 165" xmlns="http://www.w3.org/2000/svg">
-                                            <path fill="#2563EB" d="M82.5,12.5 C105.52,12.5 110,16.98 110,22.5 L110,62.5 L142.5,45 C147.2,42.12 153.21,43.87 156.08,48.58 C158.96,53.28 157.21,59.29 152.5,62.17 L115,82.5 L152.5,102.83 C157.21,105.71 158.96,111.72 156.08,116.42 C153.21,121.13 147.2,122.88 142.5,120 L110,102.5 L110,142.5 C110,148.02 105.52,152.5 82.5,152.5 C76.98,152.5 72.5,148.02 72.5,142.5 L72.5,102.5 L40,120 C35.3,122.88 29.29,121.13 26.42,116.42 C23.54,111.72 25.29,105.71 30,102.83 L67.5,82.5 L30,62.17 C25.29,59.29 23.54,53.28 26.42,48.58 C29.29,43.87 35.3,42.12 40,45 L72.5,62.5 L72.5,22.5 C72.5,16.98 76.98,12.5 82.5,12.5 Z" />
+                                        <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                                          <path fill="#2563EB" d="M100,12.5 C105.52,12.5 110,16.98 110,22.5 L110,62.5 L142.5,45 C147.2,42.12 153.21,43.87 156.08,48.58 C158.96,53.28 157.21,59.29 152.5,62.17 L115,82.5 L152.5,102.83 C157.21,105.71 158.96,111.72 156.08,116.42 C153.21,121.13 147.2,122.88 142.5,120 L110,102.5 L110,142.5 C110,148.02 105.52,152.5 100,152.5 C94.48,152.5 90,148.02 90,142.5 L90,102.5 L57.5,120 C52.8,122.88 46.79,121.13 43.92,116.42 C41.04,111.72 42.79,105.71 47.5,102.83 L85,82.5 L47.5,62.17 C42.79,59.29 41.04,53.28 43.92,48.58 C46.79,43.87 52.8,42.12 57.5,45 L90,62.5 L90,22.5 C90,16.98 94.48,12.5 100,12.5 Z" />
+                                          <path fill="#808080" d="M100,12.5 C105.52,12.5 110,16.98 110,22.5 L110,62.5 L142.5,45 C147.2,42.12 153.21,43.87 156.08,48.58 C158.96,53.28 157.21,59.29 152.5,62.17 L115,82.5 L152.5,102.83 C157.21,105.71 158.96,111.72 156.08,116.42 C153.21,121.13 147.2,122.88 142.5,120 L110,102.5 L110,142.5 C110,148.02 105.52,152.5 100,152.5 C94.48,152.5 90,148.02 90,142.5 L90,102.5 L57.5,120 C52.8,122.88 46.79,121.13 43.92,116.42 C41.04,111.72 42.79,105.71 47.5,102.83 L85,82.5 L47.5,62.17 C42.79,59.29 41.04,53.28 43.92,48.58 C46.79,43.87 52.8,42.12 57.5,45 L90,62.5 L90,22.5 C90,16.98 94.48,12.5 100,12.5 Z" />
                                         </svg>
                                         <div>
                                             <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#2563EB', margin: 0 }}>Bluestar Electronics</h1>
@@ -410,12 +423,12 @@ export default function SalesDashboard() {
                                       <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.address}</p>
                                       <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.email}</p>
                                   </div>
-                                  <div style={{ width: '220px', backgroundColor: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '10px' }}>
-                                      <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 10px 0', textAlign: 'center', color: '#30475E', borderBottom: '1px solid #E2E8F0', paddingBottom: '5px' }}>QUOTATION</h2>
-                                      <div style={{ fontSize: '12px' }}>
-                                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}><strong>Quote No:</strong><span>{selectedQuote.quoteId}</span></div>
-                                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}><strong>Quote Date:</strong><span>{formatDate(quoteDate)}</span></div>
-                                          <div style={{ display: 'flex', justifyContent: 'space-between' }}><strong>Due Date:</strong><span>{formatDate(dueDate)}</span></div>
+                                  <div style={{ width: '220px' }}>
+                                      <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 10px 0', textAlign: 'right', color: '#30475E' }}>QUOTATION</h2>
+                                      <div style={{ fontSize: '12px', textAlign: 'right' }}>
+                                          <div style={{ marginBottom: '5px' }}><strong>Quote No:</strong><span>{selectedQuote.quoteId}</span></div>
+                                          <div style={{ marginBottom: '5px' }}><strong>Quote Date:</strong><span>{formatDate(quoteDate)}</span></div>
+                                          <div><strong>Due Date:</strong><span>{formatDate(dueDate)}</span></div>
                                       </div>
                                   </div>
                               </div>
@@ -443,7 +456,7 @@ export default function SalesDashboard() {
                                       ))}
                                       {selectedQuote.laborCost > 0 && (
                                           <tr style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: selectedQuote.items.length % 2 === 0 ? '#F8FAFC' : 'white' }}>
-                                              <td colSpan={4} style={{ padding: '10px', textAlign: 'right' }}>Labor Cost</td>
+                                              <td colSpan={4} style={{ padding: '10px', textAlign: 'right', fontWeight: 'bold' }}>Labor Cost</td>
                                               <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(selectedQuote.laborCost)}</td>
                                           </tr>
                                       )}
@@ -454,7 +467,7 @@ export default function SalesDashboard() {
                               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
                                   <div style={{ width: '250px', fontSize: '12px' }}>
                                       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Sub Total:</span><span>{formatCurrency(subTotal)}</span></div>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Discount ({selectedQuote.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Discount ({selectedQuote.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>
                                       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>GST ({selectedQuote.gst}%):</span><span>{formatCurrency(gstAmount)}</span></div>
                                       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px' }}><span>TOTAL:</span><span>{formatCurrency(grandTotal)}</span></div>
                                   </div>
@@ -462,23 +475,18 @@ export default function SalesDashboard() {
                             </div>
                             
                              {/* Signature and Terms */}
-                            <div style={{ marginTop: 'auto', paddingTop: '20px', display: 'flex', justifyContent: 'space-between', fontSize: '12px', flexShrink: 0 }}>
+                            <div style={{ marginTop: 'auto', paddingTop: '20px', display: 'flex', justifyContent: 'space-between', fontSize: '12px', flexShrink: 0, borderTop: '1px solid #E2E8F0' }}>
                                 <div>
                                     <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Terms and Conditions:</h3>
-                                    <p style={{ color: '#64748B', maxWidth: '300px' }}>Payment is due within 15 days. All products are subject to standard warranty. Thank you for your business!</p>
+                                    <p style={{ color: '#64748B', maxWidth: '300px', fontSize: '10px' }}>Payment is due within 15 days. All products are subject to standard warranty. Thank you for your business!</p>
                                 </div>
                                 <div style={{ textAlign: 'center' }}>
-                                    <p style={{ borderTop: '1px solid #64748B', paddingTop: '5px' }}>Authorized Signature</p>
+                                    <p style={{ borderTop: '1px solid #64748B', paddingTop: '5px', marginTop: '40px' }}>Authorized Signature</p>
                                     <p style={{ fontWeight: 'bold', marginTop: '5px' }}>Bluestar Electronics</p>
                                 </div>
                             </div>
                             
-                             <div style={{ position: 'absolute', zIndex: 2, display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: '60px', color: 'white', fontSize: '12px', bottom: 0, left: 0, right: 0, paddingBottom: '10px' }}>
-                                <span>bluestar.elec@gmail.com</span>
-                                <span>+91 9766661333</span>
-                                <span>www.bluestarhub.com</span>
-                            </div>
-                             <div style={{ position: 'absolute', bottom: '5px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: '#E2E8F0' }}>
+                             <div style={{ position: 'absolute', bottom: '10px', left: '0', right: '0', textAlign: 'center', fontSize: '10px', color: '#A0AEC0' }}>
                                 <p>Created on Bluestar Hub</p>
                             </div>
                         </div>
