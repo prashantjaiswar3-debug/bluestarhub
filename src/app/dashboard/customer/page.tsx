@@ -103,12 +103,13 @@ export default function CustomerDashboard() {
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString(undefined, {
+    return date.toLocaleString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: 'UTC'
     });
   }
 
