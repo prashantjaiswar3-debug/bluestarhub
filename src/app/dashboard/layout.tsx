@@ -525,8 +525,8 @@ export default function DashboardLayout({
         </DialogContent>
       </Dialog>
       <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
-        <DialogContent className="max-w-md sm:max-w-md w-full h-full sm:h-auto sm:w-auto p-0 sm:p-6">
-            <DialogHeader className="p-6 pb-0 sm:pb-6 sm:p-0">
+        <DialogContent className="sm:max-w-md w-full h-full sm:h-auto p-0 sm:p-6">
+            <DialogHeader className="p-6 pb-0 sm:p-0 sm:pb-6">
                 <DialogTitle>My Profile</DialogTitle>
                 <DialogDescription>
                     Review your account details below.
@@ -577,7 +577,7 @@ export default function DashboardLayout({
                     </div>
                 )}
             </div>
-             <DialogFooter className="p-6 pt-0 sm:pt-6 sm:p-0">
+             <DialogFooter className="p-6 pt-0 sm:pt-6 sm:p-0 sm:border-t">
                 <DialogClose asChild>
                     <Button variant="outline" className="w-full sm:w-auto">Close</Button>
                 </DialogClose>
@@ -606,3 +606,6 @@ export default function DashboardLayout({
     
 
 
+
+
+    
