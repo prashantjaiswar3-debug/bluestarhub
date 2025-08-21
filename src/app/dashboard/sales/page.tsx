@@ -52,7 +52,7 @@ const registeredCustomers: Customer[] = [
 ];
 
 
-const initialQuotations: Quotation[] = [
+export const initialQuotations: Quotation[] = [
   {
     quoteId: "QT-2023-051",
     customer: { name: "ABC Corporation", email: "contact@abc.com", address: "123 Business Rd, Corp Town" },
@@ -442,11 +442,10 @@ export default function SalesDashboard() {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '20px' }}>
                               <div>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                                        <path fill="#2563EB" d="M100 10.4c-4.8 0-9.2 2-12.4 5.2l-40 40c-6.8 6.8-6.8 18 0 24.8l40 40c3.2 3.2 7.6 5.2 12.4 5.2s9.2-2 12.4-5.2l40-40c6.8-6.8 6.8-18 0-24.8l-40-40c-3.2-3.2-7.6-5.2-12.4-5.2zm0 14.8c1.6 0 3.2.6 4.4 1.8l40 40c2.4 2.4 2.4 6.4 0 8.8l-40 40c-1.2 1.2-2.8 1.8-4.4 1.8s-3.2-.6-4.4-1.8l-40-40c-2.4-2.4-2.4-6.4 0-8.8l40-40c1.2-1.2 2.8-1.8 4.4-1.8z"/>
-                                        <path fill="#9CA3AF" d="m100 62.5c-2.4 0-4.6.9-6.4 2.5l-25 20c-4 3.2-4.6 9-1.4 13s9 4.6 13 1.4l19.6-15.7 19.6 15.7c4 3.2 9.6 2.6 13-1.4s2.6-9.6-1.4-13l-25-20c-1.8-1.6-4-2.5-6.4-2.5z"/>
+                                    <svg width="40" height="40" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#30475E"/>
                                     </svg>
-                                    <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#2563EB' }}>Bluestar Electronics</h1>
+                                    <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#30475E' }}>Bluestar Electronics</h1>
                                   </div>
                               </div>
                             </div>
