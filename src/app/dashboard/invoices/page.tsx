@@ -40,11 +40,12 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Send, Eye, PlusCircle, Trash2, Download, Share2, CreditCard, DollarSign } from "lucide-react";
-import type { Invoice, Quotation, QuotationItem, Customer, Payment } from "@/lib/types";
+import type { Invoice, QuotationItem, Customer, Payment } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
 import type html2canvas from 'html2canvas';
 import { initialQuotations } from "@/lib/data";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const registeredCustomers: Customer[] = [
     { id: "CUST-001", name: "Green Valley Apartments", contactPerson: "Mr. Sharma", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City" },
@@ -104,6 +105,7 @@ export default function InvoicesPage() {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState<boolean>(false);
   const [newPayment, setNewPayment] = useState({ amount: 0, method: "Online" as Payment["method"]});
+  const [copyType, setCopyType] = useState<'Original Copy' | "Customer's Copy">('Original Copy');
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -564,6 +566,7 @@ export default function InvoicesPage() {
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
                                     <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>INVOICE</h2>
+                                    <p style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>{copyType}</p>
                                 </div>
                             </div>
                           </header>
@@ -648,6 +651,19 @@ export default function InvoicesPage() {
                         </div>
                     );
                   })()}
+                </div>
+                <div className="p-4 border rounded-md">
+                    <RadioGroup defaultValue="Original Copy" className="flex items-center gap-4" onValueChange={(value: 'Original Copy' | "Customer's Copy") => setCopyType(value)}>
+                        <h4 className="text-sm font-medium">Select Copy Type:</h4>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Original Copy" id="r-original" />
+                            <Label htmlFor="r-original">Original Copy</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Customer's Copy" id="r-customer" />
+                            <Label htmlFor="r-customer">Customer's Copy</Label>
+                        </div>
+                    </RadioGroup>
                 </div>
                  {selectedInvoice?.payments && selectedInvoice.payments.length > 0 && (
                     <div className="p-4 border rounded-md">
@@ -737,10 +753,3 @@ export default function InvoicesPage() {
     </>
   );
 }
-
-
-    
-
-    
-
-

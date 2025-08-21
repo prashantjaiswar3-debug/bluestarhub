@@ -45,6 +45,7 @@ import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
 import type html2canvas from 'html2canvas';
 import { initialQuotations } from "@/lib/data";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const registeredCustomers: Customer[] = [
     { id: "CUST-001", name: "Green Valley Apartments", contactPerson: "Mr. Sharma", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City" },
@@ -70,6 +71,7 @@ export default function SalesDashboard() {
     poNumber: "",
   });
   const [selectedQuote, setSelectedQuote] = useState<Quotation | null>(null);
+  const [copyType, setCopyType] = useState<'Original Copy' | "Customer's Copy">('Original Copy');
   const quoteRef = useRef<HTMLDivElement>(null);
 
 
@@ -417,7 +419,7 @@ export default function SalesDashboard() {
                     </DialogDescription>
                 </DialogHeader>
             </div>
-            <div className="max-h-[70vh] overflow-y-auto px-6 pb-6">
+            <div className="max-h-[70vh] overflow-y-auto px-6 pb-6 space-y-4">
                 <div ref={quoteRef} className="bg-white text-black font-sans w-[210mm]">
                 {selectedQuote && (() => {
                     const { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
@@ -444,6 +446,7 @@ export default function SalesDashboard() {
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
                                         <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>QUOTATION</h2>
+                                        <p style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>{copyType}</p>
                                     </div>
                                 </div>
                             </header>
@@ -529,6 +532,19 @@ export default function SalesDashboard() {
                     );
                 })()}
                 </div>
+                 <div className="p-4 border rounded-md">
+                    <RadioGroup defaultValue="Original Copy" className="flex items-center gap-4" onValueChange={(value: 'Original Copy' | "Customer's Copy") => setCopyType(value)}>
+                        <h4 className="text-sm font-medium">Select Copy Type:</h4>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Original Copy" id="q-original" />
+                            <Label htmlFor="q-original">Original Copy</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Customer's Copy" id="q-customer" />
+                            <Label htmlFor="q-customer">Customer's Copy</Label>
+                        </div>
+                    </RadioGroup>
+                </div>
             </div>
           <DialogFooter className="px-6 py-4 flex-row justify-between w-full border-t">
             <div className="flex gap-2">
@@ -550,8 +566,3 @@ export default function SalesDashboard() {
     </div>
   );
 }
-
-
-    
-
-    
