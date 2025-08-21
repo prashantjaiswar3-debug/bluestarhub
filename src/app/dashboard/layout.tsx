@@ -183,6 +183,7 @@ export default function DashboardLayout({
   const navItems = allNavItems.filter(item => item.roles.includes(currentRole));
 
   const dashboardLabel = navItems.find(item => pathname.startsWith(item.href))?.label || 'Dashboard';
+  const currentUser = roleInfo[currentRole] || roleInfo.default;
 
 
   return (
