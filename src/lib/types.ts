@@ -39,6 +39,13 @@ export type QuotationItem = {
   gstRate: number; // Percentage
 };
 
+export type Payment = {
+  id: string;
+  amount: number;
+  date: string;
+  method: 'Cash' | 'Card' | 'Online' | 'Other';
+};
+
 export type Invoice = {
   invoiceId: string;
   customer: {
@@ -51,10 +58,11 @@ export type Invoice = {
   laborCost: number;
   discount: number; // Percentage
   totalAmount: number;
-  status: "Paid" | "Pending" | "Overdue";
+  status: "Paid" | "Pending" | "Overdue" | "Partially Paid";
   date: string;
   quoteId?: string; // Optional link to a quotation
   poNumber?: string;
+  payments?: Payment[];
 };
 
 
@@ -65,6 +73,7 @@ export type Quotation = {
     email: string;
     address: string;
     contactPerson?: string;
+    phone?: string;
   };
   items: QuotationItem[];
   laborCost: number;

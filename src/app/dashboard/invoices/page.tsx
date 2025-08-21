@@ -39,8 +39,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Send, Eye, PlusCircle, Trash2, Download, Share2, CreditCard, Wand2 } from "lucide-react";
-import type { Invoice, Quotation, QuotationItem, Customer } from "@/lib/types";
+import { Send, Eye, PlusCircle, Trash2, Download, Share2, CreditCard, Wand2, DollarSign } from "lucide-react";
+import type { Invoice, Quotation, QuotationItem, Customer, Payment } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
 import type html2canvas from 'html2canvas';
@@ -66,6 +66,9 @@ const initialInvoices: Invoice[] = [
         status: "Paid",
         date: "2023-10-22",
         quoteId: "QT-2023-050",
+        payments: [
+            { id: "PAY-001", amount: 157528, date: "2023-10-22", method: "Online" }
+        ]
     },
     {
         invoiceId: "INV-2023-0015",
@@ -74,9 +77,12 @@ const initialInvoices: Invoice[] = [
         laborCost: 5000,
         discount: 10,
         totalAmount: 24780,
-        status: "Pending",
+        status: "Partially Paid",
         date: "2023-10-25",
-        quoteId: "QT-2023-051"
+        quoteId: "QT-2023-051",
+        payments: [
+            { id: "PAY-002", amount: 10000, date: "2023-10-26", method: "Cash" }
+        ]
     },
 ];
 
@@ -84,6 +90,7 @@ const statusVariant: { [key in Invoice["status"]]: "secondary" | "default" | "de
   Paid: "secondary",
   Pending: "default",
   Overdue: "destructive",
+  "Partially Paid": "default",
 };
 
 export default function InvoicesPage() {
@@ -100,6 +107,8 @@ export default function InvoicesPage() {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [comparisonResult, setComparisonResult] = useState<string>("");
   const [isComparing, setIsComparing] = useState<boolean>(false);
+  const [isAddPaymentOpen, setIsAddPaymentOpen] = useState<boolean>(false);
+  const [newPayment, setNewPayment] = useState({ amount: 0, method: "Online" as Payment["method"]});
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -140,8 +149,9 @@ export default function InvoicesPage() {
 
   const gstAmount = useMemo(() => {
     return newInvoice.items.reduce((sum, item) => {
-      const itemTotal = item.quantity * item.price * (1 - newInvoice.discount / 100);
-      return sum + (itemTotal * (item.gstRate / 100));
+      const itemTotal = item.quantity * item.price;
+      const itemTotalAfterDiscount = itemTotal * (1 - (newInvoice.discount / 100));
+      return sum + (itemTotalAfterDiscount * (item.gstRate / 100));
     }, 0);
   }, [newInvoice.items, newInvoice.discount]);
 
@@ -204,6 +214,7 @@ export default function InvoicesPage() {
       date: new Date().toISOString().split('T')[0],
       quoteId: newInvoice.quoteId,
       poNumber: newInvoice.poNumber,
+      payments: [],
     };
     
     const updatedInvoices = [newInvoiceData, ...invoices];
@@ -264,7 +275,9 @@ export default function InvoicesPage() {
       return sum + (itemTotalAfterDiscount * (item.gstRate / 100));
     }, 0);
     const grandTotal = Math.round(totalAfterDiscount + gstAmount);
-    return { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal };
+    const amountPaid = invoice.payments?.reduce((sum, p) => sum + p.amount, 0) || 0;
+    const amountDue = grandTotal - amountPaid;
+    return { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal, amountPaid, amountDue };
   }
 
   const handleDownloadPdf = async () => {
@@ -330,8 +343,63 @@ export default function InvoicesPage() {
     }
   };
 
+  const handleAddPayment = () => {
+    if (!selectedInvoice || !newPayment.amount) {
+        toast({
+            variant: "destructive",
+            title: "Invalid Payment",
+            description: "Please enter a valid payment amount.",
+        });
+        return;
+    }
+
+    const updatedInvoices = invoices.map(inv => {
+        if (inv.invoiceId === selectedInvoice.invoiceId) {
+            const existingPayments = inv.payments || [];
+            const newPaymentRecord: Payment = {
+                id: `PAY-${Date.now()}`,
+                amount: newPayment.amount,
+                date: new Date().toISOString(),
+                method: newPayment.method,
+            };
+            const updatedPayments = [...existingPayments, newPaymentRecord];
+            const amountPaid = updatedPayments.reduce((sum, p) => sum + p.amount, 0);
+            
+            let newStatus: Invoice["status"] = "Partially Paid";
+            if (amountPaid >= inv.totalAmount) {
+                newStatus = "Paid";
+            }
+
+            return {
+                ...inv,
+                payments: updatedPayments,
+                status: newStatus,
+            };
+        }
+        return inv;
+    });
+
+    setInvoices(updatedInvoices);
+    localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+    
+    // Update the selected invoice in the dialog as well
+    const updatedSelectedInvoice = updatedInvoices.find(inv => inv.invoiceId === selectedInvoice.invoiceId);
+    if (updatedSelectedInvoice) {
+        setSelectedInvoice(updatedSelectedInvoice);
+    }
+    
+    toast({
+        title: "Payment Recorded",
+        description: `${formatCurrency(newPayment.amount)} has been added to invoice ${selectedInvoice.invoiceId}.`
+    });
+    
+    setIsAddPaymentOpen(false);
+    setNewPayment({ amount: 0, method: 'Online' });
+  };
+
 
   return (
+    <>
     <div className="grid gap-6 lg:grid-cols-5">
       <Card className="lg:col-span-2 self-start">
         <CardHeader>
@@ -479,9 +547,9 @@ export default function InvoicesPage() {
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
                        {invoice.status !== "Paid" && (
-                            <Button size="sm">
-                                <CreditCard className="mr-2 h-3 w-3" />
-                                Mark as Paid
+                            <Button size="sm" onClick={() => { setSelectedInvoice(invoice); setIsAddPaymentOpen(true); }}>
+                                <DollarSign className="mr-2 h-3 w-3" />
+                                Add Payment
                             </Button>
                         )}
                         <Button variant="ghost" size="icon" onClick={() => setSelectedInvoice(invoice)}>
@@ -510,11 +578,11 @@ export default function InvoicesPage() {
             <div className="max-h-[70vh] overflow-y-auto px-6 pb-6 space-y-6">
                  <div ref={invoiceRef} className="bg-white text-black p-8 font-sans w-[210mm]">
                   {selectedInvoice && (() => {
-                    const { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal } = calculateInvoiceTotals(selectedInvoice);
+                    const { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal, amountPaid, amountDue } = calculateInvoiceTotals(selectedInvoice);
                      const invoiceDate = new Date(selectedInvoice.date);
                     const dueDate = new Date(invoiceDate);
                     dueDate.setDate(invoiceDate.getDate() + 15);
-                    const formatDate = (date: Date) => date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+                    const formatDate = (date: Date | string) => new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
 
                     return (
                         <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '100%', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
@@ -522,9 +590,7 @@ export default function InvoicesPage() {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#2563EB' }}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 200 200"><g transform="translate(100 100)"><path d="M78.8-3.4C71.3 14.1 52.8 28.1 36.4 39.1C20.1 50.1 5.9 58.1-10.4 59.4C-26.7 60.7-45.1 55.4-58.4 43.1C-71.7 30.7-79.9 11.4-78.6-8.8C-77.3-29-66.5-50.1-50.6-62.1C-34.7-74.1-13.7-77-5.5-69.8C2.7-62.7 10.9-45.5 24.3-33.1C37.8-20.7 56.5-13.1 78.8-3.4Z" fill="#3B82F6"></path></g></svg>
                                         <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Bluestar Electronics</h1>
                                     </div>
                                     <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
@@ -594,6 +660,8 @@ export default function InvoicesPage() {
                                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Discount ({selectedInvoice.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Total GST:</span><span>{formatCurrency(gstAmount)}</span></div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px' }}><span>TOTAL:</span><span>{formatCurrency(grandTotal)}</span></div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Amount Paid:</span><span>-{formatCurrency(amountPaid)}</span></div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px', backgroundColor: '#F1F5F9', borderRadius: '4px' }}><span>AMOUNT DUE:</span><span>{formatCurrency(amountDue)}</span></div>
                                 </div>
                             </div>
                           </div>
@@ -617,6 +685,29 @@ export default function InvoicesPage() {
                     );
                   })()}
                 </div>
+                 {selectedInvoice?.payments && selectedInvoice.payments.length > 0 && (
+                    <div className="p-4 border rounded-md">
+                        <h4 className="font-semibold mb-2">Payment History</h4>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>Amount</TableHead>
+                                    <TableHead>Method</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {selectedInvoice.payments.map(p => (
+                                    <TableRow key={p.id}>
+                                        <TableCell>{new Date(p.date).toLocaleDateString('en-IN')}</TableCell>
+                                        <TableCell>{formatCurrency(p.amount)}</TableCell>
+                                        <TableCell><Badge variant="secondary">{p.method}</Badge></TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
                  {selectedInvoice?.quoteId && (
                     <div className="p-4 border rounded-md">
                         {isComparing ? (
@@ -658,6 +749,12 @@ export default function InvoicesPage() {
                     <Share2 className="mr-2 h-4 w-4" />
                     Send Invoice
                 </Button>
+                {selectedInvoice?.status !== "Paid" && (
+                    <Button onClick={() => setIsAddPaymentOpen(true)}>
+                        <DollarSign className="mr-2 h-4 w-4" />
+                        Add Payment
+                    </Button>
+                )}
             </div>
             <DialogClose asChild>
                 <Button variant="outline">Close</Button>
@@ -665,7 +762,45 @@ export default function InvoicesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+
+       <Dialog open={isAddPaymentOpen} onOpenChange={setIsAddPaymentOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Add Payment for {selectedInvoice?.invoiceId}</DialogTitle>
+                <DialogDescription>
+                    Record a new payment for this invoice. The amount due is {selectedInvoice && formatCurrency(calculateInvoiceTotals(selectedInvoice).amountDue)}.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="space-y-2">
+                    <Label htmlFor="payment-amount">Amount (₹)</Label>
+                    <Input id="payment-amount" type="number" value={newPayment.amount} onChange={e => setNewPayment(p => ({...p, amount: parseFloat(e.target.value) || 0}))} />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="payment-method">Payment Method</Label>
+                    <Select value={newPayment.method} onValueChange={(value: Payment["method"]) => setNewPayment(p => ({...p, method: value}))}>
+                        <SelectTrigger id="payment-method">
+                            <SelectValue placeholder="Select method" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Online">Online</SelectItem>
+                            <SelectItem value="Cash">Cash</SelectItem>
+                            <SelectItem value="Card">Card</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+            <DialogFooter>
+                <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button onClick={handleAddPayment}>Record Payment</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
