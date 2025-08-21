@@ -22,6 +22,7 @@ import {
   Phone,
   Mail,
   FilePlus2,
+  Trash2,
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -52,6 +53,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent } from "@/components/ui/card";
 
 
 const allNavItems = [
@@ -97,6 +99,8 @@ export default function DashboardLayout({
   const [passwordFields, setPasswordFields] = React.useState({ current: "", new: "", confirm: "" });
 
   const [isProfileOpen, setIsProfileOpen] = React.useState(false);
+
+  const [isManageOffersOpen, setIsManageOffersOpen] = React.useState(false);
 
 
   const getRole = () => {
@@ -228,7 +232,7 @@ export default function DashboardLayout({
                {currentRole === 'admin' && (
                 <>
                   <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => {}} tooltip={{ children: "Manage Offers" }}>
+                    <SidebarMenuButton onClick={() => setIsManageOffersOpen(true)} tooltip={{ children: "Manage Offers" }}>
                       <Gift className="shrink-0" />
                       <span>Manage Offers</span>
                     </SidebarMenuButton>
@@ -322,6 +326,65 @@ export default function DashboardLayout({
           <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
         </SidebarInset>
       </div>
+      <Dialog open={isManageOffersOpen} onOpenChange={setIsManageOffersOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Manage Offers</DialogTitle>
+            <DialogDescription>
+              Add, edit, or remove promotional offers displayed to customers.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-6 py-4">
+             <Card>
+                <CardContent className="p-4 grid gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="offer-title">Offer Title</Label>
+                        <Input id="offer-title" placeholder="e.g., Upgrade Your Security" />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="offer-description">Offer Description</Label>
+                        <Textarea id="offer-description" placeholder="e.g., Get 20% off on all new smart camera installations." />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="offer-image">Image URL</Label>
+                        <Input id="offer-image" placeholder="https://placehold.co/600x400.png" />
+                    </div>
+                     <Button className="w-full">Add New Offer</Button>
+                </CardContent>
+             </Card>
+             <div>
+                <h3 className="text-lg font-medium mb-4">Current Offers</h3>
+                <div className="space-y-4">
+                    <div className="flex items-center gap-4 p-4 border rounded-lg">
+                        <Image src="https://placehold.co/600x400.png" alt="Offer 1" width={100} height={60} className="rounded-md" />
+                        <div className="flex-1">
+                            <p className="font-semibold">Upgrade Your Security</p>
+                            <p className="text-sm text-muted-foreground">Get 20% off on all new smart camera installations.</p>
+                        </div>
+                        <Button variant="ghost" size="icon">
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                    </div>
+                    <div className="flex items-center gap-4 p-4 border rounded-lg">
+                        <Image src="https://placehold.co/600x400.png" alt="Offer 2" width={100} height={60} className="rounded-md" />
+                        <div className="flex-1">
+                            <p className="font-semibold">Peace of Mind Plan</p>
+                            <p className="text-sm text-muted-foreground">Sign up for our Annual Maintenance Contract and get the first month free.</p>
+                        </div>
+                         <Button variant="ghost" size="icon">
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                    </div>
+                </div>
+             </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+                <Button variant="outline">Close</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog open={isRegisterCustomerOpen} onOpenChange={setIsRegisterCustomerOpen}>
         <DialogContent>
           <DialogHeader>
@@ -541,4 +604,5 @@ export default function DashboardLayout({
     
 
     
+
 
