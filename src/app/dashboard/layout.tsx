@@ -56,6 +56,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
+import QRCode from "react-qr-code";
 
 
 const allNavItems = [
@@ -67,11 +68,11 @@ const allNavItems = [
 ];
 
 const initialRoleInfo = {
-    admin: { name: "Admin User", email: "admin@bluestar.com", fallback: "AD", id: "ADM-001", avatar: "https://placehold.co/100x100.png" },
-    technician: { name: "Technician User", email: "tech@bluestar.com", fallback: "TU", id: "TECH-007", avatar: "https://placehold.co/100x100.png" },
-    customer: { name: "Customer User", email: "customer@bluestar.com", fallback: "CU", id: "CUST-101", avatar: "https://placehold.co/100x100.png" },
-    sales: { name: "Sales User", email: "sales@bluestar.com", fallback: "SU", id: "SALES-003", avatar: "https://placehold.co/100x100.png" },
-    default: { name: "Demo User", email: "user@bluestar.com", fallback: "DU", id: "USER-000", avatar: "https://placehold.co/100x100.png" },
+    admin: { name: "Admin User", email: "admin@bluestar.com", fallback: "AD", id: "ADM-001", avatar: "https://placehold.co/100x100.png", phone: "9876543210" },
+    technician: { name: "Technician User", email: "tech@bluestar.com", fallback: "TU", id: "TECH-007", avatar: "https://placehold.co/100x100.png", phone: "9876543211" },
+    customer: { name: "Customer User", email: "customer@bluestar.com", fallback: "CU", id: "CUST-101", avatar: "https://placehold.co/100x100.png", phone: "9876543212" },
+    sales: { name: "Sales User", email: "sales@bluestar.com", fallback: "SU", id: "SALES-003", avatar: "https://placehold.co/100x100.png", phone: "9876543213" },
+    default: { name: "Demo User", email: "user@bluestar.com", fallback: "DU", id: "USER-000", avatar: "https://placehold.co/100x100.png", phone: "9876543214" },
 };
 
 export default function DashboardLayout({
@@ -218,6 +219,12 @@ export default function DashboardLayout({
   const dashboardLabel = navItems.find(item => pathname.startsWith(item.href))?.label || 'Dashboard';
   const currentUser = roleInfo[currentRole as keyof typeof roleInfo] || roleInfo.default;
 
+  const vCard = `BEGIN:VCARD
+VERSION:3.0
+FN:${currentUser.name}
+EMAIL:${currentUser.email}
+TEL:${currentUser.phone}
+END:VCARD`;
 
   return (
     <SidebarProvider>
@@ -603,8 +610,13 @@ export default function DashboardLayout({
                                 <span className="text-muted-foreground">Employee ID</span>
                                 <span className="font-mono font-semibold">{currentUser.id}</span>
                             </div>
-                            <div className="flex justify-center pt-2">
-                                <ScanLine className="h-20 w-20 text-muted-foreground" data-ai-hint="qr code" />
+                            <div className="flex justify-center pt-2 bg-white p-2 rounded-md">
+                                <QRCode
+                                  value={vCard}
+                                  size={80}
+                                  className="h-20 w-20"
+                                  viewBox={`0 0 80 80`}
+                                />
                             </div>
                             <p className="text-xs text-muted-foreground">This card is the property of Bluestar Hub. If found, please return to the nearest office.</p>
                         </div>
@@ -643,27 +655,3 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
-    
-
-    
-
-    
-
-    
-
-
-
-    
-
-    
-
-    
-
-    
-
-
-
-
-    
-
-    
