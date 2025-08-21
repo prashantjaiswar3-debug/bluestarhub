@@ -1,13 +1,15 @@
+
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { LayoutGrid, Wrench, Users, FileText, ArrowRight } from 'lucide-react';
+import { LayoutGrid, Wrench, Users, FileText, ArrowRight, FilePlus2 } from 'lucide-react';
 
 const quickLinks = [
     { href: "/dashboard/admin", icon: LayoutGrid, title: "Assignments", description: "Assign jobs to technicians." },
     { href: "/dashboard/technician", icon: Wrench, title: "Technician View", description: "Manage your assigned jobs." },
     { href: "/dashboard/customer", icon: Users, title: "Customer Portal", description: "Track complaints and invoices." },
     { href: "/dashboard/sales", icon: FileText, title: "Sales & Quotes", description: "Create and manage quotations." },
+    { href: "/dashboard/invoices", icon: FilePlus2, title: "Invoices", description: "Manage and track invoices." },
 ]
 
 export default function DashboardPage() {
@@ -40,3 +42,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
