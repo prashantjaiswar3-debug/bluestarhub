@@ -14,7 +14,7 @@ export type Complaint = {
 
 export type Technician = {
   id: string;
-  name: string;
+  name:string;
   skills: string[];
   load: number;
   location: string;
@@ -106,5 +106,15 @@ export type Review = {
   date: string;
 };
 
-
+export type JobEnquiry = {
+    id: string;
+    title: string;
+    description: string;
+    location: string;
+    proposedRate: number;
+    status: 'Pending' | 'Accepted' | 'Rejected' | 'Bargaining';
+    date: string;
+    bargainRate?: number;
+    assignedTo?: string;
+};
     
