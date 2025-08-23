@@ -159,7 +159,7 @@ export default function InvoicesPage() {
     setNewInvoice(prev => ({
       ...prev,
       items: prev.items.map(item =>
-        item.id === id ? { ...item, [field]: typeof value === 'string' && (field !== 'description' && field !== 'unit') ? parseFloat(value) || 0 : value } : item
+        item.id === id ? { ...item, [field]: value } : item
       ),
     }));
   };
@@ -243,7 +243,7 @@ export default function InvoicesPage() {
         if (quote) {
             setNewInvoice({
                 customer: quote.customer,
-                items: quote.items,
+                items: quote.items.map(item => ({...item, unit: item.unit || 'nos'})),
                 laborCost: quote.laborCost,
                 discount: quote.discount,
                 quoteId: quote.quoteId,

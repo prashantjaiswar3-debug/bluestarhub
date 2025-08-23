@@ -104,7 +104,7 @@ export default function SalesDashboard() {
     setNewQuote(prev => ({
       ...prev,
       items: prev.items.map(item =>
-        item.id === id ? { ...item, [field]: typeof value === 'string' && (field !== 'description' && field !== 'unit') ? parseFloat(value) || 0 : value } : item
+        item.id === id ? { ...item, [field]: value } : item
       ),
     }));
   };
