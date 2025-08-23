@@ -52,14 +52,15 @@ type User = {
   email: string;
   role: "Admin" | "Sales" | "Technician" | "Customer";
   status: "Active" | "Inactive";
+  password?: string;
 };
 
 const initialUsers: User[] = [
-  { id: "ADM-001", name: "Vaibhav Rodge", email: "vaibhav.rodge@bluestar.com", role: "Admin", status: "Active" },
-  { id: "SALES-001", name: "Priya Sharma", email: "priya.sharma@bluestar.com", role: "Sales", status: "Active" },
-  { id: "TECH-007", name: "Raj Patel", email: "raj.patel@bluestar.com", role: "Technician", status: "Active" },
-  { id: "CUST-101", name: "John Doe", email: "john.doe@example.com", role: "Customer", status: "Active" },
-  { id: "CUST-102", name: "Green Valley Apartments", email: "manager@gva.com", role: "Customer", status: "Inactive" },
+  { id: "ADM-001", name: "Vaibhav Rodge", email: "vaibhav.rodge@bluestar.com", role: "Admin", status: "Active", password: "adminpassword" },
+  { id: "SALES-001", name: "Priya Sharma", email: "priya.sharma@bluestar.com", role: "Sales", status: "Active", password: "salespassword" },
+  { id: "TECH-007", name: "Raj Patel", email: "raj.patel@bluestar.com", role: "Technician", status: "Active", password: "techpassword" },
+  { id: "CUST-101", name: "John Doe", email: "john.doe@example.com", role: "Customer", status: "Active", password: "customerpassword" },
+  { id: "CUST-102", name: "Green Valley Apartments", email: "manager@gva.com", role: "Customer", status: "Inactive", password: "customerpassword2" },
 ];
 
 const roleVariant: { [key in User["role"]]: "default" | "secondary" | "outline" } = {
@@ -182,6 +183,20 @@ export default function UserManagementPage() {
                 }
               />
             </div>
+             <div className="space-y-2">
+                <Label htmlFor="edit-password">Password</Label>
+                <Input
+                    id="edit-password"
+                    type="text"
+                    value={selectedUser?.password || ""}
+                    placeholder="Enter new password"
+                    onChange={(e) =>
+                    setSelectedUser(
+                        (prev) => prev && { ...prev, password: e.target.value }
+                    )
+                    }
+                />
+            </div>
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="edit-role">Role</Label>
@@ -230,6 +245,7 @@ function UserTable({ users, onEdit, onDelete }: { users: User[], onEdit: (user: 
         <TableRow>
           <TableHead>Name</TableHead>
           <TableHead>Email</TableHead>
+          <TableHead>Password</TableHead>
           <TableHead>Role</TableHead>
           <TableHead>Status</TableHead>
           <TableHead className="text-right">Actions</TableHead>
@@ -240,6 +256,9 @@ function UserTable({ users, onEdit, onDelete }: { users: User[], onEdit: (user: 
           <TableRow key={user.id}>
             <TableCell className="font-medium">{user.name}</TableCell>
             <TableCell>{user.email}</TableCell>
+            <TableCell>
+                <Badge variant="outline">{user.password}</Badge>
+            </TableCell>
             <TableCell>
               <Badge variant={roleVariant[user.role]}>{user.role}</Badge>
             </TableCell>
