@@ -47,6 +47,7 @@ import type html2canvas from 'html2canvas';
 import { initialQuotations } from "@/lib/data";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import Image from "next/image";
 
 const registeredCustomers: Customer[] = [
     { id: "CUST-001", name: "Green Valley Apartments", contactPerson: "Mr. Sharma", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City" },
@@ -466,9 +467,9 @@ export default function QuotationsPage() {
                                  <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                         <div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#2563EB' }}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 200 200"><g transform="translate(100 100)"><path d="M78.8-3.4C71.3 14.1 52.8 28.1 36.4 39.1C20.1 50.1 5.9 58.1-10.4 59.4C-26.7 60.7-45.1 55.4-58.4 43.1C-71.7 30.7-79.9 11.4-78.6-8.8C-77.3-29-66.5-50.1-50.6-62.1C-34.7-74.1-13.7-77-5.5-69.8C2.7-62.7 10.9-45.5 24.3-33.1C37.8-20.7 56.5-13.1 78.8-3.4Z" fill="#3B82F6"></path></g></svg>
-                                                <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Bluestar Electronics</h1>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/refs/heads/main/1755977876302__1_-removebg-preview.png" alt="Bluestar Logo" width={50} height={50} />
+                                                <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#2563EB' }}>Bluestar Electronics</h1>
                                             </div>
                                             <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
                                                 <p><strong>Email:</strong> bluestar.elec@gmail.com</p>

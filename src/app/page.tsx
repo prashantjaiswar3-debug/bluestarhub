@@ -10,8 +10,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Gem, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import Image from "next/image";
 
 const demoUsers = [
   { role: "Admin", href: "/dashboard/admin", description: "Full access to all dashboards." },
@@ -28,7 +29,7 @@ export default function LoginPage() {
         <Card className="shadow-lg">
           <CardHeader className="space-y-1 text-center">
             <div className="mx-auto flex items-center justify-center">
-              <Gem className="h-8 w-8 text-primary" />
+              <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/refs/heads/main/1755977876302__1_-removebg-preview.png" alt="Bluestar Logo" width={64} height={64} />
             </div>
             <CardTitle className="text-2xl font-bold tracking-tight">
               Bluestar Hub
