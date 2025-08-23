@@ -60,10 +60,10 @@ import QRCode from "react-qr-code";
 
 
 const allNavItems = [
-  { href: "/dashboard/admin", icon: LayoutGrid, label: "Assignments", roles: ['admin'] },
+  { href: "/dashboard/sales", icon: LayoutGrid, label: "Assignments", roles: ['sales'] },
   { href: "/dashboard/technician", icon: Wrench, label: "My Jobs", roles: ['technician'] },
   { href: "/dashboard/customer", icon: Users, label: "My Portal", roles: ['customer'] },
-  { href: "/dashboard/sales", icon: FileText, label: "Sales & Quotes", roles: ['sales'] },
+  { href: "/dashboard/quotations", icon: FileText, label: "Quotations", roles: ['sales'] },
   { href: "/dashboard/invoices", icon: FilePlus2, label: "Invoices", roles: ['admin', 'sales'] },
 ];
 
@@ -115,7 +115,7 @@ export default function DashboardLayout({
     if (pathname.startsWith('/dashboard/admin')) return 'admin';
     if (pathname.startsWith('/dashboard/technician')) return 'technician';
     if (pathname.startsWith('/dashboard/customer')) return 'customer';
-    if (pathname.startsWith('/dashboard/sales') || pathname.startsWith('/dashboard/invoices')) return 'sales';
+    if (pathname.startsWith('/dashboard/sales') || pathname.startsWith('/dashboard/invoices') || pathname.startsWith('/dashboard/quotations')) return 'sales';
     return 'admin';
   }
   
