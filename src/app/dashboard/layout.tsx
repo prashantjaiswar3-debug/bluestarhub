@@ -321,7 +321,7 @@ END:VCARD`;
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-card/80 px-4 backdrop-blur-sm sm:px-6">
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-sidebar-border bg-sidebar px-4 text-sidebar-foreground sm:px-6">
             <div className="flex items-center gap-2">
                 <SidebarTrigger className="md:hidden" />
                 <h2 className="text-lg font-semibold md:text-xl">
@@ -329,15 +329,15 @@ END:VCARD`;
                 </h2>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="rounded-full">
+              <Button variant="ghost" size="icon" className="rounded-full hover:bg-sidebar-accent">
                 <Bell className="h-5 w-5" />
                 <span className="sr-only">Notifications</span>
               </Button>
-              <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setIsChangePasswordOpen(true)}>
+              <Button variant="ghost" size="icon" className="rounded-full hover:bg-sidebar-accent" onClick={() => setIsChangePasswordOpen(true)}>
                 <Settings className="h-5 w-5" />
                 <span className="sr-only">Settings</span>
               </Button>
-              <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setIsProfileOpen(true)}>
+              <Button variant="ghost" size="icon" className="rounded-full hover:bg-sidebar-accent" onClick={() => setIsProfileOpen(true)}>
                 <UserCircle className="h-5 w-5" />
                 <span className="sr-only">Profile</span>
               </Button>
