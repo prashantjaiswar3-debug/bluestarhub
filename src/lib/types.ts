@@ -18,6 +18,7 @@ export type Technician = {
   skills: string[];
   load: number;
   location: string;
+  type: 'Fixed' | 'Freelance';
 };
 
 export type Customer = {

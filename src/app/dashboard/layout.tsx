@@ -59,6 +59,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import QRCode from "react-qr-code";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Technician } from "@/lib/types";
 
 
 const allNavItems = [
@@ -73,7 +75,7 @@ const allNavItems = [
 
 const initialRoleInfo = {
     admin: { name: "Vaibhav Rodge", email: "vaibhav.rodge@bluestar.com", fallback: "VR", id: "ADM-001", avatar: "https://placehold.co/100x100.png", phone: "9876543210" },
-    technician: { name: "Technician User", email: "tech@bluestar.com", fallback: "TU", id: "TECH-007", avatar: "https://placehold.co/100x100.png", phone: "9876543211" },
+    technician: { name: "Technician User", email: "tech@bluestar.com", fallback: "TU", id: "TECH-007", avatar: "https://placehold.co/100x100.png", phone: "9876543211", type: "Fixed" },
     customer: { name: "Customer User", email: "customer@bluestar.com", fallback: "CU", id: "CUST-101", avatar: "https://placehold.co/100x100.png", phone: "9876543212" },
     sales: { name: "Vaibhav Rodge", email: "vaibhav.rodge@bluestar.com", fallback: "VR", id: "SALES-001", avatar: "https://placehold.co/100x100.png", phone: "9876543213" },
     default: { name: "Demo User", email: "user@bluestar.com", fallback: "DU", id: "USER-000", avatar: "https://placehold.co/100x100.png", phone: "9876543214" },
@@ -99,7 +101,7 @@ export default function DashboardLayout({
   });
 
   const [isRegisterTechnicianOpen, setIsRegisterTechnicianOpen] = React.useState(false);
-  const [newTechnician, setNewTechnician] = React.useState({ name: "", email: "", phone: "", skills: "" });
+  const [newTechnician, setNewTechnician] = React.useState({ name: "", email: "", phone: "", skills: "", type: "Fixed" as Technician['type'] });
   
   const [isRegisterSalesOpen, setIsRegisterSalesOpen] = React.useState(false);
   const [newSales, setNewSales] = React.useState({ name: "", email: "", phone: "" });
@@ -156,11 +158,11 @@ export default function DashboardLayout({
     const generatedPassword = Math.random().toString(36).slice(-8);
     toast({
       title: "Technician Registered",
-      description: `Technician ${newTechnician.name} created. Email: ${newTechnician.email}, Password: ${generatedPassword}`,
+      description: `${newTechnician.type} Technician ${newTechnician.name} created. Email: ${newTechnician.email}, Password: ${generatedPassword}`,
       duration: 9000,
     });
     setIsRegisterTechnicianOpen(false);
-    setNewTechnician({ name: "", email: "", phone: "", skills: "" });
+    setNewTechnician({ name: "", email: "", phone: "", skills: "", type: "Fixed" });
   }
 
   const handleRegisterSales = () => {
@@ -453,7 +455,7 @@ END:VCARD`;
             <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button onClick={handleRegisterCustomer}>Register & Generate Credentials</Button>
+            <Button onClick={handleRegisterCustomer} className="whitespace-normal">Register & Generate Credentials</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -478,9 +480,21 @@ END:VCARD`;
               <Label htmlFor="tech-phone">Phone Number</Label>
               <Input id="tech-phone" value={newTechnician.phone} onChange={(e) => setNewTechnician({...newTechnician, phone: e.target.value})} placeholder="e.g., 9876543210" />
             </div>
-             <div className="space-y-2">
+            <div className="space-y-2">
               <Label htmlFor="tech-skills">Skills</Label>
               <Input id="tech-skills" value={newTechnician.skills} onChange={(e) => setNewTechnician({...newTechnician, skills: e.target.value})} placeholder="e.g., Installation, Repair" />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="tech-type">Technician Type</Label>
+                <Select value={newTechnician.type} onValueChange={(value: Technician['type']) => setNewTechnician(prev => ({...prev, type: value}))}>
+                    <SelectTrigger id="tech-type">
+                        <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="Fixed">Fixed</SelectItem>
+                        <SelectItem value="Freelance">Freelance</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
           </div>
           <DialogFooter>

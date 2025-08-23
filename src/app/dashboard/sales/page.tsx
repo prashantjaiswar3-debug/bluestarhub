@@ -50,11 +50,11 @@ const initialComplaints: Complaint[] = [
 ];
 
 const initialTechnicians: Technician[] = [
-    { id: "TECH-01", name: "Raj Patel", skills: ["Installation", "Repair"], load: 2, location: "North Zone" },
-    { id: "TECH-02", name: "Amit Singh", skills: ["Repair", "Networking"], load: 1, location: "South Zone" },
-    { id: "TECH-03", name: "Suresh Kumar", skills: ["Maintenance", "Installation"], load: 4, location: "North Zone" },
-    { id: "TECH-04", name: "Prashant Jaiswar", skills: ["Installation", "Networking"], load: 0, location: "West Zone" },
-    { id: "TECH-05", name: "Krishna Sharma", skills: ["Repair", "Maintenance"], load: 0, location: "East Zone" },
+    { id: "TECH-01", name: "Raj Patel", skills: ["Installation", "Repair"], load: 2, location: "North Zone", type: "Fixed" },
+    { id: "TECH-02", name: "Amit Singh", skills: ["Repair", "Networking"], load: 1, location: "South Zone", type: "Fixed" },
+    { id: "TECH-03", name: "Suresh Kumar", skills: ["Maintenance", "Installation"], load: 4, location: "North Zone", type: "Fixed" },
+    { id: "TECH-04", name: "Prashant Jaiswar", skills: ["Installation", "Networking"], load: 0, location: "West Zone", type: "Freelance" },
+    { id: "TECH-05", name: "Krishna Sharma", skills: ["Repair", "Maintenance"], load: 0, location: "East Zone", type: "Freelance" },
 ];
 
 const initialReviews: Review[] = [
@@ -90,6 +90,8 @@ export default function AdminDashboard() {
   const [enquiries, setEnquiries] = useState<JobEnquiry[]>(initialEnquiries);
   const [isCreateEnquiryOpen, setIsCreateEnquiryOpen] = useState(false);
   const [newEnquiry, setNewEnquiry] = useState({ title: "", description: "", location: "", proposedRate: "" });
+
+  const fixedTechnicians = technicians.filter(t => t.type === 'Fixed');
 
   const handleAssign = (ticketId: string) => {
     const techId = selectedTechnicians[ticketId];
@@ -278,7 +280,7 @@ export default function AdminDashboard() {
                             <SelectValue placeholder="Select Tech" />
                           </SelectTrigger>
                           <SelectContent>
-                            {technicians.map((tech) => (
+                            {fixedTechnicians.map((tech) => (
                               <SelectItem key={tech.id} value={tech.id}>{tech.name}</SelectItem>
                             ))}
                           </SelectContent>
@@ -335,7 +337,7 @@ export default function AdminDashboard() {
                             <SelectValue placeholder="Re-assign" />
                           </SelectTrigger>
                           <SelectContent>
-                            {technicians.map((tech) => (
+                            {fixedTechnicians.map((tech) => (
                               <SelectItem key={tech.id} value={tech.id}>{tech.name}</SelectItem>
                             ))}
                           </SelectContent>
@@ -411,6 +413,7 @@ export default function AdminDashboard() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead className="text-right">Load</TableHead>
               </TableRow>
             </TableHeader>
@@ -421,6 +424,7 @@ export default function AdminDashboard() {
                     <div className="font-medium">{tech.name}</div>
                     <div className="text-sm text-muted-foreground">{tech.skills.join(", ")}</div>
                   </TableCell>
+                  <TableCell><Badge variant={tech.type === 'Fixed' ? 'default' : 'secondary'}>{tech.type}</Badge></TableCell>
                   <TableCell className="text-right">{tech.load}</TableCell>
                 </TableRow>
               ))}

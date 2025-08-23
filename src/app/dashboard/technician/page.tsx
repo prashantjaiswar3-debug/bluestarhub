@@ -25,8 +25,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { MapPin, Phone, FilePlus, ThumbsUp, ThumbsDown, Handshake } from "lucide-react";
-import type { Job, JobEnquiry } from "@/lib/types";
+import type { Job, JobEnquiry, Technician } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
+
+// This would typically be fetched based on the logged-in user
+const currentTechnician: Technician = {
+    id: "TECH-04",
+    name: "Prashant Jaiswar",
+    skills: ["Installation", "Networking"],
+    load: 0,
+    location: "West Zone",
+    type: "Freelance", // or "Fixed"
+};
 
 const jobs: Job[] = [
   { id: "JOB-001", customer: "John Doe", address: "123 Main St, Anytown", issue: "CCTV Camera not recording, needs urgent check.", priority: "High", phone: "555-0101" },
@@ -129,75 +139,81 @@ export default function TechnicianDashboard() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-bold">Today's Jobs</h1>
-        <p className="text-muted-foreground">Here are your regular assignments for the day.</p>
-      </div>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {jobs.map((job) => (
-          <Card key={job.id} className="flex flex-col">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <CardTitle>{job.customer}</CardTitle>
-                <Badge variant={priorityVariant[job.priority]}>{job.priority}</Badge>
-              </div>
-              <CardDescription className="flex items-center gap-2 pt-1">
-                <MapPin className="h-4 w-4" />
-                <span className="truncate">{job.address}</span>
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <p className="text-sm text-foreground">{job.issue}</p>
-            </CardContent>
-            <CardFooter className="grid grid-cols-2 gap-2">
-              <Button variant="outline" onClick={() => handleCall(job.phone)}>
-                <Phone className="mr-2 h-4 w-4" />
-                Call
-              </Button>
-               <Button onClick={() => handleUpdateClick(job)}>
-                <FilePlus className="mr-2 h-4 w-4" />
-                Update / Report
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-      
-      <div className="pt-4">
-        <h1 className="text-2xl font-bold">Job Enquiries</h1>
-        <p className="text-muted-foreground">Available jobs for freelance technicians.</p>
-      </div>
-       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {enquiries.map((enquiry) => (
-          <Card key={enquiry.id} className="flex flex-col">
-            <CardHeader>
-                <CardTitle>{enquiry.title}</CardTitle>
-                 <CardDescription className="flex items-center gap-2 pt-1">
+      {currentTechnician.type === "Fixed" ? (
+        <>
+          <div>
+            <h1 className="text-2xl font-bold">Today's Jobs</h1>
+            <p className="text-muted-foreground">Here are your regular assignments for the day.</p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {jobs.map((job) => (
+              <Card key={job.id} className="flex flex-col">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <CardTitle className="text-lg">{job.customer}</CardTitle>
+                    <Badge variant={priorityVariant[job.priority]}>{job.priority}</Badge>
+                  </div>
+                  <CardDescription className="flex items-center gap-2 pt-1">
                     <MapPin className="h-4 w-4" />
-                    <span>{enquiry.location}</span>
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1 space-y-4">
-              <p className="text-sm text-foreground">{enquiry.description}</p>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Proposed Rate</p>
-                <p className="text-lg font-bold">{formatCurrency(enquiry.proposedRate)}</p>
-              </div>
-            </CardContent>
-            <CardFooter className="grid grid-cols-3 gap-2">
-                <Button variant="outline" className="border-green-500 text-green-600 hover:bg-green-50 hover:text-green-700" onClick={() => handleEnquiryAction(enquiry.id, 'accept')}>
-                    <ThumbsUp className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Accept</span>
-                </Button>
-                <Button variant="outline" className="border-destructive text-destructive hover:bg-red-50 hover:text-destructive" onClick={() => handleEnquiryAction(enquiry.id, 'reject')}>
-                    <ThumbsDown className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Reject</span>
-                </Button>
-                <Button onClick={() => handleEnquiryAction(enquiry.id, 'bargain')}>
-                    <Handshake className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Bargain</span>
-                </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+                    <span className="truncate">{job.address}</span>
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1">
+                  <p className="text-sm text-foreground">{job.issue}</p>
+                </CardContent>
+                <CardFooter className="grid grid-cols-2 gap-2">
+                  <Button variant="outline" onClick={() => handleCall(job.phone)}>
+                    <Phone className="mr-2 h-4 w-4" />
+                    Call
+                  </Button>
+                   <Button onClick={() => handleUpdateClick(job)}>
+                    <FilePlus className="mr-2 h-4 w-4" />
+                    Update / Report
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          <div>
+            <h1 className="text-2xl font-bold">Job Enquiries</h1>
+            <p className="text-muted-foreground">Available jobs for freelance technicians.</p>
+          </div>
+           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {enquiries.map((enquiry) => (
+              <Card key={enquiry.id} className="flex flex-col">
+                <CardHeader>
+                    <CardTitle className="text-lg">{enquiry.title}</CardTitle>
+                     <CardDescription className="flex items-center gap-2 pt-1">
+                        <MapPin className="h-4 w-4" />
+                        <span>{enquiry.location}</span>
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 space-y-4">
+                  <p className="text-sm text-foreground">{enquiry.description}</p>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Proposed Rate</p>
+                    <p className="text-lg font-bold">{formatCurrency(enquiry.proposedRate)}</p>
+                  </div>
+                </CardContent>
+                <CardFooter className="grid grid-cols-3 gap-2">
+                    <Button variant="outline" className="border-green-500 text-green-600 hover:bg-green-50 hover:text-green-700" onClick={() => handleEnquiryAction(enquiry.id, 'accept')}>
+                        <ThumbsUp className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Accept</span>
+                    </Button>
+                    <Button variant="outline" className="border-destructive text-destructive hover:bg-red-50 hover:text-destructive" onClick={() => handleEnquiryAction(enquiry.id, 'reject')}>
+                        <ThumbsDown className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Reject</span>
+                    </Button>
+                    <Button onClick={() => handleEnquiryAction(enquiry.id, 'bargain')}>
+                        <Handshake className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Bargain</span>
+                    </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </>
+      )}
 
 
        <Dialog open={!!selectedJob} onOpenChange={(isOpen) => !isOpen && handleDialogClose()}>
