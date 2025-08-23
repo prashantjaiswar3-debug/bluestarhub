@@ -47,7 +47,8 @@ import type html2canvas from 'html2canvas';
 import { initialQuotations } from "@/lib/data";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
+import { BrowserBarcodeReader, NotFoundException } from '@zxing/library';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 
 const registeredCustomers: Customer[] = [
@@ -104,7 +105,7 @@ const units = ["nos", "meters", "pcs", "pack", "box"];
 
 const BarcodeScanner = ({ onScanSuccess, onScanFailure }: { onScanSuccess: (text: string) => void; onScanFailure: (error: any) => void }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const codeReader = useMemo(() => new BrowserMultiFormatReader(), []);
+    const codeReader = useMemo(() => new BrowserBarcodeReader(), []);
     const controlsRef = useRef<any>();
 
     const stopScanner = useCallback(() => {
@@ -495,190 +496,196 @@ export default function InvoicesPage() {
 
   return (
     <>
-    <div className="grid gap-6 lg:grid-cols-5">
-      <Card className="lg:col-span-2 self-start">
-        <CardHeader>
-          <CardTitle>Create Invoice</CardTitle>
-          <CardDescription>Fill in the details to generate a new invoice.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-6">
-           <div className="space-y-4 rounded-md border p-4">
-             <h4 className="text-sm font-medium">Quotation Details</h4>
-             <div className="space-y-2">
-                 <Label>Select Approved Quotation</Label>
-                  <Select onValueChange={handleQuotationSelect}>
-                     <SelectTrigger>
-                         <SelectValue placeholder="Select a quotation to pre-fill" />
-                     </SelectTrigger>
-                     <SelectContent>
-                         {initialQuotations.filter(q => q.status === 'Approved').map((quote) => (
-                             <SelectItem key={quote.quoteId} value={quote.quoteId}>{quote.quoteId} - {quote.customer.name}</SelectItem>
-                         ))}
-                     </SelectContent>
-                 </Select>
-             </div>
-             <div className="space-y-2">
-                <Label htmlFor="po-number">Purchase Order Number (Optional)</Label>
-                <Input id="po-number" placeholder="e.g., PO-12345" value={newInvoice.poNumber} onChange={(e) => setNewInvoice(prev => ({...prev, poNumber: e.target.value}))}/>
-              </div>
-          </div>
-          
-          <div className="space-y-4 rounded-md border p-4">
-             <h4 className="text-sm font-medium">Customer Details</h4>
-              <div className="space-y-2">
-                  <Label>Select Registered Customer</Label>
-                   <Select onValueChange={handleCustomerSelect} value={registeredCustomers.find(c => c.name === newInvoice.customer.name)?.id}>
-                      <SelectTrigger>
-                          <SelectValue placeholder="Select a customer" />
-                      </SelectTrigger>
-                      <SelectContent>
-                          {registeredCustomers.map((customer) => (
-                              <SelectItem key={customer.id} value={customer.id}>{customer.name}</SelectItem>
-                          ))}
-                      </SelectContent>
-                  </Select>
-              </div>
-             <div className="space-y-2">
-                <Label htmlFor="customer-name">Customer / Company Name</Label>
-                <Input id="customer-name" placeholder="e.g., ABC Corporation" value={newInvoice.customer.name} onChange={(e) => setNewInvoice(prev => ({...prev, customer: {...prev.customer, name: e.target.value}}))}/>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="customer-email">Email</Label>
-                <Input id="customer-email" placeholder="e.g., contact@abccorp.com" value={newInvoice.customer.email} onChange={(e) => setNewInvoice(prev => ({...prev, customer: {...prev.customer, email: e.target.value}}))}/>
-              </div>
-               <div className="space-y-2">
-                <Label htmlFor="customer-address">Address</Label>
-                <Textarea id="customer-address" placeholder="e.g., 123 Business Road, Mumbai" value={newInvoice.customer.address} onChange={(e) => setNewInvoice(prev => ({...prev, customer: {...prev.customer, address: e.target.value}}))} />
-              </div>
-          </div>
+    <div className="grid h-full grid-cols-1 gap-6 md:grid-cols-2">
+       <div className="flex flex-col">
+            <Card className="flex flex-1 flex-col">
+                <CardHeader>
+                    <CardTitle>Create Invoice</CardTitle>
+                    <CardDescription>Fill in the details to generate a new invoice.</CardDescription>
+                </CardHeader>
+                <ScrollArea className="flex-1">
+                    <CardContent className="grid gap-6">
+                       <div className="space-y-4 rounded-md border p-4">
+                         <h4 className="text-sm font-medium">Quotation Details</h4>
+                         <div className="space-y-2">
+                             <Label>Select Approved Quotation</Label>
+                              <Select onValueChange={handleQuotationSelect}>
+                                 <SelectTrigger>
+                                     <SelectValue placeholder="Select a quotation to pre-fill" />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                     {initialQuotations.filter(q => q.status === 'Approved').map((quote) => (
+                                         <SelectItem key={quote.quoteId} value={quote.quoteId}>{quote.quoteId} - {quote.customer.name}</SelectItem>
+                                     ))}
+                                 </SelectContent>
+                             </Select>
+                         </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="po-number">Purchase Order Number (Optional)</Label>
+                            <Input id="po-number" placeholder="e.g., PO-12345" value={newInvoice.poNumber} onChange={(e) => setNewInvoice(prev => ({...prev, poNumber: e.target.value}))}/>
+                          </div>
+                      </div>
+                      
+                      <div className="space-y-4 rounded-md border p-4">
+                         <h4 className="text-sm font-medium">Customer Details</h4>
+                          <div className="space-y-2">
+                              <Label>Select Registered Customer</Label>
+                               <Select onValueChange={handleCustomerSelect} value={registeredCustomers.find(c => c.name === newInvoice.customer.name)?.id}>
+                                  <SelectTrigger>
+                                      <SelectValue placeholder="Select a customer" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                      {registeredCustomers.map((customer) => (
+                                          <SelectItem key={customer.id} value={customer.id}>{customer.name}</SelectItem>
+                                      ))}
+                                  </SelectContent>
+                              </Select>
+                          </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="customer-name">Customer / Company Name</Label>
+                            <Input id="customer-name" placeholder="e.g., ABC Corporation" value={newInvoice.customer.name} onChange={(e) => setNewInvoice(prev => ({...prev, customer: {...prev.customer, name: e.target.value}}))}/>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="customer-email">Email</Label>
+                            <Input id="customer-email" placeholder="e.g., contact@abccorp.com" value={newInvoice.customer.email} onChange={(e) => setNewInvoice(prev => ({...prev, customer: {...prev.customer, email: e.target.value}}))}/>
+                          </div>
+                           <div className="space-y-2">
+                            <Label htmlFor="customer-address">Address</Label>
+                            <Textarea id="customer-address" placeholder="e.g., 123 Business Road, Mumbai" value={newInvoice.customer.address} onChange={(e) => setNewInvoice(prev => ({...prev, customer: {...prev.customer, address: e.target.value}}))} />
+                          </div>
+                      </div>
 
-          <div className="space-y-4">
-            <h4 className="text-sm font-medium">Services / Parts</h4>
-            {newInvoice.items.map((item, index) => (
-              <div key={item.id} className="grid gap-2 rounded-md border p-3 relative">
-                 {newInvoice.items.length > 1 && (
-                     <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removeItem(item.id)}>
-                        <Trash2 className="h-4 w-4 text-destructive"/>
-                     </Button>
-                 )}
-                <div className="space-y-2">
-                  <Label htmlFor={`item-desc-${index}`}>Description</Label>
-                  <Textarea id={`item-desc-${index}`} placeholder="e.g., 4x Dome Cameras, 1x 8-Channel DVR..." value={item.description} onChange={(e) => handleItemChange(item.id, 'description', e.target.value)} />
-                </div>
-                <div className="grid grid-cols-4 gap-4">
-                   <div className="space-y-2">
-                      <Label htmlFor={`item-qty-${index}`}>Quantity</Label>
-                      <Input id={`item-qty-${index}`} type="text" placeholder="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor={`item-unit-${index}`}>Unit</Label>
-                        <Select value={item.unit} onValueChange={(value) => handleItemChange(item.id, 'unit', value)}>
-                            <SelectTrigger id={`item-unit-${index}`}>
-                                <SelectValue placeholder="Select unit" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {units.map(unit => <SelectItem key={unit} value={unit}>{unit}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`item-price-${index}`}>Price (₹)</Label>
-                      <Input id={`item-price-${index}`} type="text" placeholder="10000" value={item.price} onChange={(e) => handleItemChange(item.id, 'price', e.target.value)}/>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`item-gst-${index}`}>GST (%)</Label>
-                      <Input id={`item-gst-${index}`} type="number" placeholder="18" value={item.gstRate} onChange={(e) => handleItemChange(item.id, 'gstRate', e.target.value)}/>
-                    </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`item-serial-${index}`}>Serial Number</Label>
-                  <div className="flex gap-2">
-                    <Input id={`item-serial-${index}`} placeholder="Scan or enter serial number" value={item.serialNumber} onChange={(e) => handleItemChange(item.id, 'serialNumber', e.target.value)} />
-                    <Button variant="outline" size="icon" onClick={() => handleOpenScanner(item.id)}>
-                        <QrCode className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-             <Button variant="outline" onClick={addItem}>
-                <PlusCircle className="mr-2 h-4 w-4"/>
-                Add Item
-            </Button>
-          </div>
-          
-          <div className="space-y-4 rounded-md border p-4">
-            <h4 className="text-sm font-medium">Costs & Total</h4>
-             <div className="space-y-2">
-                <Label htmlFor="labor-cost">Labor Cost (₹)</Label>
-                <Input id="labor-cost" type="number" placeholder="5000" value={newInvoice.laborCost} onChange={(e) => setNewInvoice(prev => ({...prev, laborCost: parseFloat(e.target.value) || 0}))}/>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="discount">Discount (%)</Label>
-                    <Input id="discount" type="number" placeholder="10" value={newInvoice.discount} onChange={(e) => setNewInvoice(prev => ({...prev, discount: parseFloat(e.target.value) || 0}))} />
-                </div>
-                <div className="space-y-2">
-                    <Label>Grand Total</Label>
-                    <Input readOnly value={formatCurrency(totalAmount)} className="font-semibold border-none p-0 h-auto text-lg"/>
-                </div>
-            </div>
-           </div>
-        </CardContent>
-        <CardFooter className="flex justify-end">
-            <Button onClick={handleCreateInvoice}>
-                <Send className="mr-2 h-4 w-4" />
-                Create Invoice
-            </Button>
-        </CardFooter>
-      </Card>
-      <Card className="lg:col-span-3">
-        <CardHeader>
-          <CardTitle>Recent Invoices</CardTitle>
-          <CardDescription>Track and manage your invoices.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Invoice ID</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {invoices.map((invoice) => (
-                <TableRow key={invoice.invoiceId}>
-                  <TableCell className="font-medium">{invoice.invoiceId}</TableCell>
-                  <TableCell>{invoice.customer.name}</TableCell>
-                  <TableCell>{formatCurrency(invoice.totalAmount)}</TableCell>
-                  <TableCell>
-                    <Badge variant={statusVariant[invoice.status]}>
-                      {invoice.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                       {invoice.status !== "Paid" && (
-                            <Button size="sm" onClick={() => { setSelectedInvoice(invoice); setIsAddPaymentOpen(true); }}>
-                                <DollarSign className="mr-2 h-3 w-3" />
-                                Add Payment
-                            </Button>
-                        )}
-                        <Button variant="ghost" size="icon" onClick={() => setSelectedInvoice(invoice)}>
-                            <Eye className="h-4 w-4" />
-                            <span className="sr-only">View</span>
+                      <div className="space-y-4">
+                        <h4 className="text-sm font-medium">Services / Parts</h4>
+                        {newInvoice.items.map((item, index) => (
+                          <div key={item.id} className="grid gap-2 rounded-md border p-3 relative">
+                             {newInvoice.items.length > 1 && (
+                                 <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removeItem(item.id)}>
+                                    <Trash2 className="h-4 w-4 text-destructive"/>
+                                 </Button>
+                             )}
+                            <div className="space-y-2">
+                              <Label htmlFor={`item-desc-${index}`}>Description</Label>
+                              <Textarea id={`item-desc-${index}`} placeholder="e.g., 4x Dome Cameras, 1x 8-Channel DVR..." value={item.description} onChange={(e) => handleItemChange(item.id, 'description', e.target.value)} />
+                            </div>
+                            <div className="grid grid-cols-4 gap-4">
+                               <div className="space-y-2">
+                                  <Label htmlFor={`item-qty-${index}`}>Quantity</Label>
+                                  <Input id={`item-qty-${index}`} type="text" placeholder="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor={`item-unit-${index}`}>Unit</Label>
+                                    <Select value={item.unit} onValueChange={(value) => handleItemChange(item.id, 'unit', value)}>
+                                        <SelectTrigger id={`item-unit-${index}`}>
+                                            <SelectValue placeholder="Select unit" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {units.map(unit => <SelectItem key={unit} value={unit}>{unit}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor={`item-price-${index}`}>Price (₹)</Label>
+                                  <Input id={`item-price-${index}`} type="text" placeholder="10000" value={item.price} onChange={(e) => handleItemChange(item.id, 'price', e.target.value)}/>
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor={`item-gst-${index}`}>GST (%)</Label>
+                                  <Input id={`item-gst-${index}`} type="number" placeholder="18" value={item.gstRate} onChange={(e) => handleItemChange(item.id, 'gstRate', e.target.value)}/>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`item-serial-${index}`}>Serial Number</Label>
+                              <div className="flex gap-2">
+                                <Input id={`item-serial-${index}`} placeholder="Scan or enter serial number" value={item.serialNumber} onChange={(e) => handleItemChange(item.id, 'serialNumber', e.target.value)} />
+                                <Button variant="outline" size="icon" onClick={() => handleOpenScanner(item.id)}>
+                                    <QrCode className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                         <Button variant="outline" onClick={addItem}>
+                            <PlusCircle className="mr-2 h-4 w-4"/>
+                            Add Item
                         </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                      </div>
+                      
+                      <div className="space-y-4 rounded-md border p-4">
+                        <h4 className="text-sm font-medium">Costs & Total</h4>
+                         <div className="space-y-2">
+                            <Label htmlFor="labor-cost">Labor Cost (₹)</Label>
+                            <Input id="labor-cost" type="number" placeholder="5000" value={newInvoice.laborCost} onChange={(e) => setNewInvoice(prev => ({...prev, laborCost: parseFloat(e.target.value) || 0}))}/>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="discount">Discount (%)</Label>
+                                <Input id="discount" type="number" placeholder="10" value={newInvoice.discount} onChange={(e) => setNewInvoice(prev => ({...prev, discount: parseFloat(e.target.value) || 0}))} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Grand Total</Label>
+                                <Input readOnly value={formatCurrency(totalAmount)} className="font-semibold border-none p-0 h-auto text-lg"/>
+                            </div>
+                        </div>
+                       </div>
+                    </CardContent>
+                </ScrollArea>
+                <CardFooter className="flex justify-end pt-6">
+                    <Button onClick={handleCreateInvoice}>
+                        <Send className="mr-2 h-4 w-4" />
+                        Create Invoice
+                    </Button>
+                </CardFooter>
+            </Card>
+        </div>
+      <div className="flex flex-col">
+          <Card className="flex flex-1 flex-col">
+            <CardHeader>
+              <CardTitle>Recent Invoices</CardTitle>
+              <CardDescription>Track and manage your invoices.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Invoice ID</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {invoices.map((invoice) => (
+                    <TableRow key={invoice.invoiceId}>
+                      <TableCell className="font-medium">{invoice.invoiceId}</TableCell>
+                      <TableCell>{invoice.customer.name}</TableCell>
+                      <TableCell>{formatCurrency(invoice.totalAmount)}</TableCell>
+                      <TableCell>
+                        <Badge variant={statusVariant[invoice.status]}>
+                          {invoice.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                           {invoice.status !== "Paid" && (
+                                <Button size="sm" onClick={() => { setSelectedInvoice(invoice); setIsAddPaymentOpen(true); }}>
+                                    <DollarSign className="mr-2 h-3 w-3" />
+                                    Add Payment
+                                </Button>
+                            )}
+                            <Button variant="ghost" size="icon" onClick={() => setSelectedInvoice(invoice)}>
+                                <Eye className="h-4 w-4" />
+                                <span className="sr-only">View</span>
+                            </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+      </div>
       
       <Dialog open={!!selectedInvoice} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-4xl p-0" data-slot="header-plain">
@@ -932,3 +939,5 @@ export default function InvoicesPage() {
     </>
   );
 }
+
+    
