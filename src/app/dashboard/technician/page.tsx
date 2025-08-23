@@ -27,16 +27,8 @@ import { Input } from "@/components/ui/input";
 import { MapPin, Phone, FilePlus, ThumbsUp, ThumbsDown, Handshake } from "lucide-react";
 import type { Job, JobEnquiry, Technician } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
+import { usePathname } from "next/navigation";
 
-// This would typically be fetched based on the logged-in user
-const currentTechnician: Technician = {
-    id: "TECH-04",
-    name: "Prashant Jaiswar",
-    skills: ["Installation", "Networking"],
-    load: 0,
-    location: "West Zone",
-    type: "Freelance", // or "Fixed"
-};
 
 const jobs: Job[] = [
   { id: "JOB-001", customer: "John Doe", address: "123 Main St, Anytown", issue: "CCTV Camera not recording, needs urgent check.", priority: "High", phone: "555-0101" },
@@ -58,12 +50,15 @@ const priorityVariant: { [key in Job["priority"]]: "destructive" | "secondary" |
 
 export default function TechnicianDashboard() {
   const { toast } = useToast();
+  const pathname = usePathname();
   const [selectedJob, setSelectedJob] = React.useState<Job | null>(null);
   const [reportText, setReportText] = React.useState("");
   const [enquiries, setEnquiries] = React.useState<JobEnquiry[]>(initialEnquiries);
   const [isBargainOpen, setIsBargainOpen] = React.useState(false);
   const [selectedEnquiry, setSelectedEnquiry] = React.useState<JobEnquiry | null>(null);
   const [bargainAmount, setBargainAmount] = React.useState("");
+
+  const isFreelance = pathname.includes('freelance');
 
   const handleCall = (phone: string) => {
     toast({
@@ -119,7 +114,13 @@ export default function TechnicianDashboard() {
   const handleBargainSubmit = () => {
     if (!selectedEnquiry || !bargainAmount) return;
 
-    setEnquiries(prev => prev.filter(e => e.id !== selectedEnquiry.id));
+    setEnquiries(prev => prev.map(e => {
+        if(e.id === selectedEnquiry.id) {
+            return { ...e, status: 'Bargaining', bargainRate: parseFloat(bargainAmount) }
+        }
+        return e;
+    }).filter(e => e.id !== selectedEnquiry.id));
+    
     toast({
         title: "Counter-Offer Submitted",
         description: `Your offer of ${formatCurrency(parseFloat(bargainAmount))} for "${selectedEnquiry.title}" has been sent.`,
@@ -139,7 +140,7 @@ export default function TechnicianDashboard() {
 
   return (
     <div className="flex flex-col gap-8">
-      {currentTechnician.type === "Fixed" ? (
+      {!isFreelance ? (
         <>
           <div>
             <h1 className="text-2xl font-bold">Today's Jobs</h1>

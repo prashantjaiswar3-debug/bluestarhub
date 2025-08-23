@@ -64,9 +64,9 @@ import { Technician } from "@/lib/types";
 
 
 const allNavItems = [
-  { href: "/dashboard", icon: Home, label: "Dashboard", roles: ['admin', 'sales', 'technician', 'customer', 'supervisor'] },
+  { href: "/dashboard", icon: Home, label: "Dashboard", roles: ['admin', 'sales', 'technician', 'customer', 'supervisor', 'freelance'] },
   { href: "/dashboard/sales", icon: LayoutGrid, label: "Jobs Management", roles: ['admin','sales', 'supervisor'] },
-  { href: "/dashboard/technician", icon: Wrench, label: "My Jobs", roles: ['technician'] },
+  { href: "/dashboard/technician", icon: Wrench, label: "My Jobs", roles: ['technician', 'freelance'] },
   { href: "/dashboard/customer", icon: Users, label: "My Portal", roles: ['customer'] },
   { href: "/dashboard/quotations", icon: FileText, label: "Quotations", roles: ['sales', 'supervisor'] },
   { href: "/dashboard/invoices", icon: FilePlus2, label: "Invoices", roles: ['admin', 'sales', 'supervisor'] },
@@ -76,6 +76,7 @@ const allNavItems = [
 const initialRoleInfo = {
     admin: { name: "Vaibhav Rodge", email: "vaibhav.rodge@bluestar.com", fallback: "VR", id: "ADM-001", avatar: "https://placehold.co/100x100.png", phone: "9876543210" },
     technician: { name: "Technician User", email: "tech@bluestar.com", fallback: "TU", id: "TECH-007", avatar: "https://placehold.co/100x100.png", phone: "9876543211", type: "Fixed" },
+    freelance: { name: "Freelancer User", email: "freelance@bluestar.com", fallback: "FU", id: "TECH-F01", avatar: "https://placehold.co/100x100.png", phone: "9876543215", type: "Freelance" },
     customer: { name: "Customer User", email: "customer@bluestar.com", fallback: "CU", id: "CUST-101", avatar: "https://placehold.co/100x100.png", phone: "9876543212" },
     sales: { name: "Vaibhav Rodge", email: "vaibhav.rodge@bluestar.com", fallback: "VR", id: "SALES-001", avatar: "https://placehold.co/100x100.png", phone: "9876543213" },
     supervisor: { name: "Raj Patel", email: "raj.patel@bluestar.com", fallback: "RP", id: "TECH-007", avatar: "https://placehold.co/100x100.png", phone: "9876543211", type: "Fixed" },
@@ -120,18 +121,13 @@ export default function DashboardLayout({
 
   const getRole = () => {
     if (pathname.startsWith('/dashboard/admin')) return 'admin';
-    if (pathname.startsWith('/dashboard/technician')) {
-        // A bit of a hack for demo purposes
-        const supervisor = initialRoleInfo.supervisor;
-        const technician = initialRoleInfo.technician;
-        if(supervisor.name === "Raj Patel") return 'supervisor';
-        return 'technician';
-    }
+    if (pathname.startsWith('/dashboard/technician/freelance')) return 'freelance';
+    if (pathname.startsWith('/dashboard/technician')) return 'technician';
     if (pathname.startsWith('/dashboard/customer')) return 'customer';
     if (pathname.startsWith('/dashboard/sales') || pathname.startsWith('/dashboard/invoices') || pathname.startsWith('/dashboard/quotations')) {
-       // A bit of a hack for demo purposes
-       if (pathname.includes('sales')) return 'sales';
-       return 'supervisor';
+        const supervisor = initialRoleInfo.supervisor;
+        if (supervisor.name === "Raj Patel") return 'supervisor';
+        return 'sales';
     }
     if (pathname === '/dashboard') return 'admin';
     return 'admin';
@@ -260,6 +256,21 @@ END:VCARD`;
             <SidebarMenu>
               {navItems.map((item) => {
                 const isActive = item.href === '/dashboard' ? pathname === item.href : pathname.startsWith(item.href);
+                if(currentRole === 'freelance' && item.href === '/dashboard/technician') {
+                    return (
+                      <SidebarMenuItem key={item.href}>
+                        <Link href="/dashboard/technician/freelance">
+                           <SidebarMenuButton
+                            isActive={isActive}
+                            tooltip={{ children: "Job Enquiries" }}
+                          >
+                            <item.icon className="shrink-0"/>
+                            <span>Job Enquiries</span>
+                          </SidebarMenuButton>
+                        </Link>
+                      </SidebarMenuItem>
+                    )
+                }
                 return (
                   <SidebarMenuItem key={item.href}>
                     <Link href={item.href}>
@@ -604,7 +615,7 @@ END:VCARD`;
                         </Avatar>
                         <p className="text-sm text-muted-foreground">Click the image to upload a new one.</p>
                     </div>
-                ) : ['technician', 'sales', 'admin', 'supervisor'].includes(currentRole) ? (
+                ) : ['technician', 'sales', 'admin', 'supervisor', 'freelance'].includes(currentRole) ? (
                     <div className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-sm mx-auto h-full flex flex-col">
                         <div className="p-6 flex flex-col items-center gap-4 bg-primary text-primary-foreground rounded-t-lg">
                            <div className="flex items-center gap-2">

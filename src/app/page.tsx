@@ -16,6 +16,7 @@ import { Separator } from "@/components/ui/separator";
 const demoUsers = [
   { role: "Admin", href: "/dashboard/admin", description: "Full access to all dashboards." },
   { role: "Technician", href: "/dashboard/technician", description: "View and manage assigned jobs." },
+  { role: "Freelancer", href: "/dashboard/technician/freelance", description: "View job enquiries." },
   { role: "Customer", href: "/dashboard/customer", description: "Track complaints and pay invoices." },
   { role: "Sales", href: "/dashboard/sales", description: "Create and manage sales quotations." },
 ];
