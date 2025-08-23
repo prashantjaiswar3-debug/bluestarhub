@@ -19,7 +19,7 @@ export type Technician = {
   load: number;
   location: string;
   type: 'Fixed' | 'Freelance';
-  role?: 'Technician' | 'Supervisor';
+  role?: 'Technician' | 'Supervisor' | 'Electrician';
 };
 
 export type Customer = {
