@@ -68,10 +68,10 @@ const allNavItems = [
 ];
 
 const initialRoleInfo = {
-    admin: { name: "Admin User", email: "admin@bluestar.com", fallback: "AD", id: "ADM-001", avatar: "https://placehold.co/100x100.png", phone: "9876543210" },
+    admin: { name: "Vaibhav Rodge", email: "vaibhav.rodge@bluestar.com", fallback: "VR", id: "ADM-001", avatar: "https://placehold.co/100x100.png", phone: "9876543210" },
     technician: { name: "Technician User", email: "tech@bluestar.com", fallback: "TU", id: "TECH-007", avatar: "https://placehold.co/100x100.png", phone: "9876543211" },
     customer: { name: "Customer User", email: "customer@bluestar.com", fallback: "CU", id: "CUST-101", avatar: "https://placehold.co/100x100.png", phone: "9876543212" },
-    sales: { name: "Sales User", email: "sales@bluestar.com", fallback: "SU", id: "SALES-003", avatar: "https://placehold.co/100x100.png", phone: "9876543213" },
+    sales: { name: "Vaibhav Rodge", email: "vaibhav.rodge@bluestar.com", fallback: "VR", id: "SALES-001", avatar: "https://placehold.co/100x100.png", phone: "9876543213" },
     default: { name: "Demo User", email: "user@bluestar.com", fallback: "DU", id: "USER-000", avatar: "https://placehold.co/100x100.png", phone: "9876543214" },
 };
 
@@ -573,7 +573,7 @@ END:VCARD`;
                         </Avatar>
                         <p className="text-sm text-muted-foreground">Click the image to upload a new one.</p>
                     </div>
-                ) : ['technician', 'sales'].includes(currentRole) ? (
+                ) : ['technician', 'sales', 'admin'].includes(currentRole) ? (
                     <div className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-sm mx-auto h-full flex flex-col">
                         <div className="p-6 flex flex-col items-center gap-4 bg-primary text-primary-foreground rounded-t-lg">
                            <div className="flex items-center gap-2">
