@@ -61,7 +61,7 @@ const initialInvoices: Invoice[] = [
     {
         invoiceId: "INV-2023-0012",
         customer: { name: "Green Valley Apartments", email: "manager@gva.com", address: "456 Park Ave, Residence City", contactPerson: "Mr. Sharma" },
-        items: [{ id: "item-1", description: "16-Channel NVR System", quantity: 1, unit: "nos", price: 80000, gstRate: 18, serialNumber: "NVR-GVA-001" }, { id: "item-2", description: "12x Bullet Cameras", quantity: 1, unit: "nos", price: 40000, gstRate: 18, serialNumber: "CAM-GVA-001" }],
+        items: [{ id: "item-1", description: "16-Channel NVR System", quantity: 1, unit: "nos", price: 80000, gstRate: 18, serialNumbers: ["NVR-GVA-001"] }, { id: "item-2", description: "12x Bullet Cameras", quantity: 1, unit: "nos", price: 40000, gstRate: 18, serialNumbers: ["CAM-GVA-001"] }],
         laborCost: 20000,
         discount: 5,
         totalAmount: 157528,
@@ -75,7 +75,7 @@ const initialInvoices: Invoice[] = [
     {
         invoiceId: "INV-2023-0015",
         customer: { name: "ABC Corporation", email: "contact@abc.com", address: "123 Business Rd, Corp Town", contactPerson: "Ms. Priya" },
-        items: [{ id: "item-1", description: "4x Hikvision 5MP Dome Cameras", quantity: 1, unit: "nos", price: 18000, gstRate: 18, serialNumber: "CAM-ABC-001" }],
+        items: [{ id: "item-1", description: "4x Hikvision 5MP Dome Cameras", quantity: 1, unit: "nos", price: 18000, gstRate: 18, serialNumbers: ["CAM-ABC-001"] }],
         laborCost: 5000,
         discount: 10,
         totalAmount: 24780,
@@ -192,7 +192,7 @@ export default function InvoicesPage() {
     poNumber: string;
   }>({
     customer: { name: "", email: "", address: "" },
-    items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18, serialNumber: "" }],
+    items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18, serialNumbers: [] }],
     laborCost: 0,
     discount: 0,
     quoteId: "",
@@ -204,7 +204,7 @@ export default function InvoicesPage() {
   const [copyType, setCopyType] = useState<'Original Copy' | "Customer's Copy">('Original Copy');
   const invoiceRef = useRef<HTMLDivElement>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [activeScannerItemId, setActiveScannerItemId] = useState<string | null>(null);
+  const [activeScannerState, setActiveScannerState] = useState<{itemId: string, serialIndex: number} | null>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -221,13 +221,12 @@ export default function InvoicesPage() {
     }
   }, []);
 
-  const handleOpenScanner = async (itemId: string) => {
+  const handleOpenScanner = async (itemId: string, serialIndex: number) => {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        // Stop all tracks to release the camera, this is a good practice
         stream.getTracks().forEach(track => track.stop());
         setHasCameraPermission(true);
-        setActiveScannerItemId(itemId);
+        setActiveScannerState({ itemId, serialIndex });
         setIsScannerOpen(true);
     } catch (error) {
         console.error('Error accessing camera:', error);
@@ -241,21 +240,21 @@ export default function InvoicesPage() {
   };
   
   const onScanSuccess = (decodedText: string) => {
-    if(activeScannerItemId) {
-        handleItemChange(activeScannerItemId, 'serialNumber', decodedText);
+    if(activeScannerState) {
+        handleSerialNumberChange(activeScannerState.itemId, activeScannerState.serialIndex, decodedText);
     }
     toast({
         title: "Scan Successful",
         description: `Serial Number: ${decodedText}`,
     });
     setIsScannerOpen(false);
-    setActiveScannerItemId(null);
+    setActiveScannerState(null);
   }
   
   const onScanFailure = (error: any) => {
       console.error('Scan failed:', error);
       setIsScannerOpen(false);
-      setActiveScannerItemId(null);
+      setActiveScannerState(null);
       
       let title = 'Scanner Error';
       let description = 'Could not start the scanner.';
@@ -326,10 +325,51 @@ export default function InvoicesPage() {
     }));
   };
 
+  const handleSerialNumberChange = (itemId: string, index: number, value: string) => {
+    setNewInvoice(prev => ({
+      ...prev,
+      items: prev.items.map(item => {
+        if (item.id === itemId) {
+          const newSerialNumbers = [...(item.serialNumbers || [])];
+          newSerialNumbers[index] = value;
+          return { ...item, serialNumbers: newSerialNumbers };
+        }
+        return item;
+      })
+    }));
+  };
+
+  const addSerialNumber = (itemId: string) => {
+    setNewInvoice(prev => ({
+      ...prev,
+      items: prev.items.map(item => {
+        if (item.id === itemId) {
+          const newSerialNumbers = [...(item.serialNumbers || []), ''];
+          return { ...item, serialNumbers: newSerialNumbers };
+        }
+        return item;
+      })
+    }));
+  };
+
+  const removeSerialNumber = (itemId: string, index: number) => {
+    setNewInvoice(prev => ({
+      ...prev,
+      items: prev.items.map(item => {
+        if (item.id === itemId) {
+          const newSerialNumbers = [...(item.serialNumbers || [])];
+          newSerialNumbers.splice(index, 1);
+          return { ...item, serialNumbers: newSerialNumbers };
+        }
+        return item;
+      })
+    }));
+  };
+
   const addItem = () => {
     setNewInvoice(prev => ({
       ...prev,
-      items: [...prev.items, { id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18, serialNumber: "" }],
+      items: [...prev.items, { id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18, serialNumbers: [] }],
     }));
   };
 
@@ -343,7 +383,7 @@ export default function InvoicesPage() {
   const resetForm = () => {
       setNewInvoice({
         customer: { name: "", email: "", address: "" },
-        items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18, serialNumber: "" }],
+        items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18, serialNumbers: [] }],
         laborCost: 0,
         discount: 0,
         quoteId: "",
@@ -412,7 +452,7 @@ export default function InvoicesPage() {
         if (quote) {
             setNewInvoice({
                 customer: quote.customer,
-                items: quote.items.map(item => ({...item, unit: item.unit || 'nos', serialNumber: "", price: item.price || '', quantity: item.quantity || '', gstRate: item.gstRate || ''})),
+                items: quote.items.map(item => ({...item, unit: item.unit || 'nos', serialNumbers: [], price: item.price || '', quantity: item.quantity || '', gstRate: item.gstRate || ''})),
                 laborCost: quote.laborCost,
                 discount: quote.discount,
                 quoteId: quote.quoteId,
@@ -592,7 +632,7 @@ export default function InvoicesPage() {
                       <div className="space-y-4">
                         <h4 className="text-sm font-medium">Services / Parts</h4>
                         {newInvoice.items.map((item, index) => (
-                          <div key={item.id} className="grid gap-2 rounded-md border p-3 relative">
+                          <div key={item.id} className="grid gap-4 rounded-md border p-3 relative">
                              {newInvoice.items.length > 1 && (
                                  <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removeItem(item.id)}>
                                     <Trash2 className="h-4 w-4 text-destructive"/>
@@ -627,14 +667,30 @@ export default function InvoicesPage() {
                                   <Input id={`item-gst-${index}`} type="number" placeholder="18" value={item.gstRate} onChange={(e) => handleItemChange(item.id, 'gstRate', e.target.value)}/>
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                              <Label htmlFor={`item-serial-${index}`}>Serial Number</Label>
-                              <div className="flex gap-2">
-                                <Input id={`item-serial-${index}`} placeholder="Scan or enter serial number" value={item.serialNumber} onChange={(e) => handleItemChange(item.id, 'serialNumber', e.target.value)} />
-                                <Button variant="outline" size="icon" onClick={() => handleOpenScanner(item.id)}>
-                                    <QrCode className="h-4 w-4" />
+                             <div className="space-y-2">
+                                <Label>Serial Numbers</Label>
+                                <div className="space-y-2">
+                                {(item.serialNumbers || []).map((serial, serialIndex) => (
+                                    <div key={serialIndex} className="flex items-center gap-2">
+                                    <Input
+                                        id={`item-${item.id}-serial-${serialIndex}`}
+                                        placeholder={`Serial number ${serialIndex + 1}`}
+                                        value={serial}
+                                        onChange={(e) => handleSerialNumberChange(item.id, serialIndex, e.target.value)}
+                                    />
+                                    <Button variant="outline" size="icon" onClick={() => handleOpenScanner(item.id, serialIndex)}>
+                                        <QrCode className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" onClick={() => removeSerialNumber(item.id, serialIndex)}>
+                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                    </div>
+                                ))}
+                                <Button variant="outline" size="sm" onClick={() => addSerialNumber(item.id)}>
+                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                    Add Serial No.
                                 </Button>
-                              </div>
+                                </div>
                             </div>
                           </div>
                         ))}
@@ -796,7 +852,7 @@ export default function InvoicesPage() {
                                     {selectedInvoice.items.map((item, index) => (
                                         <tr key={item.id} style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: index % 2 === 0 ? '#F8FAFC' : 'white' }}>
                                             <td style={{ padding: '10px' }}>{index + 1}</td>
-                                            <td style={{ padding: '10px', maxWidth: '300px' }}>{item.description} {item.serialNumber && <span style={{color: '#64748B', fontSize: '10px', display: 'block'}}>S/N: {item.serialNumber}</span>}</td>
+                                            <td style={{ padding: '10px', maxWidth: '300px' }}>{item.description} {item.serialNumbers && item.serialNumbers.length > 0 && <span style={{color: '#64748B', fontSize: '10px', display: 'block'}}>S/N: {item.serialNumbers.join(', ')}</span>}</td>
                                             <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
                                             <td style={{ padding: '10px', textAlign: 'right' }}>{item.quantity} {item.unit}</td>
                                             <td style={{ padding: '10px', textAlign: 'right' }}>{item.gstRate}%</td>
@@ -944,7 +1000,7 @@ export default function InvoicesPage() {
       <Dialog open={isScannerOpen} onOpenChange={(open) => {
         if (!open) {
             setIsScannerOpen(false);
-            setActiveScannerItemId(null);
+            setActiveScannerState(null);
         }
       }}>
         <DialogContent>
@@ -966,7 +1022,7 @@ export default function InvoicesPage() {
                 )}
             </div>
             <DialogFooter>
-                 <Button variant="outline" onClick={() => { setIsScannerOpen(false); setActiveScannerItemId(null); }}>Cancel</Button>
+                 <Button variant="outline" onClick={() => { setIsScannerOpen(false); setActiveScannerState(null); }}>Cancel</Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>

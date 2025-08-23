@@ -73,7 +73,7 @@ export default function QuotationsPage() {
     poNumber: string;
   }>({
     customer: { name: "", email: "", address: "", phone: "" },
-    items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18 }],
+    items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18, serialNumbers: [] }],
     laborCost: 0,
     discount: 0,
     poNumber: "",
@@ -108,7 +108,7 @@ export default function QuotationsPage() {
   }, [totalAfterDiscount, gstAmount]);
 
 
-  const handleItemChange = (id: string, field: keyof Omit<QuotationItem, 'id'> | 'price' | 'quantity', value: string | number) => {
+  const handleItemChange = (id: string, field: keyof Omit<QuotationItem, 'id' | 'serialNumbers'> | 'price' | 'quantity', value: string | number) => {
     setNewQuote(prev => ({
       ...prev,
       items: prev.items.map(item => {
@@ -129,7 +129,7 @@ export default function QuotationsPage() {
   const addItem = () => {
     setNewQuote(prev => ({
       ...prev,
-      items: [...prev.items, { id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18 }],
+      items: [...prev.items, { id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18, serialNumbers: [] }],
     }));
   };
 
@@ -143,7 +143,7 @@ export default function QuotationsPage() {
   const resetForm = () => {
       setNewQuote({
         customer: { name: "", email: "", address: "", phone: "" },
-        items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18 }],
+        items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18, serialNumbers: [] }],
         laborCost: 0,
         discount: 0,
         poNumber: "",
@@ -253,7 +253,7 @@ export default function QuotationsPage() {
     const newInvoice: Invoice = {
       invoiceId: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 100) + 16}`,
       customer: quote.customer,
-      items: quote.items.map(i => ({...i, serialNumber: ''})),
+      items: quote.items.map(i => ({...i, serialNumbers: []})),
       laborCost: quote.laborCost,
       discount: quote.discount,
       totalAmount: quote.totalAmount,
