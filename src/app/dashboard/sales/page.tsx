@@ -50,9 +50,9 @@ const initialComplaints: Complaint[] = [
 ];
 
 const initialTechnicians: Technician[] = [
-    { id: "TECH-01", name: "Raj Patel", skills: ["Installation", "Repair"], load: 2, location: "North Zone", type: "Fixed" },
-    { id: "TECH-02", name: "Amit Singh", skills: ["Repair", "Networking"], load: 1, location: "South Zone", type: "Fixed" },
-    { id: "TECH-03", name: "Suresh Kumar", skills: ["Maintenance", "Installation"], load: 4, location: "North Zone", type: "Fixed" },
+    { id: "TECH-01", name: "Raj Patel", skills: ["Installation", "Repair"], load: 2, location: "North Zone", type: "Fixed", role: "Supervisor" },
+    { id: "TECH-02", name: "Amit Singh", skills: ["Repair", "Networking"], load: 1, location: "South Zone", type: "Fixed", role: "Technician" },
+    { id: "TECH-03", name: "Suresh Kumar", skills: ["Maintenance", "Installation"], load: 4, location: "North Zone", type: "Fixed", role: "Technician" },
     { id: "TECH-04", name: "Prashant Jaiswar", skills: ["Installation", "Networking"], load: 0, location: "West Zone", type: "Freelance" },
     { id: "TECH-05", name: "Krishna Sharma", skills: ["Repair", "Maintenance"], load: 0, location: "East Zone", type: "Freelance" },
 ];
@@ -281,7 +281,7 @@ export default function AdminDashboard() {
                           </SelectTrigger>
                           <SelectContent>
                             {fixedTechnicians.map((tech) => (
-                              <SelectItem key={tech.id} value={tech.id}>{tech.name}</SelectItem>
+                              <SelectItem key={tech.id} value={tech.id}>{tech.name} {tech.role === 'Supervisor' && '(Supervisor)'}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -338,7 +338,7 @@ export default function AdminDashboard() {
                           </SelectTrigger>
                           <SelectContent>
                             {fixedTechnicians.map((tech) => (
-                              <SelectItem key={tech.id} value={tech.id}>{tech.name}</SelectItem>
+                              <SelectItem key={tech.id} value={tech.id}>{tech.name} {tech.role === 'Supervisor' && '(Supervisor)'}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -414,6 +414,7 @@ export default function AdminDashboard() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Type</TableHead>
+                 <TableHead>Role</TableHead>
                 <TableHead className="text-right">Load</TableHead>
               </TableRow>
             </TableHeader>
@@ -425,6 +426,11 @@ export default function AdminDashboard() {
                     <div className="text-sm text-muted-foreground">{tech.skills.join(", ")}</div>
                   </TableCell>
                   <TableCell><Badge variant={tech.type === 'Fixed' ? 'default' : 'secondary'}>{tech.type}</Badge></TableCell>
+                  <TableCell>
+                    {tech.type === 'Fixed' ? (
+                        <Badge variant={tech.role === 'Supervisor' ? 'destructive' : 'outline'}>{tech.role}</Badge>
+                    ) : 'N/A'}
+                   </TableCell>
                   <TableCell className="text-right">{tech.load}</TableCell>
                 </TableRow>
               ))}

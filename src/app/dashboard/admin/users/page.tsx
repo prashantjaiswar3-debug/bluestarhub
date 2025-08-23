@@ -50,7 +50,7 @@ type User = {
   id: string;
   name: string;
   email: string;
-  role: "Admin" | "Sales" | "Technician" | "Customer";
+  role: "Admin" | "Sales" | "Technician" | "Customer" | "Supervisor";
   status: "Active" | "Inactive";
   password?: string;
 };
@@ -58,18 +58,19 @@ type User = {
 const initialUsers: User[] = [
   { id: "ADM-001", name: "Vaibhav Rodge", email: "vaibhav.rodge@bluestar.com", role: "Admin", status: "Active", password: "adminpassword" },
   { id: "SALES-001", name: "Priya Sharma", email: "priya.sharma@bluestar.com", role: "Sales", status: "Active", password: "salespassword" },
-  { id: "TECH-007", name: "Raj Patel", email: "raj.patel@bluestar.com", role: "Technician", status: "Active", password: "techpassword" },
+  { id: "TECH-007", name: "Raj Patel", email: "raj.patel@bluestar.com", role: "Supervisor", status: "Active", password: "techpassword" },
   { id: "TECH-004", name: "Prashant Jaiswar", email: "prashant.jaiswar@bluestar.com", role: "Technician", status: "Active", password: "techpassword4" },
   { id: "TECH-005", name: "Krishna Sharma", email: "krishna.sharma@bluestar.com", role: "Technician", status: "Active", password: "techpassword5" },
   { id: "CUST-101", name: "John Doe", email: "john.doe@example.com", role: "Customer", status: "Active", password: "customerpassword" },
   { id: "CUST-102", name: "Green Valley Apartments", email: "manager@gva.com", role: "Customer", status: "Inactive", password: "customerpassword2" },
 ];
 
-const roleVariant: { [key in User["role"]]: "default" | "secondary" | "outline" } = {
+const roleVariant: { [key in User["role"]]: "default" | "secondary" | "outline" | "destructive" } = {
   Admin: "default",
   Sales: "secondary",
   Technician: "outline",
   Customer: "outline",
+  Supervisor: "destructive",
 };
 
 export default function UserManagementPage() {
@@ -130,6 +131,7 @@ export default function UserManagementPage() {
               <TabsTrigger value="Admin">Admins</TabsTrigger>
               <TabsTrigger value="Sales">Sales</TabsTrigger>
               <TabsTrigger value="Technician">Technicians</TabsTrigger>
+              <TabsTrigger value="Supervisor">Supervisors</TabsTrigger>
               <TabsTrigger value="Customer">Customers</TabsTrigger>
             </TabsList>
             <TabsContent value="All">
@@ -142,6 +144,9 @@ export default function UserManagementPage() {
               <UserTable users={filteredUsers} onEdit={handleEditClick} onDelete={handleDeleteUser} />
             </TabsContent>
             <TabsContent value="Technician">
+              <UserTable users={filteredUsers} onEdit={handleEditClick} onDelete={handleDeleteUser} />
+            </TabsContent>
+            <TabsContent value="Supervisor">
               <UserTable users={filteredUsers} onEdit={handleEditClick} onDelete={handleDeleteUser} />
             </TabsContent>
             <TabsContent value="Customer">
@@ -210,6 +215,7 @@ export default function UserManagementPage() {
                             <SelectItem value="Admin">Admin</SelectItem>
                             <SelectItem value="Sales">Sales</SelectItem>
                             <SelectItem value="Technician">Technician</SelectItem>
+                            <SelectItem value="Supervisor">Supervisor</SelectItem>
                             <SelectItem value="Customer">Customer</SelectItem>
                         </SelectContent>
                     </Select>
