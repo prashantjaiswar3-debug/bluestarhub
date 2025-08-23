@@ -94,6 +94,8 @@ const statusVariant: { [key in Invoice["status"]]: "secondary" | "default" | "de
   "Partially Paid": "default",
 };
 
+const units = ["nos", "meters", "pcs", "pack", "box"];
+
 export default function InvoicesPage() {
   const { toast } = useToast();
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
@@ -514,7 +516,14 @@ export default function InvoicesPage() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor={`item-unit-${index}`}>Unit</Label>
-                        <Input id={`item-unit-${index}`} placeholder="nos" value={item.unit} onChange={(e) => handleItemChange(item.id, 'unit', e.target.value)} />
+                        <Select value={item.unit} onValueChange={(value) => handleItemChange(item.id, 'unit', value)}>
+                            <SelectTrigger id={`item-unit-${index}`}>
+                                <SelectValue placeholder="Select unit" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {units.map(unit => <SelectItem key={unit} value={unit}>{unit}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor={`item-price-${index}`}>Price (₹)</Label>
@@ -868,3 +877,5 @@ export default function InvoicesPage() {
     </>
   );
 }
+
+    

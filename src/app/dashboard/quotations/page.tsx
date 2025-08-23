@@ -60,12 +60,20 @@ const quotationStatusVariant: { [key in Quotation["status"]]: "default" | "secon
   Rejected: "destructive",
 };
 
+const units = ["nos", "meters", "pcs", "pack", "box"];
+
 export default function QuotationsPage() {
   const { toast } = useToast();
   const [quotations, setQuotations] = useState<Quotation[]>(initialQuotations);
-  const [newQuote, setNewQuote] = useState({
+  const [newQuote, setNewQuote] = useState<{
+    customer: { name: string; email: string; address: string; phone: string; contactPerson?: string };
+    items: (Omit<QuotationItem, 'price' | 'quantity'> & { price: number | ''; quantity: number | '' })[];
+    laborCost: number;
+    discount: number;
+    poNumber: string;
+  }>({
     customer: { name: "", email: "", address: "", phone: "" },
-    items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18 }],
+    items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18 }],
     laborCost: 0,
     discount: 0,
     poNumber: "",
@@ -76,13 +84,13 @@ export default function QuotationsPage() {
 
 
  const subTotal = useMemo(() => {
-    const itemsTotal = newQuote.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+    const itemsTotal = newQuote.items.reduce((sum, item) => sum + ((Number(item.quantity) || 0) * (Number(item.price) || 0)), 0);
     return itemsTotal + newQuote.laborCost;
   }, [newQuote.items, newQuote.laborCost]);
 
   const discountAmount = useMemo(() => {
     return subTotal * (newQuote.discount / 100);
-  }, [newQuote.discount]);
+  }, [subTotal, newQuote.discount]);
 
   const totalAfterDiscount = useMemo(() => {
     return subTotal - discountAmount;
@@ -90,7 +98,7 @@ export default function QuotationsPage() {
 
   const gstAmount = useMemo(() => {
     return newQuote.items.reduce((sum, item) => {
-        const itemTotal = item.quantity * item.price;
+        const itemTotal = (Number(item.quantity) || 0) * (Number(item.price) || 0);
         return sum + (itemTotal * (item.gstRate / 100));
     }, 0);
   }, [newQuote.items]);
@@ -100,7 +108,7 @@ export default function QuotationsPage() {
   }, [totalAfterDiscount, gstAmount]);
 
 
-  const handleItemChange = (id: string, field: keyof Omit<QuotationItem, 'id'>, value: string | number) => {
+  const handleItemChange = (id: string, field: keyof Omit<QuotationItem, 'id'> | 'price' | 'quantity', value: string | number) => {
     setNewQuote(prev => ({
       ...prev,
       items: prev.items.map(item => {
@@ -109,7 +117,7 @@ export default function QuotationsPage() {
           if ((field === 'price' || field === 'quantity') && (value === '' || value === null)) {
             (newItem as any)[field] = '';
           } else if(field === 'price' || field === 'quantity' || field === 'gstRate') {
-            (newItem as any)[field] = parseFloat(value as string) || 0;
+            (newItem as any)[field] = value;
           }
           return newItem;
         }
@@ -121,7 +129,7 @@ export default function QuotationsPage() {
   const addItem = () => {
     setNewQuote(prev => ({
       ...prev,
-      items: [...prev.items, { id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18 }],
+      items: [...prev.items, { id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18 }],
     }));
   };
 
@@ -135,7 +143,7 @@ export default function QuotationsPage() {
   const resetForm = () => {
       setNewQuote({
         customer: { name: "", email: "", address: "", phone: "" },
-        items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18 }],
+        items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18 }],
         laborCost: 0,
         discount: 0,
         poNumber: "",
@@ -143,7 +151,9 @@ export default function QuotationsPage() {
   }
 
   const handleCreateQuote = () => {
-    if (!newQuote.customer.name || newQuote.items.some(i => !i.description || i.price <= 0)) {
+    const finalItems = newQuote.items.map(i => ({...i, price: Number(i.price) || 0, quantity: Number(i.quantity) || 0}));
+    
+    if (!newQuote.customer.name || finalItems.some(i => !i.description || i.price <= 0)) {
         toast({
             variant: "destructive",
             title: "Incomplete Information",
@@ -154,7 +164,7 @@ export default function QuotationsPage() {
     const newQuotationData: Quotation = {
       quoteId: `QT-${new Date().getFullYear()}-${Math.floor(Math.random() * 100) + 52}`,
       customer: newQuote.customer,
-      items: newQuote.items,
+      items: finalItems,
       laborCost: newQuote.laborCost,
       discount: newQuote.discount,
       totalAmount,
@@ -243,7 +253,7 @@ export default function QuotationsPage() {
     const newInvoice: Invoice = {
       invoiceId: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 100) + 16}`,
       customer: quote.customer,
-      items: quote.items,
+      items: quote.items.map(i => ({...i, serialNumber: ''})),
       laborCost: quote.laborCost,
       discount: quote.discount,
       totalAmount: quote.totalAmount,
@@ -325,7 +335,14 @@ export default function QuotationsPage() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor={`item-unit-${index}`}>Unit</Label>
-                        <Input id={`item-unit-${index}`} placeholder="nos" value={item.unit} onChange={(e) => handleItemChange(item.id, 'unit', e.target.value)} />
+                        <Select value={item.unit} onValueChange={(value) => handleItemChange(item.id, 'unit', value)}>
+                            <SelectTrigger id={`item-unit-${index}`}>
+                                <SelectValue placeholder="Select unit" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {units.map(unit => <SelectItem key={unit} value={unit}>{unit}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor={`item-price-${index}`}>Price (₹)</Label>
@@ -576,3 +593,5 @@ export default function QuotationsPage() {
     </div>
   );
 }
+
+    
