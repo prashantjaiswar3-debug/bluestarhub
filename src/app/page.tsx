@@ -82,10 +82,10 @@ export default function LoginPage() {
                 </div>
                  <Card className="mt-4 bg-muted/50 border-dashed">
                     <CardContent className="p-4 text-xs text-muted-foreground space-y-2">
-                        <p><strong>Admin:</strong> Email: `admin@bluestar.com`, Pass: `admin123`</p>
-                        <p><strong>Technician:</strong> Email: `tech@bluestar.com`, Pass: `tech123`</p>
-                        <p><strong>Customer:</strong> Email: `customer@bluestar.com`, Pass: `customer123`</p>
-                        <p><strong>Sales:</strong> Email: `sales@bluestar.com`, Pass: `sales123`</p>
+                        <p><strong>Admin (Vaibhav Rodge):</strong> Email: `vaibhav.rodge@bluestar.com`, Pass: `admin123`</p>
+                        <p><strong>Technician (Default):</strong> Email: `tech@bluestar.com`, Pass: `tech123`</p>
+                        <p><strong>Customer (Default):</strong> Email: `customer@bluestar.com`, Pass: `customer123`</p>
+                        <p><strong>Sales (Vaibhav Rodge):</strong> Email: `vaibhav.rodge@bluestar.com`, Pass: `sales123`</p>
                     </CardContent>
                 </Card>
             </div>
