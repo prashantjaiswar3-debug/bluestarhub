@@ -39,7 +39,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Send, Eye, PlusCircle, Trash2, Download, Share2, CreditCard, DollarSign, QrCode } from "lucide-react";
+import { Send, Eye, PlusCircle, Trash2, Download, Share2, CreditCard, DollarSign, QrCode, Zap } from "lucide-react";
 import type { Invoice, QuotationItem, Customer, Payment } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
@@ -47,7 +47,7 @@ import type html2canvas from 'html2canvas';
 import { initialQuotations } from "@/lib/data";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { BrowserBarcodeReader, NotFoundException } from '@zxing/library';
+import { BrowserBarcodeReader, NotFoundException, IScannerControls } from '@zxing/library';
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 
@@ -106,20 +106,44 @@ const units = ["nos", "meters", "pcs", "pack", "box"];
 const BarcodeScanner = ({ onScanSuccess, onScanFailure }: { onScanSuccess: (text: string) => void; onScanFailure: (error: any) => void }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const codeReader = useMemo(() => new BrowserBarcodeReader(), []);
-    const controlsRef = useRef<any>();
+    const controlsRef = useRef<IScannerControls | null>(null);
+    const [torchSupported, setTorchSupported] = useState(false);
+    const [torchOn, setTorchOn] = useState(false);
+    const videoTrackRef = useRef<MediaStreamTrack | null>(null);
 
     const stopScanner = useCallback(() => {
         if (controlsRef.current) {
             controlsRef.current.stop();
             controlsRef.current = null;
+            videoTrackRef.current = null;
         }
     }, []);
+
+    const toggleTorch = useCallback(() => {
+        if (videoTrackRef.current && torchSupported) {
+            const nextState = !torchOn;
+            videoTrackRef.current.applyConstraints({
+                advanced: [{ torch: nextState }]
+            }).then(() => {
+                setTorchOn(nextState);
+            }).catch(e => {
+                console.error("Failed to toggle torch", e);
+            });
+        }
+    }, [torchOn, torchSupported]);
 
     useEffect(() => {
         const startScanner = async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                if (videoRef.current) {
+                 if (videoRef.current) {
+                    const track = stream.getVideoTracks()[0];
+                    videoTrackRef.current = track;
+                    const capabilities = track.getCapabilities();
+                    if (capabilities.torch) {
+                        setTorchSupported(true);
+                    }
+
                     controlsRef.current = await codeReader.decodeFromStream(stream, videoRef.current, (result, error) => {
                         if (result) {
                             stopScanner();
@@ -142,7 +166,17 @@ const BarcodeScanner = ({ onScanSuccess, onScanFailure }: { onScanSuccess: (text
         };
     }, [codeReader, onScanSuccess, onScanFailure, stopScanner]);
 
-    return <video ref={videoRef} className="w-full aspect-square rounded-md bg-muted" />;
+    return (
+        <div>
+            <video ref={videoRef} className="w-full aspect-square rounded-md bg-muted" />
+             {torchSupported && (
+                <Button onClick={toggleTorch} variant="outline" className="w-full mt-4">
+                    <Zap className="mr-2 h-4 w-4" />
+                    {torchOn ? 'Turn Flashlight Off' : 'Turn Flashlight On'}
+                </Button>
+            )}
+        </div>
+    );
 };
 
 
@@ -190,7 +224,7 @@ export default function InvoicesPage() {
   const handleOpenScanner = async (itemId: string) => {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        // Stop all tracks to release the camera
+        // Stop all tracks to release the camera, this is a good practice
         stream.getTracks().forEach(track => track.stop());
         setHasCameraPermission(true);
         setActiveScannerItemId(itemId);
@@ -280,7 +314,7 @@ export default function InvoicesPage() {
       items: prev.items.map(item => {
         if (item.id === id) {
           const newItem = { ...item, [field]: value };
-          if ((field === 'price' || field === 'quantity') && (value === '' || value === null)) {
+          if ((field === 'price' || field === 'quantity') && (value === '' || value === null || value === undefined)) {
             (newItem as any)[field] = '';
           } else if(field === 'price' || field === 'quantity' || field === 'gstRate') {
             (newItem as any)[field] = value;
@@ -939,5 +973,7 @@ export default function InvoicesPage() {
     </>
   );
 }
+
+    
 
     
