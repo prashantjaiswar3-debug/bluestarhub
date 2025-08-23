@@ -103,9 +103,16 @@ export default function QuotationsPage() {
   const handleItemChange = (id: string, field: keyof Omit<QuotationItem, 'id'>, value: string | number) => {
     setNewQuote(prev => ({
       ...prev,
-      items: prev.items.map(item =>
-        item.id === id ? { ...item, [field]: value } : item
-      ),
+      items: prev.items.map(item => {
+        if (item.id === id) {
+          const newItem = { ...item, [field]: value };
+          if (field === 'price' && (value === '' || value === null)) {
+            newItem.price = 0;
+          }
+          return newItem;
+        }
+        return item;
+      }),
     }));
   };
 
