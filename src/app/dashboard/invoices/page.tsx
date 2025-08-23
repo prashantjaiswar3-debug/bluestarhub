@@ -39,13 +39,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Send, Eye, PlusCircle, Trash2, Download, Share2, CreditCard, DollarSign } from "lucide-react";
+import { Send, Eye, PlusCircle, Trash2, Download, Share2, CreditCard, DollarSign, QrCode } from "lucide-react";
 import type { Invoice, QuotationItem, Customer, Payment } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
 import type html2canvas from 'html2canvas';
 import { initialQuotations } from "@/lib/data";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Html5Qrcode } from "html5-qrcode";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 
 const registeredCustomers: Customer[] = [
     { id: "CUST-001", name: "Green Valley Apartments", contactPerson: "Mr. Sharma", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City" },
@@ -57,7 +60,7 @@ const initialInvoices: Invoice[] = [
     {
         invoiceId: "INV-2023-0012",
         customer: { name: "Green Valley Apartments", email: "manager@gva.com", address: "456 Park Ave, Residence City", contactPerson: "Mr. Sharma" },
-        items: [{ id: "item-1", description: "16-Channel NVR System", quantity: 1, unit: "nos", price: 80000, gstRate: 18 }, { id: "item-2", description: "12x Bullet Cameras", quantity: 1, unit: "nos", price: 40000, gstRate: 18 }],
+        items: [{ id: "item-1", description: "16-Channel NVR System", quantity: 1, unit: "nos", price: 80000, gstRate: 18, serialNumber: "NVR-GVA-001" }, { id: "item-2", description: "12x Bullet Cameras", quantity: 1, unit: "nos", price: 40000, gstRate: 18, serialNumber: "CAM-GVA-001" }],
         laborCost: 20000,
         discount: 5,
         totalAmount: 157528,
@@ -71,7 +74,7 @@ const initialInvoices: Invoice[] = [
     {
         invoiceId: "INV-2023-0015",
         customer: { name: "ABC Corporation", email: "contact@abc.com", address: "123 Business Rd, Corp Town", contactPerson: "Ms. Priya" },
-        items: [{ id: "item-1", description: "4x Hikvision 5MP Dome Cameras", quantity: 1, unit: "nos", price: 18000, gstRate: 18 }],
+        items: [{ id: "item-1", description: "4x Hikvision 5MP Dome Cameras", quantity: 1, unit: "nos", price: 18000, gstRate: 18, serialNumber: "CAM-ABC-001" }],
         laborCost: 5000,
         discount: 10,
         totalAmount: 24780,
@@ -96,7 +99,7 @@ export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
   const [newInvoice, setNewInvoice] = useState({
     customer: { name: "", email: "", address: "" },
-    items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18 }],
+    items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18, serialNumber: "" }],
     laborCost: 0,
     discount: 0,
     quoteId: "",
@@ -107,6 +110,10 @@ export default function InvoicesPage() {
   const [newPayment, setNewPayment] = useState({ amount: 0, method: "Online" as Payment["method"]});
   const [copyType, setCopyType] = useState<'Original Copy' | "Customer's Copy">('Original Copy');
   const invoiceRef = useRef<HTMLDivElement>(null);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [activeScannerItemId, setActiveScannerItemId] = useState<string | null>(null);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
     const storedInvoicesStr = localStorage.getItem('invoices');
@@ -122,12 +129,74 @@ export default function InvoicesPage() {
     }
   }, []);
 
+  useEffect(() => {
+    if (isScannerOpen && activeScannerItemId) {
+      startScanner();
+    } else {
+      stopScanner();
+    }
+    return () => {
+      stopScanner();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isScannerOpen, activeScannerItemId]);
+
+  const startScanner = async () => {
+    try {
+        await navigator.mediaDevices.getUserMedia({ video: true });
+        setHasCameraPermission(true);
+
+        const html5Qrcode = new Html5Qrcode("reader");
+        scannerRef.current = html5Qrcode;
+
+        html5Qrcode.start(
+            { facingMode: "environment" },
+            {
+                fps: 10,
+                qrbox: { width: 250, height: 250 }
+            },
+            (decodedText) => {
+                handleItemChange(activeScannerItemId!, 'serialNumber', decodedText);
+                toast({
+                    title: "Scan Successful",
+                    description: `Serial Number: ${decodedText}`,
+                });
+                setIsScannerOpen(false);
+                setActiveScannerItemId(null);
+            },
+            (errorMessage) => {
+                // console.warn(`QR Code no match: ${errorMessage}`);
+            }
+        ).catch(err => {
+            console.error("Failed to start scanner", err);
+            setHasCameraPermission(false);
+            toast({ variant: "destructive", title: "Scanner Error", description: "Could not start the scanner." });
+        });
+    } catch (error) {
+        console.error('Error accessing camera:', error);
+        setHasCameraPermission(false);
+        toast({
+          variant: 'destructive',
+          title: 'Camera Access Denied',
+          description: 'Please enable camera permissions in your browser settings to use this feature.',
+        });
+    }
+  };
+
+  const stopScanner = () => {
+    if (scannerRef.current && scannerRef.current.isScanning) {
+      scannerRef.current.stop().catch(err => {
+        console.error("Failed to stop scanner", err);
+      });
+      scannerRef.current = null;
+    }
+  };
+
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
       setSelectedInvoice(null);
     }
   }
-
 
   const subTotal = useMemo(() => {
     const itemsTotal = newInvoice.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
@@ -167,7 +236,7 @@ export default function InvoicesPage() {
   const addItem = () => {
     setNewInvoice(prev => ({
       ...prev,
-      items: [...prev.items, { id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18 }],
+      items: [...prev.items, { id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18, serialNumber: "" }],
     }));
   };
 
@@ -181,7 +250,7 @@ export default function InvoicesPage() {
   const resetForm = () => {
       setNewInvoice({
         customer: { name: "", email: "", address: "" },
-        items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18 }],
+        items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18, serialNumber: "" }],
         laborCost: 0,
         discount: 0,
         quoteId: "",
@@ -243,7 +312,7 @@ export default function InvoicesPage() {
         if (quote) {
             setNewInvoice({
                 customer: quote.customer,
-                items: quote.items.map(item => ({...item, unit: item.unit || 'nos'})),
+                items: quote.items.map(item => ({...item, unit: item.unit || 'nos', serialNumber: ""})),
                 laborCost: quote.laborCost,
                 discount: quote.discount,
                 quoteId: quote.quoteId,
@@ -344,7 +413,6 @@ export default function InvoicesPage() {
     setInvoices(updatedInvoices);
     localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
     
-    // Update the selected invoice in the dialog as well
     const updatedSelectedInvoice = updatedInvoices.find(inv => inv.invoiceId === selectedInvoice.invoiceId);
     if (updatedSelectedInvoice) {
         setSelectedInvoice(updatedSelectedInvoice);
@@ -449,6 +517,15 @@ export default function InvoicesPage() {
                       <Label htmlFor={`item-gst-${index}`}>GST (%)</Label>
                       <Input id={`item-gst-${index}`} type="number" placeholder="18" value={item.gstRate} onChange={(e) => handleItemChange(item.id, 'gstRate', parseFloat(e.target.value) || 0)}/>
                     </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`item-serial-${index}`}>Serial Number</Label>
+                  <div className="flex gap-2">
+                    <Input id={`item-serial-${index}`} placeholder="Scan or enter serial number" value={item.serialNumber} onChange={(e) => handleItemChange(item.id, 'serialNumber', e.target.value)} />
+                    <Button variant="outline" size="icon" onClick={() => { setActiveScannerItemId(item.id); setIsScannerOpen(true); }}>
+                        <QrCode className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -606,7 +683,7 @@ export default function InvoicesPage() {
                                     {selectedInvoice.items.map((item, index) => (
                                         <tr key={item.id} style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: index % 2 === 0 ? '#F8FAFC' : 'white' }}>
                                             <td style={{ padding: '10px' }}>{index + 1}</td>
-                                            <td style={{ padding: '10px', maxWidth: '300px' }}>{item.description}</td>
+                                            <td style={{ padding: '10px', maxWidth: '300px' }}>{item.description} {item.serialNumber && <span style={{color: '#64748B', fontSize: '10px', display: 'block'}}>S/N: {item.serialNumber}</span>}</td>
                                             <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
                                             <td style={{ padding: '10px', textAlign: 'right' }}>{item.quantity} {item.unit}</td>
                                             <td style={{ padding: '10px', textAlign: 'right' }}>{item.gstRate}%</td>
@@ -747,6 +824,37 @@ export default function InvoicesPage() {
                     <Button variant="outline">Cancel</Button>
                 </DialogClose>
                 <Button onClick={handleAddPayment}>Record Payment</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isScannerOpen} onOpenChange={(open) => {
+        if (!open) {
+            stopScanner();
+            setIsScannerOpen(false);
+            setActiveScannerItemId(null);
+        }
+      }}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Scan Barcode / QR Code</DialogTitle>
+                <DialogDescription>
+                    Point your camera at a code to scan the serial number.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+                 <div id="reader" className="w-full aspect-square rounded-md overflow-hidden bg-muted"></div>
+                {hasCameraPermission === false && (
+                    <Alert variant="destructive" className="mt-4">
+                        <AlertTitle>Camera Access Denied</AlertTitle>
+                        <AlertDescription>
+                        Please allow camera access in your browser settings to use this feature. You may need to refresh the page after granting permission.
+                        </AlertDescription>
+                    </Alert>
+                )}
+            </div>
+            <DialogFooter>
+                 <Button variant="outline" onClick={() => { setIsScannerOpen(false); setActiveScannerItemId(null); }}>Cancel</Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>

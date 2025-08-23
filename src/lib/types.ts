@@ -38,6 +38,7 @@ export type QuotationItem = {
   unit: string;
   price: number;
   gstRate: number; // Percentage
+  serialNumber?: string;
 };
 
 export type Payment = {
