@@ -26,6 +26,7 @@ import {
   Edit,
   Upload,
   Home,
+  UserCog,
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -67,6 +68,7 @@ const allNavItems = [
   { href: "/dashboard/customer", icon: Users, label: "My Portal", roles: ['customer'] },
   { href: "/dashboard/quotations", icon: FileText, label: "Quotations", roles: ['sales'] },
   { href: "/dashboard/invoices", icon: FilePlus2, label: "Invoices", roles: ['admin', 'sales'] },
+  { href: "/dashboard/admin/users", icon: UserCog, label: "User Management", roles: ['admin'] },
 ];
 
 const initialRoleInfo = {
@@ -643,5 +645,3 @@ END:VCARD`;
     </SidebarProvider>
   );
 }
-
-    
