@@ -106,8 +106,10 @@ export default function QuotationsPage() {
       items: prev.items.map(item => {
         if (item.id === id) {
           const newItem = { ...item, [field]: value };
-          if (field === 'price' && (value === '' || value === null)) {
-            newItem.price = 0;
+          if ((field === 'price' || field === 'quantity') && (value === '' || value === null)) {
+            (newItem as any)[field] = '';
+          } else if(field === 'price' || field === 'quantity' || field === 'gstRate') {
+            (newItem as any)[field] = parseFloat(value as string) || 0;
           }
           return newItem;
         }
@@ -319,7 +321,7 @@ export default function QuotationsPage() {
                 <div className="grid grid-cols-4 gap-4">
                    <div className="space-y-2">
                       <Label htmlFor={`item-qty-${index}`}>Quantity</Label>
-                      <Input id={`item-qty-${index}`} type="number" placeholder="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value, 10) || 1)} />
+                      <Input id={`item-qty-${index}`} type="number" placeholder="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor={`item-unit-${index}`}>Unit</Label>
@@ -327,11 +329,11 @@ export default function QuotationsPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor={`item-price-${index}`}>Price (₹)</Label>
-                      <Input id={`item-price-${index}`} type="number" placeholder="10000" value={item.price} onChange={(e) => handleItemChange(item.id, 'price', parseFloat(e.target.value) || 0)}/>
+                      <Input id={`item-price-${index}`} type="number" placeholder="10000" value={item.price} onChange={(e) => handleItemChange(item.id, 'price', e.target.value)}/>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor={`item-gst-${index}`}>GST (%)</Label>
-                      <Input id={`item-gst-${index}`} type="number" placeholder="18" value={item.gstRate} onChange={(e) => handleItemChange(item.id, 'gstRate', parseFloat(e.target.value) || 0)}/>
+                      <Input id={`item-gst-${index}`} type="number" placeholder="18" value={item.gstRate} onChange={(e) => handleItemChange(item.id, 'gstRate', e.target.value)}/>
                     </div>
                 </div>
               </div>
