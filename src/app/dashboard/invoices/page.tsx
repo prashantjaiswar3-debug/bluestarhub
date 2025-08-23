@@ -88,9 +88,9 @@ const initialInvoices: Invoice[] = [
 ];
 
 type NewInvoiceItem = Omit<QuotationItem, 'quantity' | 'price' | 'gstRate'> & {
-    quantity: number | '';
-    price: number | '';
-    gstRate: number | '';
+    quantity: string | number;
+    price: string | number;
+    gstRate: string | number;
 };
 
 const statusVariant: { [key in Invoice["status"]]: "secondary" | "default" | "destructive" } = {
@@ -157,6 +157,7 @@ export default function InvoicesPage() {
   }, [isScannerOpen, activeScannerItemId]);
 
   const startScanner = async () => {
+    stopScanner(); // Stop any existing scanner
     try {
         await navigator.mediaDevices.getUserMedia({ video: true });
         setHasCameraPermission(true);
@@ -185,7 +186,7 @@ export default function InvoicesPage() {
         ).catch(err => {
             console.error("Failed to start scanner", err);
             setHasCameraPermission(false);
-            toast({ variant: "destructive", title: "Scanner Error", description: "Could not start the scanner." });
+            toast({ variant: "destructive", title: "Scanner Error", description: "Could not start the scanner. It might be in use by another application." });
         });
     } catch (error) {
         console.error('Error accessing camera:', error);
@@ -203,8 +204,8 @@ export default function InvoicesPage() {
       scannerRef.current.stop().catch(err => {
         console.error("Failed to stop scanner", err);
       });
-      scannerRef.current = null;
     }
+    scannerRef.current = null;
   };
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -244,7 +245,13 @@ export default function InvoicesPage() {
       ...prev,
       items: prev.items.map(item => {
         if (item.id === id) {
-          return { ...item, [field]: value };
+          const newItem = { ...item, [field]: value };
+          if ((field === 'price' || field === 'quantity') && (value === '' || value === null)) {
+            (newItem as any)[field] = '';
+          } else if(field === 'price' || field === 'quantity' || field === 'gstRate') {
+            (newItem as any)[field] = value;
+          }
+          return newItem;
         }
         return item;
       }),
@@ -528,7 +535,7 @@ export default function InvoicesPage() {
                 <div className="grid grid-cols-4 gap-4">
                    <div className="space-y-2">
                       <Label htmlFor={`item-qty-${index}`}>Quantity</Label>
-                      <Input id={`item-qty-${index}`} type="number" placeholder="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} />
+                      <Input id={`item-qty-${index}`} type="text" placeholder="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor={`item-unit-${index}`}>Unit</Label>
@@ -543,7 +550,7 @@ export default function InvoicesPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor={`item-price-${index}`}>Price (₹)</Label>
-                      <Input id={`item-price-${index}`} type="number" placeholder="10000" value={item.price} onChange={(e) => handleItemChange(item.id, 'price', e.target.value)}/>
+                      <Input id={`item-price-${index}`} type="text" placeholder="10000" value={item.price} onChange={(e) => handleItemChange(item.id, 'price', e.target.value)}/>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor={`item-gst-${index}`}>GST (%)</Label>
@@ -893,5 +900,3 @@ export default function InvoicesPage() {
     </>
   );
 }
-
-    
