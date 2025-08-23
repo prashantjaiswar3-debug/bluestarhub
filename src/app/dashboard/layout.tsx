@@ -60,7 +60,7 @@ import QRCode from "react-qr-code";
 
 
 const allNavItems = [
-  { href: "/dashboard/sales", icon: LayoutGrid, label: "Assignments", roles: ['sales'] },
+  { href: "/dashboard/sales", icon: LayoutGrid, label: "Assignments", roles: ['admin','sales'] },
   { href: "/dashboard/technician", icon: Wrench, label: "My Jobs", roles: ['technician'] },
   { href: "/dashboard/customer", icon: Users, label: "My Portal", roles: ['customer'] },
   { href: "/dashboard/quotations", icon: FileText, label: "Quotations", roles: ['sales'] },
