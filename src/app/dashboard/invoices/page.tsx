@@ -87,6 +87,12 @@ const initialInvoices: Invoice[] = [
     },
 ];
 
+type NewInvoiceItem = Omit<QuotationItem, 'quantity' | 'price' | 'gstRate'> & {
+    quantity: number | '';
+    price: number | '';
+    gstRate: number | '';
+};
+
 const statusVariant: { [key in Invoice["status"]]: "secondary" | "default" | "destructive" } = {
   Paid: "secondary",
   Pending: "default",
@@ -99,9 +105,16 @@ const units = ["nos", "meters", "pcs", "pack", "box"];
 export default function InvoicesPage() {
   const { toast } = useToast();
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
-  const [newInvoice, setNewInvoice] = useState({
+  const [newInvoice, setNewInvoice] = useState<{
+    customer: { name: string; email: string; address: string };
+    items: NewInvoiceItem[];
+    laborCost: number;
+    discount: number;
+    quoteId: string;
+    poNumber: string;
+  }>({
     customer: { name: "", email: "", address: "" },
-    items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18, serialNumber: "" }],
+    items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18, serialNumber: "" }],
     laborCost: 0,
     discount: 0,
     quoteId: "",
@@ -201,7 +214,7 @@ export default function InvoicesPage() {
   }
 
   const subTotal = useMemo(() => {
-    const itemsTotal = newInvoice.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+    const itemsTotal = newInvoice.items.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.price)), 0);
     return itemsTotal + newInvoice.laborCost;
   }, [newInvoice.items, newInvoice.laborCost]);
 
@@ -215,9 +228,9 @@ export default function InvoicesPage() {
 
   const gstAmount = useMemo(() => {
     return newInvoice.items.reduce((sum, item) => {
-      const itemTotal = item.quantity * item.price;
+      const itemTotal = Number(item.quantity) * Number(item.price);
       const itemTotalAfterDiscount = itemTotal * (1 - (newInvoice.discount / 100));
-      return sum + (itemTotalAfterDiscount * (item.gstRate / 100));
+      return sum + (itemTotalAfterDiscount * (Number(item.gstRate) / 100));
     }, 0);
   }, [newInvoice.items, newInvoice.discount]);
 
@@ -226,16 +239,12 @@ export default function InvoicesPage() {
   }, [totalAfterDiscount, gstAmount]);
 
 
-  const handleItemChange = (id: string, field: keyof Omit<QuotationItem, 'id'>, value: string | number) => {
+  const handleItemChange = (id: string, field: keyof NewInvoiceItem, value: string | number) => {
     setNewInvoice(prev => ({
       ...prev,
       items: prev.items.map(item => {
         if (item.id === id) {
-          const newItem = { ...item, [field]: value };
-          if (field === 'price' && (value === '' || value === null)) {
-            newItem.price = 0;
-          }
-          return newItem;
+          return { ...item, [field]: value };
         }
         return item;
       }),
@@ -245,7 +254,7 @@ export default function InvoicesPage() {
   const addItem = () => {
     setNewInvoice(prev => ({
       ...prev,
-      items: [...prev.items, { id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18, serialNumber: "" }],
+      items: [...prev.items, { id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18, serialNumber: "" }],
     }));
   };
 
@@ -259,7 +268,7 @@ export default function InvoicesPage() {
   const resetForm = () => {
       setNewInvoice({
         customer: { name: "", email: "", address: "" },
-        items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18, serialNumber: "" }],
+        items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18, serialNumber: "" }],
         laborCost: 0,
         discount: 0,
         quoteId: "",
@@ -268,7 +277,14 @@ export default function InvoicesPage() {
   }
 
   const handleCreateInvoice = () => {
-    if (!newInvoice.customer.name || newInvoice.items.some(i => !i.description || i.price <= 0)) {
+    const finalItems: QuotationItem[] = newInvoice.items.map(i => ({
+        ...i,
+        quantity: Number(i.quantity) || 0,
+        price: Number(i.price) || 0,
+        gstRate: Number(i.gstRate) || 0,
+    }));
+
+    if (!newInvoice.customer.name || finalItems.some(i => !i.description || i.price <= 0)) {
         toast({
             variant: "destructive",
             title: "Incomplete Information",
@@ -279,7 +295,7 @@ export default function InvoicesPage() {
     const newInvoiceData: Invoice = {
       invoiceId: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 100) + 16}`,
       customer: newInvoice.customer,
-      items: newInvoice.items,
+      items: finalItems,
       laborCost: newInvoice.laborCost,
       discount: newInvoice.discount,
       totalAmount,
@@ -321,7 +337,7 @@ export default function InvoicesPage() {
         if (quote) {
             setNewInvoice({
                 customer: quote.customer,
-                items: quote.items.map(item => ({...item, unit: item.unit || 'nos', serialNumber: ""})),
+                items: quote.items.map(item => ({...item, unit: item.unit || 'nos', serialNumber: "", price: item.price || '', quantity: item.quantity || '', gstRate: item.gstRate || ''})),
                 laborCost: quote.laborCost,
                 discount: quote.discount,
                 quoteId: quote.quoteId,
@@ -512,7 +528,7 @@ export default function InvoicesPage() {
                 <div className="grid grid-cols-4 gap-4">
                    <div className="space-y-2">
                       <Label htmlFor={`item-qty-${index}`}>Quantity</Label>
-                      <Input id={`item-qty-${index}`} type="number" placeholder="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value, 10) || 1)} />
+                      <Input id={`item-qty-${index}`} type="number" placeholder="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor={`item-unit-${index}`}>Unit</Label>
@@ -527,11 +543,11 @@ export default function InvoicesPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor={`item-price-${index}`}>Price (₹)</Label>
-                      <Input id={`item-price-${index}`} type="number" placeholder="10000" value={item.price} onChange={(e) => handleItemChange(item.id, 'price', parseFloat(e.target.value) || 0)}/>
+                      <Input id={`item-price-${index}`} type="number" placeholder="10000" value={item.price} onChange={(e) => handleItemChange(item.id, 'price', e.target.value)}/>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor={`item-gst-${index}`}>GST (%)</Label>
-                      <Input id={`item-gst-${index}`} type="number" placeholder="18" value={item.gstRate} onChange={(e) => handleItemChange(item.id, 'gstRate', parseFloat(e.target.value) || 0)}/>
+                      <Input id={`item-gst-${index}`} type="number" placeholder="18" value={item.gstRate} onChange={(e) => handleItemChange(item.id, 'gstRate', e.target.value)}/>
                     </div>
                 </div>
                 <div className="space-y-2">
