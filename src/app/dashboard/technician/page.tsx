@@ -143,7 +143,7 @@ export default function TechnicianDashboard() {
               </div>
               <CardDescription className="flex items-center gap-2 pt-1">
                 <MapPin className="h-4 w-4" />
-                <span>{job.address}</span>
+                <span className="truncate">{job.address}</span>
               </CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
@@ -186,13 +186,13 @@ export default function TechnicianDashboard() {
             </CardContent>
             <CardFooter className="grid grid-cols-3 gap-2">
                 <Button variant="outline" className="border-green-500 text-green-600 hover:bg-green-50 hover:text-green-700" onClick={() => handleEnquiryAction(enquiry.id, 'accept')}>
-                    <ThumbsUp className="mr-2 h-4 w-4" /> Accept
+                    <ThumbsUp className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Accept</span>
                 </Button>
                 <Button variant="outline" className="border-destructive text-destructive hover:bg-red-50 hover:text-destructive" onClick={() => handleEnquiryAction(enquiry.id, 'reject')}>
-                    <ThumbsDown className="mr-2 h-4 w-4" /> Reject
+                    <ThumbsDown className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Reject</span>
                 </Button>
                 <Button onClick={() => handleEnquiryAction(enquiry.id, 'bargain')}>
-                    <Handshake className="mr-2 h-4 w-4" /> Bargain
+                    <Handshake className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Bargain</span>
                 </Button>
             </CardFooter>
           </Card>
