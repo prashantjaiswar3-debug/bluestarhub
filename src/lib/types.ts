@@ -1,7 +1,7 @@
 
 export type Complaint = {
   ticketId: string;
-  customer: {
+  customer?: {
     name: string;
     id: string;
   };

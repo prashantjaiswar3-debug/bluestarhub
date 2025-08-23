@@ -40,7 +40,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Send, Eye, PlusCircle, Trash2, Download, Share2, FileText } from "lucide-react";
-import type { Quotation, QuotationItem, Customer, Invoice } from "@/lib/types";
+import type { Quotation, QuotationItem, Customer, Invoice, Complaint } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
 import type html2canvas from 'html2canvas';
@@ -53,16 +53,30 @@ const registeredCustomers: Customer[] = [
     { id: "CUST-003", name: "John Doe", email: "john.doe@example.com", phone: "555-0103", address: "789 Pine Ln, Sometown" },
 ];
 
-const statusVariant: { [key in Quotation["status"]]: "default" | "secondary" | "outline" | "destructive" } = {
+const initialComplaints: Complaint[] = [
+  { ticketId: "BLU-7238", customer: { name: "John Doe", id: "CUST-001" }, issue: "CCTV Camera not recording", priority: "High", status: "Open", date: "2023-10-26" },
+  { ticketId: "BLU-7239", customer: { name: "Jane Smith", id: "CUST-002" }, issue: "DVR signal loss on 2 channels", priority: "Medium", status: "Open", date: "2023-10-26" },
+  { ticketId: "BLU-7240", customer: { name: "Bob Johnson", id: "CUST-003" }, issue: "Request for new installation quote", priority: "Low", status: "Open", date: "2023-10-25" },
+  { ticketId: "BLU-7241", customer: { name: "Alice Williams", id: "CUST-004" }, issue: "Annual Maintenance Checkup", priority: "Medium", status: "Open", date: "2023-10-25" },
+];
+
+const quotationStatusVariant: { [key in Quotation["status"]]: "default" | "secondary" | "outline" | "destructive" } = {
   Sent: "default",
   Approved: "secondary",
   Draft: "outline",
   Rejected: "destructive",
 };
 
+const complaintPriorityVariant: { [key in Complaint["priority"]]: "destructive" | "secondary" | "default" } = {
+  High: "destructive",
+  Medium: "secondary",
+  Low: "default",
+};
+
 export default function SalesDashboard() {
   const { toast } = useToast();
   const [quotations, setQuotations] = useState<Quotation[]>(initialQuotations);
+  const [complaints, setComplaints] = useState<Complaint[]>(initialComplaints);
   const [newQuote, setNewQuote] = useState({
     customer: { name: "", email: "", address: "", phone: "" },
     items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: 0, gstRate: 18 }],
@@ -82,7 +96,7 @@ export default function SalesDashboard() {
 
   const discountAmount = useMemo(() => {
     return subTotal * (newQuote.discount / 100);
-  }, [subTotal, newQuote.discount]);
+  }, [newQuote.discount]);
 
   const totalAfterDiscount = useMemo(() => {
     return subTotal - discountAmount;
@@ -183,6 +197,12 @@ export default function SalesDashboard() {
         currency: 'INR',
     }).format(amount);
   }
+  
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+    });
+  };
 
   const calculateQuoteTotals = (quote: Quotation) => {
     const itemsTotal = quote.items.reduce((sum, item) => sum + item.quantity * item.price, 0);
@@ -255,6 +275,7 @@ export default function SalesDashboard() {
     });
   }
 
+  const openComplaints = complaints.filter(c => c.status === 'Open');
 
   return (
     <div className="grid gap-6 lg:grid-cols-5">
@@ -361,53 +382,95 @@ export default function SalesDashboard() {
             </Button>
         </CardFooter>
       </Card>
-      <Card className="lg:col-span-3">
-        <CardHeader>
-          <CardTitle>Recent Quotations</CardTitle>
-          <CardDescription>Track the status of recently sent quotes.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Quote ID</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {quotations.map((quote) => (
-                <TableRow key={quote.quoteId}>
-                  <TableCell className="font-medium">{quote.quoteId}</TableCell>
-                  <TableCell>{quote.customer.name}</TableCell>
-                  <TableCell>{formatCurrency(quote.totalAmount)}</TableCell>
-                  <TableCell>
-                    <Badge variant={statusVariant[quote.status]}>
-                      {quote.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                        {quote.status === "Approved" && (
-                            <Button variant="outline" size="sm" onClick={() => handleGenerateInvoice(quote)}>
-                                <FileText className="mr-2 h-4 w-4" />
-                                Generate Invoice
-                            </Button>
-                        )}
-                        <Button variant="ghost" size="icon" onClick={() => setSelectedQuote(quote)}>
-                            <Eye className="h-4 w-4" />
-                            <span className="sr-only">View</span>
-                        </Button>
-                    </div>
-                  </TableCell>
+      <div className="lg:col-span-3 flex flex-col gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Quotations</CardTitle>
+            <CardDescription>Track the status of recently sent quotes.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Quote ID</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {quotations.map((quote) => (
+                  <TableRow key={quote.quoteId}>
+                    <TableCell className="font-medium">{quote.quoteId}</TableCell>
+                    <TableCell>{quote.customer.name}</TableCell>
+                    <TableCell>{formatCurrency(quote.totalAmount)}</TableCell>
+                    <TableCell>
+                      <Badge variant={quotationStatusVariant[quote.status]}>
+                        {quote.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                          {quote.status === "Approved" && (
+                              <Button variant="outline" size="sm" onClick={() => handleGenerateInvoice(quote)}>
+                                  <FileText className="mr-2 h-4 w-4" />
+                                  Generate Invoice
+                              </Button>
+                          )}
+                          <Button variant="ghost" size="icon" onClick={() => setSelectedQuote(quote)}>
+                              <Eye className="h-4 w-4" />
+                              <span className="sr-only">View</span>
+                          </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+         <Card>
+          <CardHeader>
+            <CardTitle>Open Complaints</CardTitle>
+            <CardDescription>
+              New service and installation requests.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Ticket ID</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Issue</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Priority</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {openComplaints.length > 0 ? openComplaints.map((complaint) => (
+                  <TableRow key={complaint.ticketId}>
+                    <TableCell className="font-medium">{complaint.ticketId}</TableCell>
+                    <TableCell>{complaint.customer?.name}</TableCell>
+                    <TableCell className="max-w-[300px] truncate">{complaint.issue}</TableCell>
+                    <TableCell>{formatDate(complaint.date)}</TableCell>
+                    <TableCell>
+                      <Badge variant={complaintPriorityVariant[complaint.priority]}>
+                        {complaint.priority}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                )) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center">No open complaints.</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
       
       <Dialog open={!!selectedQuote} onOpenChange={(isOpen) => !isOpen && setSelectedQuote(null)}>
         <DialogContent className="sm:max-w-4xl p-0" data-slot="header-plain">
