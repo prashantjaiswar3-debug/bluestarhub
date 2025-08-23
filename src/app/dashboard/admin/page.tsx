@@ -8,7 +8,7 @@ const quickLinks = [
     { href: "/dashboard/sales", icon: LayoutGrid, title: "Assignments", description: "Assign jobs to technicians." },
     { href: "/dashboard/technician", icon: Wrench, title: "Technician View", description: "Manage your assigned jobs." },
     { href: "/dashboard/customer", icon: Users, title: "Customer Portal", description: "Track complaints and invoices." },
-    { href: "/dashboard/sales", icon: FileText, title: "Sales & Quotes", description: "Create and manage quotations." },
+    { href: "/dashboard/quotations", icon: FileText, title: "Sales & Quotes", description: "Create and manage quotations." },
     { href: "/dashboard/invoices", icon: FilePlus2, title: "Invoices", description: "Manage and track invoices." },
 ]
 
@@ -42,5 +42,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
