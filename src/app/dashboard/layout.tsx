@@ -25,6 +25,7 @@ import {
   Trash2,
   Edit,
   Upload,
+  Home,
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -60,6 +61,7 @@ import QRCode from "react-qr-code";
 
 
 const allNavItems = [
+  { href: "/dashboard", icon: Home, label: "Dashboard", roles: ['admin', 'sales', 'technician', 'customer'] },
   { href: "/dashboard/sales", icon: LayoutGrid, label: "Assignments", roles: ['admin','sales'] },
   { href: "/dashboard/technician", icon: Wrench, label: "My Jobs", roles: ['technician'] },
   { href: "/dashboard/customer", icon: Users, label: "My Portal", roles: ['customer'] },
@@ -116,6 +118,7 @@ export default function DashboardLayout({
     if (pathname.startsWith('/dashboard/technician')) return 'technician';
     if (pathname.startsWith('/dashboard/customer')) return 'customer';
     if (pathname.startsWith('/dashboard/sales') || pathname.startsWith('/dashboard/invoices') || pathname.startsWith('/dashboard/quotations')) return 'sales';
+    if (pathname === '/dashboard') return 'admin';
     return 'admin';
   }
   
@@ -216,7 +219,9 @@ export default function DashboardLayout({
   const currentRole = getRole();
   const navItems = allNavItems.filter(item => item.roles.includes(currentRole));
 
-  const dashboardLabel = navItems.find(item => pathname.startsWith(item.href))?.label || 'Dashboard';
+  const dashboardLabel = navItems.find(item => item.href === pathname)?.label || 
+                       navItems.find(item => pathname.startsWith(item.href) && item.href !== '/dashboard')?.label || 
+                       'Dashboard';
   const currentUser = roleInfo[currentRole as keyof typeof roleInfo] || roleInfo.default;
 
   const vCard = `BEGIN:VCARD
@@ -528,8 +533,7 @@ END:VCARD`;
               <Input id="current-password" type="password" value={passwordFields.current} onChange={(e) => setPasswordFields({...passwordFields, current: e.target.value})} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
-              <Input id="new-password" type="password" value={passwordFields.new} onChange={(e) => setPasswordFields({...passwordFields, new: e.target.value})} />
+              <Label htmlFor="new-password">New Password</Label>              <Input id="new-password" type="password" value={passwordFields.new} onChange={(e) => setPasswordFields({...passwordFields, new: e.target.value})} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirm-password">Confirm New Password</Label>
@@ -639,3 +643,5 @@ END:VCARD`;
     </SidebarProvider>
   );
 }
+
+    
