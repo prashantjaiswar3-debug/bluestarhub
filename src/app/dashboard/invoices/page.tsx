@@ -21,6 +21,16 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -99,6 +109,7 @@ const statusVariant: { [key in Invoice["status"]]: "secondary" | "default" | "de
   Pending: "default",
   Overdue: "destructive",
   "Partially Paid": "default",
+  Cancelled: "destructive",
 };
 
 const units = ["nos", "meters", "pcs", "pack", "box"];
@@ -115,7 +126,10 @@ const BarcodeScanner = ({ onScanSuccess, onScanFailure }: { onScanSuccess: (text
         if (controlsRef.current) {
             controlsRef.current.stop();
             controlsRef.current = null;
-            videoTrackRef.current = null;
+            if (videoTrackRef.current) {
+                videoTrackRef.current.stop();
+                videoTrackRef.current = null;
+            }
         }
     }, []);
 
@@ -137,6 +151,7 @@ const BarcodeScanner = ({ onScanSuccess, onScanFailure }: { onScanSuccess: (text
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                  if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
                     const track = stream.getVideoTracks()[0];
                     videoTrackRef.current = track;
                     const capabilities = track.getCapabilities();
@@ -144,7 +159,7 @@ const BarcodeScanner = ({ onScanSuccess, onScanFailure }: { onScanSuccess: (text
                         setTorchSupported(true);
                     }
 
-                    controlsRef.current = await codeReader.decodeFromStream(stream, videoRef.current, (result, error) => {
+                    controlsRef.current = codeReader.decodeFromStream(stream, videoRef.current, (result, error) => {
                         if (result) {
                             stopScanner();
                             onScanSuccess(result.getText());
@@ -199,6 +214,7 @@ export default function InvoicesPage() {
     poNumber: "",
   });
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [invoiceToCancel, setInvoiceToCancel] = useState<Invoice | null>(null);
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState<boolean>(false);
   const [newPayment, setNewPayment] = useState({ amount: 0, method: "Online" as Payment["method"]});
   const [copyType, setCopyType] = useState<'Original Copy' | "Customer's Copy">('Original Copy');
@@ -566,6 +582,21 @@ export default function InvoicesPage() {
     setIsAddPaymentOpen(false);
     setNewPayment({ amount: 0, method: 'Online' });
   };
+  
+  const handleConfirmCancel = () => {
+    if (!invoiceToCancel) return;
+
+    const updatedInvoices = invoices.map(inv => 
+        inv.invoiceId === invoiceToCancel.invoiceId ? { ...inv, status: 'Cancelled' } : inv
+    );
+    setInvoices(updatedInvoices);
+    localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+    toast({
+        title: 'Invoice Cancelled',
+        description: `Invoice ${invoiceToCancel.invoiceId} has been cancelled.`,
+    });
+    setInvoiceToCancel(null);
+  };
 
 
   return (
@@ -757,7 +788,7 @@ export default function InvoicesPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
-                           {invoice.status !== "Paid" && (
+                           {invoice.status !== "Paid" && invoice.status !== "Cancelled" && (
                                 <Button size="sm" onClick={() => { setSelectedInvoice(invoice); setIsAddPaymentOpen(true); }}>
                                     <DollarSign className="mr-2 h-3 w-3" />
                                     Add Payment
@@ -767,6 +798,12 @@ export default function InvoicesPage() {
                                 <Eye className="h-4 w-4" />
                                 <span className="sr-only">View</span>
                             </Button>
+                            {invoice.status !== "Cancelled" && (
+                               <Button variant="ghost" size="icon" onClick={() => setInvoiceToCancel(invoice)}>
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                    <span className="sr-only">Cancel Invoice</span>
+                                </Button>
+                            )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -1026,6 +1063,21 @@ export default function InvoicesPage() {
             </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      <AlertDialog open={!!invoiceToCancel} onOpenChange={() => setInvoiceToCancel(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure you want to cancel this invoice?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This action cannot be undone. This will permanently mark invoice {invoiceToCancel?.invoiceId} as cancelled.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Close</AlertDialogCancel>
+                <AlertDialogAction onClick={handleConfirmCancel}>Confirm</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

@@ -60,7 +60,7 @@ export type Invoice = {
   laborCost: number;
   discount: number; // Percentage
   totalAmount: number;
-  status: "Paid" | "Pending" | "Overdue" | "Partially Paid";
+  status: "Paid" | "Pending" | "Overdue" | "Partially Paid" | "Cancelled";
   date: string;
   quoteId?: string; // Optional link to a quotation
   poNumber?: string;
