@@ -69,7 +69,7 @@ export default function TechnicianDashboard() {
     }
     toast({
       title: "Report Submitted",
-      description: `Update for Job ID: ${selectedJob?.id} has been submitted.`,
+      description: `Update for Job ID: ${selectedJob?.id} submitted. A feedback link has been sent to the customer.`,
     });
     setReportText("");
     setSelectedJob(null);
