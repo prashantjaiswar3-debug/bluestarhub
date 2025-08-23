@@ -46,6 +46,7 @@ import type jsPDF from 'jspdf';
 import type html2canvas from 'html2canvas';
 import { initialQuotations } from "@/lib/data";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const registeredCustomers: Customer[] = [
     { id: "CUST-001", name: "Green Valley Apartments", contactPerson: "Mr. Sharma", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City" },
@@ -275,117 +276,121 @@ export default function QuotationsPage() {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-5">
-      <Card className="lg:col-span-2 self-start">
-        <CardHeader>
-          <CardTitle>Create Quotation</CardTitle>
-          <CardDescription>Fill in the details to generate a new quote.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-6">
-          <div className="space-y-4 rounded-md border p-4">
-             <h4 className="text-sm font-medium">Customer Details</h4>
-              <div className="space-y-2">
-                <Label>Select Registered Customer</Label>
-                <Select onValueChange={handleCustomerSelect}>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Select a customer" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {registeredCustomers.map((customer) => (
-                            <SelectItem key={customer.id} value={customer.id}>{customer.name}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-              </div>
-             <div className="space-y-2">
-                <Label htmlFor="customer-name">Customer / Company Name</Label>
-                <Input id="customer-name" placeholder="e.g., ABC Corporation" value={newQuote.customer.name} onChange={(e) => setNewQuote(prev => ({...prev, customer: {...prev.customer, name: e.target.value}}))}/>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="customer-email">Email</Label>
-                <Input id="customer-email" placeholder="e.g., contact@abccorp.com" value={newQuote.customer.email} onChange={(e) => setNewQuote(prev => ({...prev, customer: {...prev.customer, email: e.target.value}}))}/>
-              </div>
-               <div className="space-y-2">
-                <Label htmlFor="customer-address">Address</Label>
-                <Textarea id="customer-address" placeholder="e.g., 123 Business Road, Mumbai" value={newQuote.customer.address} onChange={(e) => setNewQuote(prev => ({...prev, customer: {...prev.customer, address: e.target.value}}))} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="po-number">Purchase Order Number (Optional)</Label>
-                <Input id="po-number" placeholder="e.g., PO-12345" value={newQuote.poNumber} onChange={(e) => setNewQuote(prev => ({...prev, poNumber: e.target.value}))}/>
-              </div>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="text-sm font-medium">Services / Parts</h4>
-            {newQuote.items.map((item, index) => (
-              <div key={item.id} className="grid gap-2 rounded-md border p-3 relative">
-                 {newQuote.items.length > 1 && (
-                     <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removeItem(item.id)}>
-                        <Trash2 className="h-4 w-4 text-destructive"/>
-                     </Button>
-                 )}
-                <div className="space-y-2">
-                  <Label htmlFor={`item-desc-${index}`}>Description</Label>
-                  <Textarea id={`item-desc-${index}`} placeholder="e.g., 4x Dome Cameras, 1x 8-Channel DVR..." value={item.description} onChange={(e) => handleItemChange(item.id, 'description', e.target.value)} />
-                </div>
-                <div className="grid grid-cols-4 gap-4">
-                   <div className="space-y-2">
-                      <Label htmlFor={`item-qty-${index}`}>Quantity</Label>
-                      <Input id={`item-qty-${index}`} type="number" placeholder="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor={`item-unit-${index}`}>Unit</Label>
-                        <Select value={item.unit} onValueChange={(value) => handleItemChange(item.id, 'unit', value)}>
-                            <SelectTrigger id={`item-unit-${index}`}>
-                                <SelectValue placeholder="Select unit" />
+    <div className="grid h-full grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
+      <div className="lg:col-span-2 flex flex-col">
+          <Card className="flex flex-1 flex-col">
+            <CardHeader>
+              <CardTitle>Create Quotation</CardTitle>
+              <CardDescription>Fill in the details to generate a new quote.</CardDescription>
+            </CardHeader>
+            <ScrollArea className="flex-1">
+                <CardContent className="grid gap-6">
+                  <div className="space-y-4 rounded-md border p-4">
+                     <h4 className="text-sm font-medium">Customer Details</h4>
+                      <div className="space-y-2">
+                        <Label>Select Registered Customer</Label>
+                        <Select onValueChange={handleCustomerSelect}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a customer" />
                             </SelectTrigger>
                             <SelectContent>
-                                {units.map(unit => <SelectItem key={unit} value={unit}>{unit}</SelectItem>)}
+                                {registeredCustomers.map((customer) => (
+                                    <SelectItem key={customer.id} value={customer.id}>{customer.name}</SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
+                      </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="customer-name">Customer / Company Name</Label>
+                        <Input id="customer-name" placeholder="e.g., ABC Corporation" value={newQuote.customer.name} onChange={(e) => setNewQuote(prev => ({...prev, customer: {...prev.customer, name: e.target.value}}))}/>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="customer-email">Email</Label>
+                        <Input id="customer-email" placeholder="e.g., contact@abccorp.com" value={newQuote.customer.email} onChange={(e) => setNewQuote(prev => ({...prev, customer: {...prev.customer, email: e.target.value}}))}/>
+                      </div>
+                       <div className="space-y-2">
+                        <Label htmlFor="customer-address">Address</Label>
+                        <Textarea id="customer-address" placeholder="e.g., 123 Business Road, Mumbai" value={newQuote.customer.address} onChange={(e) => setNewQuote(prev => ({...prev, customer: {...prev.customer, address: e.target.value}}))} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="po-number">Purchase Order Number (Optional)</Label>
+                        <Input id="po-number" placeholder="e.g., PO-12345" value={newQuote.poNumber} onChange={(e) => setNewQuote(prev => ({...prev, poNumber: e.target.value}))}/>
+                      </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium">Services / Parts</h4>
+                    {newQuote.items.map((item, index) => (
+                      <div key={item.id} className="grid gap-2 rounded-md border p-3 relative">
+                         {newQuote.items.length > 1 && (
+                             <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removeItem(item.id)}>
+                                <Trash2 className="h-4 w-4 text-destructive"/>
+                             </Button>
+                         )}
+                        <div className="space-y-2">
+                          <Label htmlFor={`item-desc-${index}`}>Description</Label>
+                          <Textarea id={`item-desc-${index}`} placeholder="e.g., 4x Dome Cameras, 1x 8-Channel DVR..." value={item.description} onChange={(e) => handleItemChange(item.id, 'description', e.target.value)} />
+                        </div>
+                        <div className="grid grid-cols-4 gap-4">
+                           <div className="space-y-2">
+                              <Label htmlFor={`item-qty-${index}`}>Quantity</Label>
+                              <Input id={`item-qty-${index}`} type="text" placeholder="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor={`item-unit-${index}`}>Unit</Label>
+                                <Select value={item.unit} onValueChange={(value) => handleItemChange(item.id, 'unit', value)}>
+                                    <SelectTrigger id={`item-unit-${index}`}>
+                                        <SelectValue placeholder="Select unit" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {units.map(unit => <SelectItem key={unit} value={unit}>{unit}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`item-price-${index}`}>Price (₹)</Label>
+                              <Input id={`item-price-${index}`} type="text" placeholder="10000" value={item.price} onChange={(e) => handleItemChange(item.id, 'price', e.target.value)}/>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`item-gst-${index}`}>GST (%)</Label>
+                              <Input id={`item-gst-${index}`} type="number" placeholder="18" value={item.gstRate} onChange={(e) => handleItemChange(item.id, 'gstRate', e.target.value)}/>
+                            </div>
+                        </div>
+                      </div>
+                    ))}
+                     <Button variant="outline" onClick={addItem}>
+                        <PlusCircle className="mr-2 h-4 w-4"/>
+                        Add Item
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-4 rounded-md border p-4">
+                    <h4 className="text-sm font-medium">Costs & Total</h4>
+                     <div className="space-y-2">
+                        <Label htmlFor="labor-cost">Labor Cost (₹)</Label>
+                        <Input id="labor-cost" type="number" placeholder="5000" value={newQuote.laborCost} onChange={(e) => setNewQuote(prev => ({...prev, laborCost: parseFloat(e.target.value) || 0}))}/>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`item-price-${index}`}>Price (₹)</Label>
-                      <Input id={`item-price-${index}`} type="number" placeholder="10000" value={item.price} onChange={(e) => handleItemChange(item.id, 'price', e.target.value)}/>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="discount">Discount (%)</Label>
+                            <Input id="discount" type="number" placeholder="10" value={newQuote.discount} onChange={(e) => setNewQuote(prev => ({...prev, discount: parseFloat(e.target.value) || 0}))} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Grand Total</Label>
+                            <Input readOnly value={formatCurrency(totalAmount)} className="font-semibold border-none p-0 h-auto text-lg"/>
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`item-gst-${index}`}>GST (%)</Label>
-                      <Input id={`item-gst-${index}`} type="number" placeholder="18" value={item.gstRate} onChange={(e) => handleItemChange(item.id, 'gstRate', e.target.value)}/>
-                    </div>
-                </div>
-              </div>
-            ))}
-             <Button variant="outline" onClick={addItem}>
-                <PlusCircle className="mr-2 h-4 w-4"/>
-                Add Item
-            </Button>
-          </div>
-          
-          <div className="space-y-4 rounded-md border p-4">
-            <h4 className="text-sm font-medium">Costs & Total</h4>
-             <div className="space-y-2">
-                <Label htmlFor="labor-cost">Labor Cost (₹)</Label>
-                <Input id="labor-cost" type="number" placeholder="5000" value={newQuote.laborCost} onChange={(e) => setNewQuote(prev => ({...prev, laborCost: parseFloat(e.target.value) || 0}))}/>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="discount">Discount (%)</Label>
-                    <Input id="discount" type="number" placeholder="10" value={newQuote.discount} onChange={(e) => setNewQuote(prev => ({...prev, discount: parseFloat(e.target.value) || 0}))} />
-                </div>
-                <div className="space-y-2">
-                    <Label>Grand Total</Label>
-                    <Input readOnly value={formatCurrency(totalAmount)} className="font-semibold border-none p-0 h-auto text-lg"/>
-                </div>
-            </div>
-           </div>
-        </CardContent>
-        <CardFooter className="flex justify-end">
-            <Button onClick={handleCreateQuote}>
-                <Send className="mr-2 h-4 w-4" />
-                Create Quote
-            </Button>
-        </CardFooter>
-      </Card>
+                   </div>
+                </CardContent>
+            </ScrollArea>
+            <CardFooter className="flex justify-end pt-6">
+                <Button onClick={handleCreateQuote}>
+                    <Send className="mr-2 h-4 w-4" />
+                    Create Quote
+                </Button>
+            </CardFooter>
+          </Card>
+      </div>
       <div className="lg:col-span-3 flex flex-col gap-6">
         <Card>
           <CardHeader>
@@ -446,133 +451,133 @@ export default function QuotationsPage() {
                     </DialogDescription>
                 </DialogHeader>
             </div>
-            <div className="max-h-[70vh] overflow-y-auto px-6 pb-6 space-y-4">
-                <div ref={quoteRef} className="bg-white text-black font-sans w-[210mm]">
-                {selectedQuote && (() => {
-                    const { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
-                    const quoteDate = new Date(selectedQuote.date);
-                    const dueDate = new Date(quoteDate);
-                    dueDate.setDate(quoteDate.getDate() + 15);
-                    const formatDate = (date: Date) => date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+            <ScrollArea className="max-h-[70vh] px-6">
+                <div className="space-y-4 pb-6">
+                    <div ref={quoteRef} className="bg-white text-black font-sans w-[210mm]">
+                    {selectedQuote && (() => {
+                        const { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
+                        const quoteDate = new Date(selectedQuote.date);
+                        const dueDate = new Date(quoteDate);
+                        dueDate.setDate(quoteDate.getDate() + 15);
+                        const formatDate = (date: Date) => date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
 
-                    return (
-                        <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '100%', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
-                             <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                    <div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#2563EB' }}>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                                            </svg>
-                                            <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Bluestar Electronics</h1>
+                        return (
+                            <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '100%', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
+                                 <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                        <div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#2563EB' }}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 200 200"><g transform="translate(100 100)"><path d="M78.8-3.4C71.3 14.1 52.8 28.1 36.4 39.1C20.1 50.1 5.9 58.1-10.4 59.4C-26.7 60.7-45.1 55.4-58.4 43.1C-71.7 30.7-79.9 11.4-78.6-8.8C-77.3-29-66.5-50.1-50.6-62.1C-34.7-74.1-13.7-77-5.5-69.8C2.7-62.7 10.9-45.5 24.3-33.1C37.8-20.7 56.5-13.1 78.8-3.4Z" fill="#3B82F6"></path></g></svg>
+                                                <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Bluestar Electronics</h1>
+                                            </div>
+                                            <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
+                                                <p><strong>Email:</strong> bluestar.elec@gmail.com</p>
+                                                <p><strong>Contact:</strong> +91 9766661333</p>
+                                            </div>
                                         </div>
-                                        <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
-                                            <p><strong>Email:</strong> bluestar.elec@gmail.com</p>
-                                            <p><strong>Contact:</strong> +91 9766661333</p>
+                                        <div style={{ textAlign: 'right' }}>
+                                            <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>QUOTATION</h2>
+                                            <p style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>{copyType}</p>
                                         </div>
                                     </div>
-                                    <div style={{ textAlign: 'right' }}>
-                                        <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>QUOTATION</h2>
-                                        <p style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>{copyType}</p>
-                                    </div>
-                                </div>
-                            </header>
-                            
-                            <div style={{ flexGrow: 1}}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', paddingBottom: '20px' }}>
-                                  <div>
-                                      <h2 style={{ fontSize: '14px', fontWeight: 'bold', color: '#30475E', marginBottom: '8px' }}>Billed To:</h2>
-                                      <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold' }}>{selectedQuote.customer.name}</p>
-                                      {selectedQuote.customer.contactPerson && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>Attn: {selectedQuote.customer.contactPerson}</p>}
-                                      <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.address}</p>
-                                      <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>Email:</strong> {selectedQuote.customer.email}</p>
-                                      {selectedQuote.customer.phone && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>Contact:</strong> {selectedQuote.customer.phone}</p>}
-                                  </div>
-                                  <div style={{ width: '220px' }}>
-                                      <div style={{ fontSize: '12px', textAlign: 'right' }}>
-                                          <div style={{ marginBottom: '5px' }}><strong>Quote ID:</strong><span>{selectedQuote.quoteId}</span></div>
-                                          <div style={{ marginBottom: '5px' }}><strong>Quote Date:</strong><span>{formatDate(quoteDate)}</span></div>
-                                          <div style={{ marginBottom: '5px' }}><strong>Due Date:</strong><span>{formatDate(dueDate)}</span></div>
-                                          {selectedQuote.poNumber && <div style={{ marginBottom: '5px' }}><strong>PO Number:</strong><span>{selectedQuote.poNumber}</span></div>}
+                                </header>
+                                
+                                <div style={{ flexGrow: 1}}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', paddingBottom: '20px' }}>
+                                      <div>
+                                          <h2 style={{ fontSize: '14px', fontWeight: 'bold', color: '#30475E', marginBottom: '8px' }}>Billed To:</h2>
+                                          <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold' }}>{selectedQuote.customer.name}</p>
+                                          {selectedQuote.customer.contactPerson && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>Attn: {selectedQuote.customer.contactPerson}</p>}
+                                          <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.address}</p>
+                                          <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>Email:</strong> {selectedQuote.customer.email}</p>
+                                          {selectedQuote.customer.phone && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>Contact:</strong> {selectedQuote.customer.phone}</p>}
+                                      </div>
+                                      <div style={{ width: '220px' }}>
+                                          <div style={{ fontSize: '12px', textAlign: 'right' }}>
+                                              <div style={{ marginBottom: '5px' }}><strong>Quote ID:</strong><span>{selectedQuote.quoteId}</span></div>
+                                              <div style={{ marginBottom: '5px' }}><strong>Quote Date:</strong><span>{formatDate(quoteDate)}</span></div>
+                                              <div style={{ marginBottom: '5px' }}><strong>Due Date:</strong><span>{formatDate(dueDate)}</span></div>
+                                              {selectedQuote.poNumber && <div style={{ marginBottom: '5px' }}><strong>PO Number:</strong><span>{selectedQuote.poNumber}</span></div>}
+                                          </div>
                                       </div>
                                   </div>
-                              </div>
-                              
-                              <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px', fontSize: '12px' }}>
-                                  <thead>
-                                      <tr style={{ backgroundColor: '#30475E', color: 'white' }}>
-                                          <th style={{ padding: '10px', textAlign: 'left' }}>S.No.</th>
-                                          <th style={{ padding: '10px', textAlign: 'left' }}>DESCRIPTION</th>
-                                          <th style={{ padding: '10px', textAlign: 'right' }}>PRICE</th>
-                                          <th style={{ padding: '10px', textAlign: 'right' }}>QTY</th>
-                                          <th style={{ padding: '10px', textAlign: 'right' }}>GST</th>
-                                          <th style={{ padding: '10px', textAlign: 'right' }}>TOTAL</th>
-                                      </tr>
-                                  </thead>
-                                  <tbody>
-                                      {selectedQuote.items.map((item, index) => (
-                                          <tr key={item.id} style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: index % 2 === 0 ? '#F8FAFC' : 'white' }}>
-                                              <td style={{ padding: '10px' }}>{index + 1}</td>
-                                              <td style={{ padding: '10px', maxWidth: '300px' }}>{item.description}</td>
-                                              <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
-                                              <td style={{ padding: '10px', textAlign: 'right' }}>{item.quantity} {item.unit}</td>
-                                               <td style={{ padding: '10px', textAlign: 'right' }}>{item.gstRate}%</td>
-                                              <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.quantity * item.price)}</td>
+                                  
+                                  <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px', fontSize: '12px' }}>
+                                      <thead>
+                                          <tr style={{ backgroundColor: '#30475E', color: 'white' }}>
+                                              <th style={{ padding: '10px', textAlign: 'left' }}>S.No.</th>
+                                              <th style={{ padding: '10px', textAlign: 'left' }}>DESCRIPTION</th>
+                                              <th style={{ padding: '10px', textAlign: 'right' }}>PRICE</th>
+                                              <th style={{ padding: '10px', textAlign: 'right' }}>QTY</th>
+                                              <th style={{ padding: '10px', textAlign: 'right' }}>GST</th>
+                                              <th style={{ padding: '10px', textAlign: 'right' }}>TOTAL</th>
                                           </tr>
-                                      ))}
-                                      {selectedQuote.laborCost > 0 && (
-                                          <tr style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: selectedQuote.items.length % 2 === 0 ? '#F8FAFC' : 'white' }}>
-                                              <td colSpan={5} style={{ padding: '10px', textAlign: 'right', fontWeight: 'bold' }}>Labor Cost</td>
-                                              <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(selectedQuote.laborCost)}</td>
-                                          </tr>
-                                      )}
-                                  </tbody>
-                              </table>
+                                      </thead>
+                                      <tbody>
+                                          {selectedQuote.items.map((item, index) => (
+                                              <tr key={item.id} style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: index % 2 === 0 ? '#F8FAFC' : 'white' }}>
+                                                  <td style={{ padding: '10px' }}>{index + 1}</td>
+                                                  <td style={{ padding: '10px', maxWidth: '300px' }}>{item.description}</td>
+                                                  <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
+                                                  <td style={{ padding: '10px', textAlign: 'right' }}>{item.quantity} {item.unit}</td>
+                                                   <td style={{ padding: '10px', textAlign: 'right' }}>{item.gstRate}%</td>
+                                                  <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.quantity * item.price)}</td>
+                                              </tr>
+                                          ))}
+                                          {selectedQuote.laborCost > 0 && (
+                                              <tr style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: selectedQuote.items.length % 2 === 0 ? '#F8FAFC' : 'white' }}>
+                                                  <td colSpan={5} style={{ padding: '10px', textAlign: 'right', fontWeight: 'bold' }}>Labor Cost</td>
+                                                  <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(selectedQuote.laborCost)}</td>
+                                              </tr>
+                                          )}
+                                      </tbody>
+                                  </table>
 
-                              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-                                  <div style={{ width: '250px', fontSize: '12px' }}>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Sub Total:</span><span>{formatCurrency(subTotal)}</span></div>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Discount ({selectedQuote.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Total GST:</span><span>{formatCurrency(gstAmount)}</span></div>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px' }}><span>TOTAL:</span><span>{formatCurrency(grandTotal)}</span></div>
+                                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                                      <div style={{ width: '250px', fontSize: '12px' }}>
+                                          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Sub Total:</span><span>{formatCurrency(subTotal)}</span></div>
+                                          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Discount ({selectedQuote.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>
+                                          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Total GST:</span><span>{formatCurrency(gstAmount)}</span></div>
+                                          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px' }}><span>TOTAL:</span><span>{formatCurrency(grandTotal)}</span></div>
+                                      </div>
                                   </div>
-                              </div>
+                                </div>
+                                
+                                <footer style={{ marginTop: 'auto', paddingTop: '20px', fontSize: '12px', flexShrink: 0, borderTop: '1px solid #E2E8F0' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <div>
+                                            <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Terms and Conditions:</h3>
+                                            <p style={{ color: '#64748B', maxWidth: '300px', fontSize: '10px' }}>Payment is due within 15 days. All products are subject to standard warranty. Thank you for your business!</p>
+                                        </div>
+                                        <div style={{ textAlign: 'center' }}>
+                                            <p style={{ borderTop: '1px solid #64748B', paddingTop: '5px', marginTop: '40px' }}>Authorized Signature</p>
+                                            <p style={{ fontWeight: 'bold', marginTop: '5px' }}>Bluestar Electronics</p>
+                                        </div>
+                                    </div>
+                                    <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '10px', color: '#888' }}>
+                                        <p>Thank you for your business!</p>
+                                        <p style={{marginTop: '5px', fontWeight: 'bold'}}>Created on Bluestar Hub</p>
+                                    </div>
+                               </footer>
                             </div>
-                            
-                            <footer style={{ marginTop: 'auto', paddingTop: '20px', fontSize: '12px', flexShrink: 0, borderTop: '1px solid #E2E8F0' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <div>
-                                        <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Terms and Conditions:</h3>
-                                        <p style={{ color: '#64748B', maxWidth: '300px', fontSize: '10px' }}>Payment is due within 15 days. All products are subject to standard warranty. Thank you for your business!</p>
-                                    </div>
-                                    <div style={{ textAlign: 'center' }}>
-                                        <p style={{ borderTop: '1px solid #64748B', paddingTop: '5px', marginTop: '40px' }}>Authorized Signature</p>
-                                        <p style={{ fontWeight: 'bold', marginTop: '5px' }}>Bluestar Electronics</p>
-                                    </div>
-                                </div>
-                                <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '10px', color: '#888' }}>
-                                    <p>Thank you for your business!</p>
-                                    <p style={{marginTop: '5px', fontWeight: 'bold'}}>Created on Bluestar Hub</p>
-                                </div>
-                           </footer>
-                        </div>
-                    );
-                })()}
+                        );
+                    })()}
+                    </div>
+                     <div className="p-4 border rounded-md">
+                        <RadioGroup defaultValue="Original Copy" className="flex items-center gap-4" onValueChange={(value: 'Original Copy' | "Customer's Copy") => setCopyType(value)}>
+                            <h4 className="text-sm font-medium">Select Copy Type:</h4>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="Original Copy" id="q-original" />
+                                <Label htmlFor="q-original">Original Copy</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="Customer's Copy" id="q-customer" />
+                                <Label htmlFor="q-customer">Customer's Copy</Label>
+                            </div>
+                        </RadioGroup>
+                    </div>
                 </div>
-                 <div className="p-4 border rounded-md">
-                    <RadioGroup defaultValue="Original Copy" className="flex items-center gap-4" onValueChange={(value: 'Original Copy' | "Customer's Copy") => setCopyType(value)}>
-                        <h4 className="text-sm font-medium">Select Copy Type:</h4>
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Original Copy" id="q-original" />
-                            <Label htmlFor="q-original">Original Copy</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Customer's Copy" id="q-customer" />
-                            <Label htmlFor="q-customer">Customer's Copy</Label>
-                        </div>
-                    </RadioGroup>
-                </div>
-            </div>
+            </ScrollArea>
           <DialogFooter className="px-6 py-4 flex-row justify-between w-full border-t">
             <div className="flex gap-2">
                 <Button variant="secondary" onClick={handleDownloadPdf}>
@@ -593,5 +598,3 @@ export default function QuotationsPage() {
     </div>
   );
 }
-
-    
