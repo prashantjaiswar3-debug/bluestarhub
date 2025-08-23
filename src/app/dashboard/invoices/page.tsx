@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,8 +46,8 @@ import type jsPDF from 'jspdf';
 import type html2canvas from 'html2canvas';
 import { initialQuotations } from "@/lib/data";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Html5Qrcode } from "html5-qrcode";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
 
 
 const registeredCustomers: Customer[] = [
@@ -102,6 +102,49 @@ const statusVariant: { [key in Invoice["status"]]: "secondary" | "default" | "de
 
 const units = ["nos", "meters", "pcs", "pack", "box"];
 
+const BarcodeScanner = ({ onScanSuccess, onScanFailure }: { onScanSuccess: (text: string) => void; onScanFailure: (error: any) => void }) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const codeReader = useMemo(() => new BrowserMultiFormatReader(), []);
+    const controlsRef = useRef<any>();
+
+    const stopScanner = useCallback(() => {
+        if (controlsRef.current) {
+            controlsRef.current.stop();
+            controlsRef.current = null;
+        }
+    }, []);
+
+    useEffect(() => {
+        const startScanner = async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                if (videoRef.current) {
+                    controlsRef.current = await codeReader.decodeFromStream(stream, videoRef.current, (result, error) => {
+                        if (result) {
+                            stopScanner();
+                            onScanSuccess(result.getText());
+                        }
+                        if (error && !(error instanceof NotFoundException)) {
+                           onScanFailure(error);
+                        }
+                    });
+                }
+            } catch (err) {
+                 onScanFailure(err);
+            }
+        };
+
+        startScanner();
+
+        return () => {
+            stopScanner();
+        };
+    }, [codeReader, onScanSuccess, onScanFailure, stopScanner]);
+
+    return <video ref={videoRef} className="w-full aspect-square rounded-md bg-muted" />;
+};
+
+
 export default function InvoicesPage() {
   const { toast } = useToast();
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
@@ -128,7 +171,6 @@ export default function InvoicesPage() {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [activeScannerItemId, setActiveScannerItemId] = useState<string | null>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
     const storedInvoicesStr = localStorage.getItem('invoices');
@@ -144,50 +186,14 @@ export default function InvoicesPage() {
     }
   }, []);
 
-  useEffect(() => {
-    if (isScannerOpen && activeScannerItemId) {
-      startScanner();
-    } else {
-      stopScanner();
-    }
-    return () => {
-      stopScanner();
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isScannerOpen, activeScannerItemId]);
-
-  const startScanner = async () => {
-    stopScanner(); // Stop any existing scanner
+  const handleOpenScanner = async (itemId: string) => {
     try {
-        await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        // Stop all tracks to release the camera
+        stream.getTracks().forEach(track => track.stop());
         setHasCameraPermission(true);
-
-        const html5Qrcode = new Html5Qrcode("reader");
-        scannerRef.current = html5Qrcode;
-
-        html5Qrcode.start(
-            { facingMode: "environment" },
-            {
-                fps: 10,
-                qrbox: { width: 250, height: 250 }
-            },
-            (decodedText) => {
-                handleItemChange(activeScannerItemId!, 'serialNumber', decodedText);
-                toast({
-                    title: "Scan Successful",
-                    description: `Serial Number: ${decodedText}`,
-                });
-                setIsScannerOpen(false);
-                setActiveScannerItemId(null);
-            },
-            (errorMessage) => {
-                // console.warn(`QR Code no match: ${errorMessage}`);
-            }
-        ).catch(err => {
-            console.error("Failed to start scanner", err);
-            setHasCameraPermission(false);
-            toast({ variant: "destructive", title: "Scanner Error", description: "Could not start the scanner. It might be in use by another application." });
-        });
+        setActiveScannerItemId(itemId);
+        setIsScannerOpen(true);
     } catch (error) {
         console.error('Error accessing camera:', error);
         setHasCameraPermission(false);
@@ -198,15 +204,42 @@ export default function InvoicesPage() {
         });
     }
   };
-
-  const stopScanner = () => {
-    if (scannerRef.current && scannerRef.current.isScanning) {
-      scannerRef.current.stop().catch(err => {
-        console.error("Failed to stop scanner", err);
-      });
+  
+  const onScanSuccess = (decodedText: string) => {
+    if(activeScannerItemId) {
+        handleItemChange(activeScannerItemId, 'serialNumber', decodedText);
     }
-    scannerRef.current = null;
-  };
+    toast({
+        title: "Scan Successful",
+        description: `Serial Number: ${decodedText}`,
+    });
+    setIsScannerOpen(false);
+    setActiveScannerItemId(null);
+  }
+  
+  const onScanFailure = (error: any) => {
+      console.error('Scan failed:', error);
+      setIsScannerOpen(false);
+      setActiveScannerItemId(null);
+      
+      let title = 'Scanner Error';
+      let description = 'Could not start the scanner.';
+
+      if (error.name === 'NotAllowedError') {
+        title = 'Camera Access Denied';
+        description = 'Please allow camera access in your browser settings.';
+      } else if (error.name === 'NotReadableError') {
+        title = 'Camera In Use';
+        description = 'Your camera is in use by another application. Please close it and try again.';
+      }
+
+      toast({
+          variant: 'destructive',
+          title: title,
+          description: description,
+      });
+  }
+
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
@@ -561,7 +594,7 @@ export default function InvoicesPage() {
                   <Label htmlFor={`item-serial-${index}`}>Serial Number</Label>
                   <div className="flex gap-2">
                     <Input id={`item-serial-${index}`} placeholder="Scan or enter serial number" value={item.serialNumber} onChange={(e) => handleItemChange(item.id, 'serialNumber', e.target.value)} />
-                    <Button variant="outline" size="icon" onClick={() => { setActiveScannerItemId(item.id); setIsScannerOpen(true); }}>
+                    <Button variant="outline" size="icon" onClick={() => handleOpenScanner(item.id)}>
                         <QrCode className="h-4 w-4" />
                     </Button>
                   </div>
@@ -869,7 +902,6 @@ export default function InvoicesPage() {
 
       <Dialog open={isScannerOpen} onOpenChange={(open) => {
         if (!open) {
-            stopScanner();
             setIsScannerOpen(false);
             setActiveScannerItemId(null);
         }
@@ -882,7 +914,7 @@ export default function InvoicesPage() {
                 </DialogDescription>
             </DialogHeader>
             <div className="py-4">
-                 <div id="reader" className="w-full aspect-square rounded-md overflow-hidden bg-muted"></div>
+                 {isScannerOpen && <BarcodeScanner onScanSuccess={onScanSuccess} onScanFailure={onScanFailure} />}
                 {hasCameraPermission === false && (
                     <Alert variant="destructive" className="mt-4">
                         <AlertTitle>Camera Access Denied</AlertTitle>
