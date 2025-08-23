@@ -41,6 +41,8 @@ const initialTechnicians: Technician[] = [
   { id: "TECH-01", name: "Raj Patel", skills: ["Installation", "Repair"], load: 2, location: "North Zone" },
   { id: "TECH-02", name: "Amit Singh", skills: ["Repair", "Networking"], load: 1, location: "South Zone" },
   { id: "TECH-03", name: "Suresh Kumar", skills: ["Maintenance", "Installation"], load: 4, location: "North Zone" },
+  { id: "TECH-04", name: "Prashant Jaiswar", skills: ["Installation", "Networking"], load: 0, location: "West Zone" },
+  { id: "TECH-05", name: "Krishna Sharma", skills: ["Repair", "Maintenance"], load: 0, location: "East Zone" },
 ];
 
 const initialReviews: Review[] = [
