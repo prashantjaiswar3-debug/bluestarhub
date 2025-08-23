@@ -318,22 +318,6 @@ END:VCARD`;
                     </Link>
                 </SidebarMenuItem>
             </SidebarMenu>
-            <SidebarSeparator />
-            <div className="p-2 text-xs text-sidebar-foreground/70 space-y-3 flex flex-col items-center">
-                <div className="font-semibold">Developed by -</div>
-                <div className="w-24 h-auto text-foreground">
-                   <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/main/logo.png" alt="Digital Fox Studio" width={200} height={200} data-ai-hint="digital fox studio" />
-                </div>
-                <div className="font-bold text-sm text-foreground">DIGITAL FOX STUDIO</div>
-                <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4" />
-                    <a href="tel:+919569737176" className="hover:underline">+91 9569737176</a>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    <a href="mailto:info.digitalfoxstudio@gmail.com" className="hover:underline truncate">info.digitalfoxstudio@gmail.com</a>
-                </div>
-            </div>
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
