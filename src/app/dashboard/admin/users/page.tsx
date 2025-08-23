@@ -59,6 +59,8 @@ const initialUsers: User[] = [
   { id: "ADM-001", name: "Vaibhav Rodge", email: "vaibhav.rodge@bluestar.com", role: "Admin", status: "Active", password: "adminpassword" },
   { id: "SALES-001", name: "Priya Sharma", email: "priya.sharma@bluestar.com", role: "Sales", status: "Active", password: "salespassword" },
   { id: "TECH-007", name: "Raj Patel", email: "raj.patel@bluestar.com", role: "Technician", status: "Active", password: "techpassword" },
+  { id: "TECH-004", name: "Prashant Jaiswar", email: "prashant.jaiswar@bluestar.com", role: "Technician", status: "Active", password: "techpassword4" },
+  { id: "TECH-005", name: "Krishna Sharma", email: "krishna.sharma@bluestar.com", role: "Technician", status: "Active", password: "techpassword5" },
   { id: "CUST-101", name: "John Doe", email: "john.doe@example.com", role: "Customer", status: "Active", password: "customerpassword" },
   { id: "CUST-102", name: "Green Valley Apartments", email: "manager@gva.com", role: "Customer", status: "Inactive", password: "customerpassword2" },
 ];
