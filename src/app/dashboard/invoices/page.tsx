@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
@@ -221,8 +220,8 @@ export default function InvoicesPage() {
   const [copyType, setCopyType] = useState<'Original Copy' | "Customer's Copy">('Original Copy');
   const invoiceRef = useRef<HTMLDivElement>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [activeScannerState, setActiveScannerState] = useState<{itemId: string, serialIndex: number} | null>(null);
-  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const [activeScannerState, setActiveScannerState<{itemId: string, serialIndex: number} | null>(null);
+  const [hasCameraPermission, setHasCameraPermission<boolean | null>(null);
 
   useEffect(() => {
     const storedInvoicesStr = localStorage.getItem('invoices');
@@ -514,6 +513,7 @@ export default function InvoicesPage() {
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
             pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
             pdf.save(`invoice-${selectedInvoice?.invoiceId}.pdf`);
             toast({
@@ -825,7 +825,7 @@ export default function InvoicesPage() {
                     </DialogDescription>
                 </DialogHeader>
             </div>
-            <div className="max-h-[70vh] overflow-y-auto px-6 pb-6 space-y-6">
+            <ScrollArea className="max-h-[70vh] px-6">
                  <div ref={invoiceRef} className="bg-white text-black p-8 font-sans w-[210mm]">
                   {selectedInvoice && (() => {
                     const { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal, amountPaid, amountDue } = calculateInvoiceTotals(selectedInvoice);
@@ -840,7 +840,7 @@ export default function InvoicesPage() {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/refs/heads/main/1755977876302__1_-removebg-preview.png" alt="Bluestar Logo" width={50} height={50} />
+                                        <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={50} height={50} />
                                         <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#2563EB' }}>Bluestar Electronics</h1>
                                     </div>
                                     <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
@@ -972,7 +972,7 @@ export default function InvoicesPage() {
                         </Table>
                     </div>
                 )}
-            </div>
+            </ScrollArea>
           <DialogFooter className="px-6 py-4 flex-row justify-between w-full border-t">
             <div className="flex gap-2">
                 <Button variant="secondary" onClick={handleDownloadPdf}>

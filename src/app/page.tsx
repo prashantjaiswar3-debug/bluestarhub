@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +28,7 @@ export default function LoginPage() {
         <Card className="shadow-lg">
           <CardHeader className="space-y-1 text-center">
             <div className="mx-auto flex items-center justify-center">
-              <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/refs/heads/main/1755977876302__1_-removebg-preview.png" alt="Bluestar Logo" width={64} height={64} />
+              <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={64} height={64} />
             </div>
             <CardTitle className="text-2xl font-bold tracking-tight">
               Bluestar Hub

@@ -249,7 +249,7 @@ END:VCARD`;
           <SidebarContent>
             <SidebarHeader>
               <div className="flex items-center gap-2 p-2">
-                 <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/refs/heads/main/1755977876302__1_-removebg-preview.png" alt="Bluestar Logo" width={40} height={40} />
+                 <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={40} height={40} />
                 <h1 className="text-xl font-semibold">Bluestar Hub</h1>
               </div>
             </SidebarHeader>
@@ -619,8 +619,7 @@ END:VCARD`;
                     <div className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-sm mx-auto h-full flex flex-col">
                         <div className="p-6 flex flex-col items-center gap-4 bg-primary text-primary-foreground rounded-t-lg">
                            <div className="flex items-center gap-2">
-                             <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/refs/heads/main/1755977876302__1_-removebg-preview.png" alt="Bluestar Logo" width={32} height={32} />
-                             <h3 className="text-lg font-bold">Bluestar Hub</h3>
+                             <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={32} height={32} />
                            </div>
                            <Avatar className="h-24 w-24 border-4 border-background">
                                <AvatarImage src={currentUser.avatar} alt="@user" />
@@ -681,3 +680,5 @@ END:VCARD`;
     </SidebarProvider>
   );
 }
+
+    
