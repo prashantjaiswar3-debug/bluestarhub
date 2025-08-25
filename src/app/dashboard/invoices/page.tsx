@@ -60,6 +60,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { BrowserBarcodeReader, NotFoundException, IScannerControls } from '@zxing/library';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
 const registeredCustomers: Customer[] = [
@@ -603,8 +604,69 @@ export default function InvoicesPage() {
 
   return (
     <>
-    <div className="grid h-full grid-cols-1 gap-6 md:grid-cols-5">
-       <div className="flex flex-col md:col-span-2">
+    <Tabs defaultValue="recent" className="flex-1">
+        <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="recent">Recent Invoices</TabsTrigger>
+            <TabsTrigger value="create">Create Invoice</TabsTrigger>
+        </TabsList>
+        <TabsContent value="recent">
+          <Card className="flex flex-1 flex-col">
+            <CardHeader>
+              <CardTitle>Recent Invoices</CardTitle>
+              <CardDescription>Track and manage your invoices.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="w-full">
+                <Table className="min-w-[700px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Invoice ID</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {invoices.map((invoice) => (
+                      <TableRow key={invoice.invoiceId}>
+                        <TableCell className="font-medium">{invoice.invoiceId}</TableCell>
+                        <TableCell>{invoice.customer.name}</TableCell>
+                        <TableCell>{formatCurrency(invoice.totalAmount)}</TableCell>
+                        <TableCell>
+                          <Badge variant={statusVariant[invoice.status]}>
+                            {invoice.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                             {invoice.status !== "Paid" && invoice.status !== "Cancelled" && (
+                                  <Button size="sm" onClick={() => { setSelectedInvoice(invoice); setIsAddPaymentOpen(true); }}>
+                                      <DollarSign className="mr-2 h-3 w-3" />
+                                      Add Payment
+                                  </Button>
+                              )}
+                              <Button variant="ghost" size="icon" onClick={() => setSelectedInvoice(invoice)}>
+                                  <Eye className="h-4 w-4" />
+                                  <span className="sr-only">View</span>
+                              </Button>
+                              {invoice.status !== "Cancelled" && (
+                                 <Button variant="ghost" size="icon" onClick={() => setInvoiceToCancel(invoice)}>
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                      <span className="sr-only">Cancel Invoice</span>
+                                  </Button>
+                              )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="create">
             <Card className="flex flex-1 flex-col">
                 <CardHeader>
                     <CardTitle>Create Invoice</CardTitle>
@@ -759,64 +821,8 @@ export default function InvoicesPage() {
                     </Button>
                 </CardFooter>
             </Card>
-        </div>
-      <div className="flex flex-col md:col-span-3">
-          <Card className="flex flex-1 flex-col">
-            <CardHeader>
-              <CardTitle>Recent Invoices</CardTitle>
-              <CardDescription>Track and manage your invoices.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="w-full">
-                <Table className="min-w-[700px]">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Invoice ID</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {invoices.map((invoice) => (
-                      <TableRow key={invoice.invoiceId}>
-                        <TableCell className="font-medium">{invoice.invoiceId}</TableCell>
-                        <TableCell>{invoice.customer.name}</TableCell>
-                        <TableCell>{formatCurrency(invoice.totalAmount)}</TableCell>
-                        <TableCell>
-                          <Badge variant={statusVariant[invoice.status]}>
-                            {invoice.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                             {invoice.status !== "Paid" && invoice.status !== "Cancelled" && (
-                                  <Button size="sm" onClick={() => { setSelectedInvoice(invoice); setIsAddPaymentOpen(true); }}>
-                                      <DollarSign className="mr-2 h-3 w-3" />
-                                      Add Payment
-                                  </Button>
-                              )}
-                              <Button variant="ghost" size="icon" onClick={() => setSelectedInvoice(invoice)}>
-                                  <Eye className="h-4 w-4" />
-                                  <span className="sr-only">View</span>
-                              </Button>
-                              {invoice.status !== "Cancelled" && (
-                                 <Button variant="ghost" size="icon" onClick={() => setInvoiceToCancel(invoice)}>
-                                      <Trash2 className="h-4 w-4 text-destructive" />
-                                      <span className="sr-only">Cancel Invoice</span>
-                                  </Button>
-                              )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-      </div>
+        </TabsContent>
+    </Tabs>
       
       <Dialog open={!!selectedInvoice} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-4xl flex flex-col p-0" data-slot="header-plain">
@@ -839,10 +845,10 @@ export default function InvoicesPage() {
 
                     return (
                         <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '100%', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
-                          <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
+                           <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div>
-                                    <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={80} height={80} />
+                                    <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={100} height={100} style={{ width: '100px', height: 'auto' }} />
                                     <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
                                         <p><strong>Email:</strong> bluestar.elec@gmail.com</p>
                                         <p><strong>Contact:</strong> +91 9766661333</p>
@@ -996,7 +1002,6 @@ export default function InvoicesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      </div>
 
        <Dialog open={isAddPaymentOpen} onOpenChange={setIsAddPaymentOpen}>
         <DialogContent>
@@ -1082,7 +1087,3 @@ export default function InvoicesPage() {
     </>
   );
 }
-
-    
-
-    
