@@ -469,10 +469,7 @@ export default function QuotationsPage() {
                                  <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                         <div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={50} height={50} />
-                                                <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#2563EB' }}>Bluestar Electronics</h1>
-                                            </div>
+                                            <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={80} height={80} />
                                             <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
                                                 <p><strong>Email:</strong> bluestar.elec@gmail.com</p>
                                                 <p><strong>Contact:</strong> +91 9766661333</p>
@@ -601,3 +598,5 @@ export default function QuotationsPage() {
     </div>
   );
 }
+
+    
