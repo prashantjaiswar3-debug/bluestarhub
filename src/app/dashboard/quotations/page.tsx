@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useRef } from "react";
@@ -276,8 +277,8 @@ export default function QuotationsPage() {
   }
 
   return (
-    <div className="grid h-full grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
-      <div className="lg:col-span-2 flex flex-col">
+    <div className="grid h-full grid-cols-1 gap-6 md:grid-cols-5">
+      <div className="md:col-span-2 flex flex-col">
           <Card className="flex flex-1 flex-col">
             <CardHeader>
               <CardTitle>Create Quotation</CardTitle>
@@ -391,52 +392,54 @@ export default function QuotationsPage() {
             </CardFooter>
           </Card>
       </div>
-      <div className="lg:col-span-3 flex flex-col gap-6">
+      <div className="md:col-span-3 flex flex-col gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Recent Quotations</CardTitle>
             <CardDescription>Track the status of recently sent quotes.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Quote ID</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {quotations.map((quote) => (
-                  <TableRow key={quote.quoteId}>
-                    <TableCell className="font-medium">{quote.quoteId}</TableCell>
-                    <TableCell>{quote.customer.name}</TableCell>
-                    <TableCell>{formatCurrency(quote.totalAmount)}</TableCell>
-                    <TableCell>
-                      <Badge variant={quotationStatusVariant[quote.status]}>
-                        {quote.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                          {quote.status === "Approved" && (
-                              <Button variant="outline" size="sm" onClick={() => handleGenerateInvoice(quote)}>
-                                  <FileText className="mr-2 h-4 w-4" />
-                                  Generate Invoice
-                              </Button>
-                          )}
-                          <Button variant="ghost" size="icon" onClick={() => setSelectedQuote(quote)}>
-                              <Eye className="h-4 w-4" />
-                              <span className="sr-only">View</span>
-                          </Button>
-                      </div>
-                    </TableCell>
+            <ScrollArea className="w-full">
+              <Table className="min-w-[600px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Quote ID</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {quotations.map((quote) => (
+                    <TableRow key={quote.quoteId}>
+                      <TableCell className="font-medium">{quote.quoteId}</TableCell>
+                      <TableCell>{quote.customer.name}</TableCell>
+                      <TableCell>{formatCurrency(quote.totalAmount)}</TableCell>
+                      <TableCell>
+                        <Badge variant={quotationStatusVariant[quote.status]}>
+                          {quote.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                            {quote.status === "Approved" && (
+                                <Button variant="outline" size="sm" onClick={() => handleGenerateInvoice(quote)}>
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    Generate Invoice
+                                </Button>
+                            )}
+                            <Button variant="ghost" size="icon" onClick={() => setSelectedQuote(quote)}>
+                                <Eye className="h-4 w-4" />
+                                <span className="sr-only">View</span>
+                            </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </ScrollArea>
           </CardContent>
         </Card>
       </div>

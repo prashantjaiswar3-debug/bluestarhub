@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
@@ -602,8 +603,8 @@ export default function InvoicesPage() {
 
   return (
     <>
-    <div className="grid h-full grid-cols-1 gap-6 md:grid-cols-2">
-       <div className="flex flex-col">
+    <div className="grid h-full grid-cols-1 gap-6 md:grid-cols-5">
+       <div className="flex flex-col md:col-span-2">
             <Card className="flex flex-1 flex-col">
                 <CardHeader>
                     <CardTitle>Create Invoice</CardTitle>
@@ -759,58 +760,60 @@ export default function InvoicesPage() {
                 </CardFooter>
             </Card>
         </div>
-      <div className="flex flex-col">
+      <div className="flex flex-col md:col-span-3">
           <Card className="flex flex-1 flex-col">
             <CardHeader>
               <CardTitle>Recent Invoices</CardTitle>
               <CardDescription>Track and manage your invoices.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Invoice ID</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {invoices.map((invoice) => (
-                    <TableRow key={invoice.invoiceId}>
-                      <TableCell className="font-medium">{invoice.invoiceId}</TableCell>
-                      <TableCell>{invoice.customer.name}</TableCell>
-                      <TableCell>{formatCurrency(invoice.totalAmount)}</TableCell>
-                      <TableCell>
-                        <Badge variant={statusVariant[invoice.status]}>
-                          {invoice.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                           {invoice.status !== "Paid" && invoice.status !== "Cancelled" && (
-                                <Button size="sm" onClick={() => { setSelectedInvoice(invoice); setIsAddPaymentOpen(true); }}>
-                                    <DollarSign className="mr-2 h-3 w-3" />
-                                    Add Payment
-                                </Button>
-                            )}
-                            <Button variant="ghost" size="icon" onClick={() => setSelectedInvoice(invoice)}>
-                                <Eye className="h-4 w-4" />
-                                <span className="sr-only">View</span>
-                            </Button>
-                            {invoice.status !== "Cancelled" && (
-                               <Button variant="ghost" size="icon" onClick={() => setInvoiceToCancel(invoice)}>
-                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                    <span className="sr-only">Cancel Invoice</span>
-                                </Button>
-                            )}
-                        </div>
-                      </TableCell>
+              <ScrollArea className="w-full">
+                <Table className="min-w-[700px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Invoice ID</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {invoices.map((invoice) => (
+                      <TableRow key={invoice.invoiceId}>
+                        <TableCell className="font-medium">{invoice.invoiceId}</TableCell>
+                        <TableCell>{invoice.customer.name}</TableCell>
+                        <TableCell>{formatCurrency(invoice.totalAmount)}</TableCell>
+                        <TableCell>
+                          <Badge variant={statusVariant[invoice.status]}>
+                            {invoice.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                             {invoice.status !== "Paid" && invoice.status !== "Cancelled" && (
+                                  <Button size="sm" onClick={() => { setSelectedInvoice(invoice); setIsAddPaymentOpen(true); }}>
+                                      <DollarSign className="mr-2 h-3 w-3" />
+                                      Add Payment
+                                  </Button>
+                              )}
+                              <Button variant="ghost" size="icon" onClick={() => setSelectedInvoice(invoice)}>
+                                  <Eye className="h-4 w-4" />
+                                  <span className="sr-only">View</span>
+                              </Button>
+                              {invoice.status !== "Cancelled" && (
+                                 <Button variant="ghost" size="icon" onClick={() => setInvoiceToCancel(invoice)}>
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                      <span className="sr-only">Cancel Invoice</span>
+                                  </Button>
+                              )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
             </CardContent>
           </Card>
       </div>

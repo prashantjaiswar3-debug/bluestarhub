@@ -41,6 +41,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { Complaint, Technician, Review, JobEnquiry } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Star, PlusCircle, Check, X } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const initialComplaints: Complaint[] = [
   { ticketId: "BLU-7238", customer: { name: "John Doe", id: "CUST-001" }, issue: "CCTV Camera not recording", priority: "High", status: "Open", date: "2023-10-26" },
@@ -251,52 +252,52 @@ export default function AdminDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Ticket ID</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Issue</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead className="text-right">Assign</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {openComplaints.length > 0 ? openComplaints.map((complaint) => (
-                  <TableRow key={complaint.ticketId}>
-                    <TableCell className="font-medium">{complaint.ticketId}</TableCell>
-                    <TableCell>{complaint.customer?.name}</TableCell>
-                    <TableCell className="max-w-[300px] truncate">{complaint.issue}</TableCell>
-                    <TableCell>{formatDate(complaint.date)}</TableCell>
-                    <TableCell>
-                      <Badge variant={priorityVariant[complaint.priority]}>
-                        {complaint.priority}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right w-[200px]">
-                      <div className="flex items-center gap-2 justify-end">
-                        <Select onValueChange={(techId) => handleTechnicianSelect(complaint.ticketId, techId)}>
-                          <SelectTrigger id={`assign-${complaint.ticketId}`} aria-label="Select technician">
-                            <SelectValue placeholder="Select Tech" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {fixedTechnicians.map((tech) => (
-                              <SelectItem key={tech.id} value={tech.id}>{tech.name} {tech.role === 'Supervisor' && '(Supervisor)'}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Button size="sm" onClick={() => handleAssign(complaint.ticketId)}>Assign</Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )) : (
+            <ScrollArea className="w-full">
+              <Table className="min-w-[600px]">
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center">No open complaints.</TableCell>
+                    <TableHead>Ticket ID</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Issue</TableHead>
+                    <TableHead>Priority</TableHead>
+                    <TableHead className="text-right">Assign</TableHead>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {openComplaints.length > 0 ? openComplaints.map((complaint) => (
+                    <TableRow key={complaint.ticketId}>
+                      <TableCell className="font-medium">{complaint.ticketId}</TableCell>
+                      <TableCell>{complaint.customer?.name}</TableCell>
+                      <TableCell className="max-w-[200px] truncate">{complaint.issue}</TableCell>
+                      <TableCell>
+                        <Badge variant={priorityVariant[complaint.priority]}>
+                          {complaint.priority}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 justify-end">
+                          <Select onValueChange={(techId) => handleTechnicianSelect(complaint.ticketId, techId)}>
+                            <SelectTrigger id={`assign-${complaint.ticketId}`} aria-label="Select technician">
+                              <SelectValue placeholder="Select Tech" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {fixedTechnicians.map((tech) => (
+                                <SelectItem key={tech.id} value={tech.id}>{tech.name} {tech.role === 'Supervisor' && '(Supervisor)'}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button size="sm" onClick={() => handleAssign(complaint.ticketId)}>Assign</Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center">No open complaints.</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </ScrollArea>
           </CardContent>
         </Card>
 
@@ -308,52 +309,54 @@ export default function AdminDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Ticket ID</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Issue</TableHead>
-                   <TableHead>Priority</TableHead>
-                  <TableHead>Assigned To</TableHead>
-                  <TableHead>Assign</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {assignedComplaints.length > 0 ? assignedComplaints.map((complaint) => (
-                  <TableRow key={complaint.ticketId}>
-                    <TableCell className="font-medium">{complaint.ticketId}</TableCell>
-                    <TableCell>{complaint.customer?.name}</TableCell>
-                    <TableCell className="max-w-[300px] truncate">{complaint.issue}</TableCell>
-                    <TableCell>
-                      <Badge variant={priorityVariant[complaint.priority]}>
-                        {complaint.priority}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{technicians.find(t => t.id === complaint.assignedTo)?.name}</TableCell>
-                     <TableCell className="text-right w-[200px]">
-                      <div className="flex items-center gap-2 justify-end">
-                        <Select onValueChange={(techId) => handleTechnicianSelect(complaint.ticketId, techId)}>
-                          <SelectTrigger id={`assign-${complaint.ticketId}`} aria-label="Select technician">
-                            <SelectValue placeholder="Re-assign" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {fixedTechnicians.map((tech) => (
-                              <SelectItem key={tech.id} value={tech.id}>{tech.name} {tech.role === 'Supervisor' && '(Supervisor)'}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Button size="sm" onClick={() => handleAssign(complaint.ticketId)}>Assign</Button>
-                      </div>
-                    </TableCell>
+             <ScrollArea className="w-full">
+              <Table className="min-w-[600px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Ticket ID</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Issue</TableHead>
+                    <TableHead>Priority</TableHead>
+                    <TableHead>Assigned To</TableHead>
+                    <TableHead>Assign</TableHead>
                   </TableRow>
-                )) : (
-                   <TableRow>
-                    <TableCell colSpan={6} className="text-center">No complaints assigned yet.</TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {assignedComplaints.length > 0 ? assignedComplaints.map((complaint) => (
+                    <TableRow key={complaint.ticketId}>
+                      <TableCell className="font-medium">{complaint.ticketId}</TableCell>
+                      <TableCell>{complaint.customer?.name}</TableCell>
+                      <TableCell className="max-w-[200px] truncate">{complaint.issue}</TableCell>
+                      <TableCell>
+                        <Badge variant={priorityVariant[complaint.priority]}>
+                          {complaint.priority}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{technicians.find(t => t.id === complaint.assignedTo)?.name}</TableCell>
+                       <TableCell className="text-right">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 justify-end">
+                          <Select onValueChange={(techId) => handleTechnicianSelect(complaint.ticketId, techId)}>
+                            <SelectTrigger id={`assign-${complaint.ticketId}`} aria-label="Select technician">
+                              <SelectValue placeholder="Re-assign" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {fixedTechnicians.map((tech) => (
+                                <SelectItem key={tech.id} value={tech.id}>{tech.name} {tech.role === 'Supervisor' && '(Supervisor)'}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button size="sm" onClick={() => handleAssign(complaint.ticketId)}>Assign</Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )) : (
+                     <TableRow>
+                      <TableCell colSpan={6} className="text-center">No complaints assigned yet.</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </ScrollArea>
           </CardContent>
         </Card>
 

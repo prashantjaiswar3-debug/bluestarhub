@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/select";
 import { Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type User = {
   id: string;
@@ -126,7 +127,7 @@ export default function UserManagementPage() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="All" onValueChange={handleFilter}>
-            <TabsList>
+            <TabsList className="grid w-full grid-cols-3 h-auto sm:w-auto sm:inline-flex">
               <TabsTrigger value="All">All Users</TabsTrigger>
               <TabsTrigger value="Admin">Admins</TabsTrigger>
               <TabsTrigger value="Sales">Sales</TabsTrigger>
@@ -248,44 +249,46 @@ export default function UserManagementPage() {
 
 function UserTable({ users, onEdit, onDelete }: { users: User[], onEdit: (user: User) => void, onDelete: (userId: string) => void }) {
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Password</TableHead>
-          <TableHead>Role</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {users.map((user) => (
-          <TableRow key={user.id}>
-            <TableCell className="font-medium">{user.name}</TableCell>
-            <TableCell>{user.email}</TableCell>
-            <TableCell>
-                <Badge variant="outline">{user.password}</Badge>
-            </TableCell>
-            <TableCell>
-              <Badge variant={roleVariant[user.role]}>{user.role}</Badge>
-            </TableCell>
-            <TableCell>
-              <Badge variant={user.status === "Active" ? "secondary" : "destructive"}>
-                {user.status}
-              </Badge>
-            </TableCell>
-            <TableCell className="text-right">
-              <Button variant="ghost" size="icon" onClick={() => onEdit(user)}>
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={() => onDelete(user.id)}>
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
-            </TableCell>
+    <ScrollArea className="w-full">
+      <Table className="min-w-[600px]">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Password</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {users.map((user) => (
+            <TableRow key={user.id}>
+              <TableCell className="font-medium">{user.name}</TableCell>
+              <TableCell>{user.email}</TableCell>
+              <TableCell>
+                  <Badge variant="outline">{user.password}</Badge>
+              </TableCell>
+              <TableCell>
+                <Badge variant={roleVariant[user.role]}>{user.role}</Badge>
+              </TableCell>
+              <TableCell>
+                <Badge variant={user.status === "Active" ? "secondary" : "destructive"}>
+                  {user.status}
+                </Badge>
+              </TableCell>
+              <TableCell className="text-right">
+                <Button variant="ghost" size="icon" onClick={() => onEdit(user)}>
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => onDelete(user.id)}>
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </ScrollArea>
   );
 }
