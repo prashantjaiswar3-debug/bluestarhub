@@ -454,8 +454,8 @@ export default function QuotationsPage() {
                     </DialogDescription>
                 </DialogHeader>
             </div>
-            <ScrollArea className="flex-1 px-6">
-                <div className="space-y-4 pb-6">
+            <ScrollArea className="flex-1">
+                <div className="px-6">
                     <div ref={quoteRef} className="bg-white text-black font-sans w-[210mm]">
                     {selectedQuote && (() => {
                         const { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
@@ -469,15 +469,15 @@ export default function QuotationsPage() {
                                  <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                         <div>
-                                            <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={80} height={80} />
-                                            <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
-                                                <p><strong>Email:</strong> bluestar.elec@gmail.com</p>
-                                                <p><strong>Contact:</strong> +91 9766661333</p>
-                                            </div>
+                                            <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={120} height={120} style={{ width: '120px', height: 'auto' }} />
                                         </div>
                                         <div style={{ textAlign: 'right' }}>
                                             <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>QUOTATION</h2>
                                             <p style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>{copyType}</p>
+                                            <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
+                                                <p><strong>Email:</strong> bluestar.elec@gmail.com</p>
+                                                <p><strong>Contact:</strong> +91 9766661333</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </header>
@@ -563,19 +563,19 @@ export default function QuotationsPage() {
                         );
                     })()}
                     </div>
-                     <div className="p-4 border rounded-md mx-6">
-                        <RadioGroup defaultValue="Original Copy" className="flex items-center gap-4" onValueChange={(value: 'Original Copy' | "Customer's Copy") => setCopyType(value)}>
-                            <h4 className="text-sm font-medium">Select Copy Type:</h4>
-                            <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="Original Copy" id="q-original" />
-                                <Label htmlFor="q-original">Original Copy</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="Customer's Copy" id="q-customer" />
-                                <Label htmlFor="q-customer">Customer's Copy</Label>
-                            </div>
-                        </RadioGroup>
-                    </div>
+                </div>
+                 <div className="p-4 border rounded-md mx-6">
+                    <RadioGroup defaultValue="Original Copy" className="flex items-center gap-4" onValueChange={(value: 'Original Copy' | "Customer's Copy") => setCopyType(value)}>
+                        <h4 className="text-sm font-medium">Select Copy Type:</h4>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Original Copy" id="q-original" />
+                            <Label htmlFor="q-original">Original Copy</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Customer's Copy" id="q-customer" />
+                            <Label htmlFor="q-customer">Customer's Copy</Label>
+                        </div>
+                    </RadioGroup>
                 </div>
             </ScrollArea>
           <DialogFooter className="px-6 py-4 flex-row justify-between w-full border-t">
@@ -598,5 +598,7 @@ export default function QuotationsPage() {
     </div>
   );
 }
+
+    
 
     

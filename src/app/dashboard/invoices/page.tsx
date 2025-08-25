@@ -604,13 +604,13 @@ export default function InvoicesPage() {
 
   return (
     <>
-    <Tabs defaultValue="recent" className="flex-1">
+    <Tabs defaultValue="recent" className="flex flex-1 flex-col">
         <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="recent">Recent Invoices</TabsTrigger>
             <TabsTrigger value="create">Create Invoice</TabsTrigger>
         </TabsList>
-        <TabsContent value="recent">
-          <Card className="flex flex-1 flex-col">
+        <TabsContent value="recent" className="flex-1">
+          <Card className="flex h-full flex-1 flex-col">
             <CardHeader>
               <CardTitle>Recent Invoices</CardTitle>
               <CardDescription>Track and manage your invoices.</CardDescription>
@@ -666,8 +666,8 @@ export default function InvoicesPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value="create">
-            <Card className="flex flex-1 flex-col">
+        <TabsContent value="create" className="flex-1">
+            <Card className="flex h-full flex-1 flex-col">
                 <CardHeader>
                     <CardTitle>Create Invoice</CardTitle>
                     <CardDescription>Fill in the details to generate a new invoice.</CardDescription>
@@ -825,7 +825,7 @@ export default function InvoicesPage() {
     </Tabs>
       
       <Dialog open={!!selectedInvoice} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-4xl flex flex-col p-0" data-slot="header-plain">
+        <DialogContent className="sm:max-w-4xl p-0 flex flex-col" data-slot="header-plain">
             <div className="p-6">
                 <DialogHeader>
                     <DialogTitle>Invoice Details</DialogTitle>
@@ -834,113 +834,115 @@ export default function InvoicesPage() {
                     </DialogDescription>
                 </DialogHeader>
             </div>
-            <ScrollArea className="flex-1 px-6">
-                 <div ref={invoiceRef} className="bg-white text-black p-8 font-sans w-[210mm]">
-                  {selectedInvoice && (() => {
-                    const { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal, amountPaid, amountDue } = calculateInvoiceTotals(selectedInvoice);
-                     const invoiceDate = new Date(selectedInvoice.date);
-                    const dueDate = new Date(invoiceDate);
-                    dueDate.setDate(invoiceDate.getDate() + 15);
-                    const formatDate = (date: Date | string) => new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+            <ScrollArea className="flex-1">
+                 <div className="px-6">
+                    <div ref={invoiceRef} className="bg-white text-black p-8 font-sans w-[210mm]">
+                    {selectedInvoice && (() => {
+                        const { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal, amountPaid, amountDue } = calculateInvoiceTotals(selectedInvoice);
+                        const invoiceDate = new Date(selectedInvoice.date);
+                        const dueDate = new Date(invoiceDate);
+                        dueDate.setDate(invoiceDate.getDate() + 15);
+                        const formatDate = (date: Date | string) => new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
 
-                    return (
-                        <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '100%', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
-                           <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <div>
-                                    <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={100} height={100} style={{ width: '100px', height: 'auto' }} />
-                                    <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
-                                        <p><strong>Email:</strong> bluestar.elec@gmail.com</p>
-                                        <p><strong>Contact:</strong> +91 9766661333</p>
-                                    </div>
-                                </div>
-                                <div style={{ textAlign: 'right' }}>
-                                    <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>INVOICE</h2>
-                                    <p style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>{copyType}</p>
-                                </div>
-                            </div>
-                          </header>
-
-                          <div style={{ marginTop: '30px', flexGrow: 1 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', paddingBottom: '20px' }}>
-                                <div>
-                                    <h2 style={{ fontSize: '14px', fontWeight: 'bold', color: '#30475E', marginBottom: '8px' }}>Bill To:</h2>
-                                    <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold' }}>{selectedInvoice.customer.name}</p>
-                                     {selectedInvoice.customer.contactPerson && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>Attn: {selectedInvoice.customer.contactPerson}</p>}
-                                    <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedInvoice.customer.address}</p>
-                                    <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>Email:</strong> {selectedInvoice.customer.email}</p>
-                                </div>
-                                 <div style={{ width: '220px' }}>
-                                    <div style={{ fontSize: '12px', textAlign: 'right' }}>
-                                        <div style={{ marginBottom: '5px' }}><strong>Invoice ID:</strong><span>{selectedInvoice.invoiceId}</span></div>
-                                        <div style={{ marginBottom: '5px' }}><strong>Invoice Date:</strong><span>{formatDate(invoiceDate)}</span></div>
-                                        <div style={{ marginBottom: '5px' }}><strong>Due Date:</strong><span>{formatDate(dueDate)}</span></div>
-                                        {selectedInvoice.quoteId && <div style={{ marginBottom: '5px' }}><strong>Quote Ref:</strong><span>{selectedInvoice.quoteId}</span></div>}
-                                        {selectedInvoice.poNumber && <div style={{ marginBottom: '5px' }}><strong>PO Number:</strong><span>{selectedInvoice.poNumber}</span></div>}
-                                    </div>
-                                </div>
-                            </div>
-                           
-                            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px', fontSize: '12px' }}>
-                                <thead>
-                                    <tr style={{ backgroundColor: '#30475E', color: 'white' }}>
-                                        <th style={{ padding: '10px', textAlign: 'left' }}>S.No.</th>
-                                        <th style={{ padding: '10px', textAlign: 'left' }}>DESCRIPTION</th>
-                                        <th style={{ padding: '10px', textAlign: 'right' }}>PRICE</th>
-                                        <th style={{ padding: '10px', textAlign: 'right' }}>QTY</th>
-                                        <th style={{ padding: '10px', textAlign: 'right' }}>GST</th>
-                                        <th style={{ padding: '10px', textAlign: 'right' }}>TOTAL</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {selectedInvoice.items.map((item, index) => (
-                                        <tr key={item.id} style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: index % 2 === 0 ? '#F8FAFC' : 'white' }}>
-                                            <td style={{ padding: '10px' }}>{index + 1}</td>
-                                            <td style={{ padding: '10px', maxWidth: '300px' }}>{item.description} {item.serialNumbers && item.serialNumbers.length > 0 && <span style={{color: '#64748B', fontSize: '10px', display: 'block'}}>S/N: {item.serialNumbers.join(', ')}</span>}</td>
-                                            <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
-                                            <td style={{ padding: '10px', textAlign: 'right' }}>{item.quantity} {item.unit}</td>
-                                            <td style={{ padding: '10px', textAlign: 'right' }}>{item.gstRate}%</td>
-                                            <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.quantity * item.price)}</td>
-                                        </tr>
-                                    ))}
-                                    {selectedInvoice.laborCost > 0 && (
-                                        <tr style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: selectedInvoice.items.length % 2 === 0 ? '#F8FAFC' : 'white' }}>
-                                            <td colSpan={5} style={{ padding: '10px', textAlign: 'right', fontWeight: 'bold' }}>Labor Cost</td>
-                                            <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(selectedInvoice.laborCost)}</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-                                <div style={{ width: '250px', fontSize: '12px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Sub Total:</span><span>{formatCurrency(subTotal)}</span></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Discount ({selectedInvoice.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Total GST:</span><span>{formatCurrency(gstAmount)}</span></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px' }}><span>TOTAL:</span><span>{formatCurrency(grandTotal)}</span></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Amount Paid:</span><span>-{formatCurrency(amountPaid)}</span></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px', backgroundColor: '#F1F5F9', borderRadius: '4px' }}><span>AMOUNT DUE:</span><span>{formatCurrency(amountDue)}</span></div>
-                                </div>
-                            </div>
-                          </div>
-                           <footer style={{ marginTop: 'auto', paddingTop: '20px', fontSize: '12px', flexShrink: 0, borderTop: '1px solid #E2E8F0' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        return (
+                            <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '100%', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
+                            <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div>
-                                        <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Terms and Conditions:</h3>
-                                        <p style={{ color: '#64748B', maxWidth: '300px', fontSize: '10px' }}>Payment is due within 15 days of the invoice date. Please make checks payable to Bluestar Electronics.</p>
+                                        <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={120} height={120} style={{ width: '120px', height: 'auto' }} />
                                     </div>
-                                    <div style={{ textAlign: 'center' }}>
-                                        <p style={{ borderTop: '1px solid #64748B', paddingTop: '5px', marginTop: '40px' }}>Authorized Signature</p>
-                                        <p style={{ fontWeight: 'bold', marginTop: '5px' }}>Bluestar Electronics</p>
+                                    <div style={{ textAlign: 'right' }}>
+                                        <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>INVOICE</h2>
+                                        <p style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>{copyType}</p>
+                                        <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
+                                            <p><strong>Email:</strong> bluestar.elec@gmail.com</p>
+                                            <p><strong>Contact:</strong> +91 9766661333</p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '10px', color: '#888' }}>
-                                    <p>Thank you for your business!</p>
-                                    <p style={{marginTop: '5px', fontWeight: 'bold'}}>Created on Bluestar Hub</p>
+                            </header>
+
+                            <div style={{ marginTop: '30px', flexGrow: 1 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', paddingBottom: '20px' }}>
+                                    <div>
+                                        <h2 style={{ fontSize: '14px', fontWeight: 'bold', color: '#30475E', marginBottom: '8px' }}>Bill To:</h2>
+                                        <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold' }}>{selectedInvoice.customer.name}</p>
+                                        {selectedInvoice.customer.contactPerson && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>Attn: {selectedInvoice.customer.contactPerson}</p>}
+                                        <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedInvoice.customer.address}</p>
+                                        <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>Email:</strong> {selectedInvoice.customer.email}</p>
+                                    </div>
+                                    <div style={{ width: '220px' }}>
+                                        <div style={{ fontSize: '12px', textAlign: 'right' }}>
+                                            <div style={{ marginBottom: '5px' }}><strong>Invoice ID:</strong><span>{selectedInvoice.invoiceId}</span></div>
+                                            <div style={{ marginBottom: '5px' }}><strong>Invoice Date:</strong><span>{formatDate(invoiceDate)}</span></div>
+                                            <div style={{ marginBottom: '5px' }}><strong>Due Date:</strong><span>{formatDate(dueDate)}</span></div>
+                                            {selectedInvoice.quoteId && <div style={{ marginBottom: '5px' }}><strong>Quote Ref:</strong><span>{selectedInvoice.quoteId}</span></div>}
+                                            {selectedInvoice.poNumber && <div style={{ marginBottom: '5px' }}><strong>PO Number:</strong><span>{selectedInvoice.poNumber}</span></div>}
+                                        </div>
+                                    </div>
                                 </div>
-                           </footer>
-                        </div>
-                    );
-                  })()}
+                            
+                                <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px', fontSize: '12px' }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: '#30475E', color: 'white' }}>
+                                            <th style={{ padding: '10px', textAlign: 'left' }}>S.No.</th>
+                                            <th style={{ padding: '10px', textAlign: 'left' }}>DESCRIPTION</th>
+                                            <th style={{ padding: '10px', textAlign: 'right' }}>PRICE</th>
+                                            <th style={{ padding: '10px', textAlign: 'right' }}>QTY</th>
+                                            <th style={{ padding: '10px', textAlign: 'right' }}>GST</th>
+                                            <th style={{ padding: '10px', textAlign: 'right' }}>TOTAL</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {selectedInvoice.items.map((item, index) => (
+                                            <tr key={item.id} style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: index % 2 === 0 ? '#F8FAFC' : 'white' }}>
+                                                <td style={{ padding: '10px' }}>{index + 1}</td>
+                                                <td style={{ padding: '10px', maxWidth: '300px' }}>{item.description} {item.serialNumbers && item.serialNumbers.length > 0 && <span style={{color: '#64748B', fontSize: '10px', display: 'block'}}>S/N: {item.serialNumbers.join(', ')}</span>}</td>
+                                                <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
+                                                <td style={{ padding: '10px', textAlign: 'right' }}>{item.quantity} {item.unit}</td>
+                                                <td style={{ padding: '10px', textAlign: 'right' }}>{item.gstRate}%</td>
+                                                <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.quantity * item.price)}</td>
+                                            </tr>
+                                        ))}
+                                        {selectedInvoice.laborCost > 0 && (
+                                            <tr style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: selectedInvoice.items.length % 2 === 0 ? '#F8FAFC' : 'white' }}>
+                                                <td colSpan={5} style={{ padding: '10px', textAlign: 'right', fontWeight: 'bold' }}>Labor Cost</td>
+                                                <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(selectedInvoice.laborCost)}</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                                    <div style={{ width: '250px', fontSize: '12px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Sub Total:</span><span>{formatCurrency(subTotal)}</span></div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Discount ({selectedInvoice.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Total GST:</span><span>{formatCurrency(gstAmount)}</span></div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px' }}><span>TOTAL:</span><span>{formatCurrency(grandTotal)}</span></div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Amount Paid:</span><span>-{formatCurrency(amountPaid)}</span></div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px', backgroundColor: '#F1F5F9', borderRadius: '4px' }}><span>AMOUNT DUE:</span><span>{formatCurrency(amountDue)}</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <footer style={{ marginTop: 'auto', paddingTop: '20px', fontSize: '12px', flexShrink: 0, borderTop: '1px solid #E2E8F0' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <div>
+                                            <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Terms and Conditions:</h3>
+                                            <p style={{ color: '#64748B', maxWidth: '300px', fontSize: '10px' }}>Payment is due within 15 days of the invoice date. Please make checks payable to Bluestar Electronics.</p>
+                                        </div>
+                                        <div style={{ textAlign: 'center' }}>
+                                            <p style={{ borderTop: '1px solid #64748B', paddingTop: '5px', marginTop: '40px' }}>Authorized Signature</p>
+                                            <p style={{ fontWeight: 'bold', marginTop: '5px' }}>Bluestar Electronics</p>
+                                        </div>
+                                    </div>
+                                    <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '10px', color: '#888' }}>
+                                        <p>Thank you for your business!</p>
+                                        <p style={{marginTop: '5px', fontWeight: 'bold'}}>Created on Bluestar Hub</p>
+                                    </div>
+                            </footer>
+                            </div>
+                        );
+                    })()}
+                    </div>
                 </div>
                  <div className="p-4 border rounded-md mx-6">
                     <RadioGroup defaultValue="Original Copy" className="flex items-center gap-4" onValueChange={(value: 'Original Copy' | "Customer's Copy") => setCopyType(value)}>
@@ -1087,3 +1089,5 @@ export default function InvoicesPage() {
     </>
   );
 }
+
+    

@@ -267,9 +267,8 @@ END:VCARD`;
         <Sidebar>
           <SidebarContent>
             <SidebarHeader>
-              <div className="flex items-center gap-2 p-2">
-                 <Image src={companyInfo.logo} alt="Bluestar Logo" width={40} height={40} />
-                <h1 className="text-xl font-semibold">{companyInfo.name}</h1>
+              <div className="flex items-center justify-center p-2">
+                 <Image src={companyInfo.logo} alt="Bluestar Logo" width={80} height={80} className="w-20 h-auto" />
               </div>
             </SidebarHeader>
             <SidebarMenu>
@@ -747,5 +746,7 @@ END:VCARD`;
     </SidebarProvider>
   );
 }
+
+    
 
     
