@@ -221,8 +221,8 @@ export default function InvoicesPage() {
   const [copyType, setCopyType] = useState<'Original Copy' | "Customer's Copy">('Original Copy');
   const invoiceRef = useRef<HTMLDivElement>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [activeScannerState, setActiveScannerState<{itemId: string, serialIndex: number} | null>(null);
-  const [hasCameraPermission, setHasCameraPermission<boolean | null>(null);
+  const [activeScannerState, setActiveScannerState] = useState<{itemId: string, serialIndex: number} | null>(null);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
 
   useEffect(() => {
     const storedInvoicesStr = localStorage.getItem('invoices');
@@ -1085,3 +1085,5 @@ export default function InvoicesPage() {
     </>
   );
 }
+
+    
