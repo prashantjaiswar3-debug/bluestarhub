@@ -20,6 +20,16 @@ import {
     DialogClose,
 } from "@/components/ui/dialog";
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
     Select,
     SelectContent,
     SelectItem,
@@ -38,10 +48,11 @@ import {
   CardDescription,
   CardFooter,
 } from "@/components/ui/card";
-import { PlusCircle, Trash2, Eye } from "lucide-react";
+import { PlusCircle, Trash2, Eye, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { PurchaseOrder, InventoryItem, PurchaseOrderItem } from "@/lib/types";
 import { initialPurchaseOrders, initialInventory } from "@/lib/data";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const statusVariant: { [key in PurchaseOrder['status']]: "default" | "secondary" | "destructive" } = {
   Pending: "default",
@@ -54,6 +65,8 @@ export default function PurchasesPage() {
   const [purchaseOrders, setPurchaseOrders] = React.useState<PurchaseOrder[]>(initialPurchaseOrders);
   const [isCreatePoOpen, setIsCreatePoOpen] = React.useState(false);
   const [newPo, setNewPo] = React.useState<{ supplier: string; items: (Omit<PurchaseOrderItem, 'price'> & { price: string })[] }>({ supplier: "", items: [] });
+  const [selectedPo, setSelectedPo] = React.useState<PurchaseOrder | null>(null);
+  const [poToCancel, setPoToCancel] = React.useState<PurchaseOrder | null>(null);
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
   const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -99,6 +112,20 @@ export default function PurchasesPage() {
       }));
   }
 
+  const handleMarkAsCompleted = (poId: string) => {
+      setPurchaseOrders(prev => prev.map(po => po.poId === poId ? { ...po, status: 'Completed', receivedDate: new Date().toISOString() } : po));
+      setSelectedPo(prev => prev && prev.poId === poId ? { ...prev, status: 'Completed', receivedDate: new Date().toISOString() } : prev);
+      toast({ title: "Order Completed", description: `Purchase order ${poId} has been marked as completed.` });
+  }
+  
+  const handleConfirmCancel = () => {
+    if (!poToCancel) return;
+    setPurchaseOrders(prev => prev.map(po => po.poId === poToCancel.poId ? { ...po, status: 'Cancelled' } : po));
+    toast({ variant: "destructive", title: "Order Cancelled", description: `Purchase order ${poToCancel.poId} has been cancelled.` });
+    setPoToCancel(null);
+    setSelectedPo(null);
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <Card>
@@ -136,7 +163,7 @@ export default function PurchasesPage() {
                     <TableCell><Badge variant={statusVariant[po.status]}>{po.status}</Badge></TableCell>
                     <TableCell className="text-right">{formatCurrency(po.total)}</TableCell>
                     <TableCell className="text-right">
-                       <Button variant="ghost" size="icon">
+                       <Button variant="ghost" size="icon" onClick={() => setSelectedPo(po)}>
                             <Eye className="h-4 w-4" />
                             <span className="sr-only">View Details</span>
                         </Button>
@@ -171,35 +198,40 @@ export default function PurchasesPage() {
             </div>
             {newPo.supplier && (
                 <Card>
-                    <CardContent className="p-4 max-h-[40vh] overflow-y-auto">
-                        <div className="space-y-4">
-                           <div className="grid grid-cols-[1fr_80px_100px] gap-4 items-center font-medium text-sm text-muted-foreground">
-                                <span>Item Name</span>
-                                <span className="text-right">Quantity</span>
-                                <span className="text-right">Price</span>
-                            </div>
-                            {newPo.items.map(item => (
-                                <div key={item.itemId} className="grid grid-cols-[1fr_80px_100px] gap-4 items-center">
-                                    <Label htmlFor={`item-qty-${item.itemId}`} className="font-normal truncate">{item.name}</Label>
-                                    <Input 
-                                        id={`item-qty-${item.itemId}`}
-                                        type="number"
-                                        className="text-right"
-                                        value={item.quantity}
-                                        onChange={(e) => handleItemChange(item.itemId, 'quantity', e.target.value)}
-                                        placeholder="0"
-                                    />
-                                    <Input
-                                        id={`item-price-${item.itemId}`}
-                                        type="text"
-                                        className="text-right"
-                                        value={item.price}
-                                        onChange={(e) => handleItemChange(item.itemId, 'price', e.target.value)}
-                                        placeholder="0.00"
-                                    />
+                    <CardHeader>
+                        <CardTitle className="text-base">Items from {newPo.supplier}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0 max-h-[40vh] overflow-y-auto">
+                        <ScrollArea className="h-full">
+                            <div className="space-y-4 pr-4">
+                               <div className="grid grid-cols-[1fr_80px_100px] gap-4 items-center font-medium text-sm text-muted-foreground">
+                                    <span>Item Name</span>
+                                    <span className="text-right">Quantity</span>
+                                    <span className="text-right">Price</span>
                                 </div>
-                            ))}
-                        </div>
+                                {newPo.items.map(item => (
+                                    <div key={item.itemId} className="grid grid-cols-[1fr_80px_100px] gap-4 items-center">
+                                        <Label htmlFor={`item-qty-${item.itemId}`} className="font-normal truncate">{item.name}</Label>
+                                        <Input 
+                                            id={`item-qty-${item.itemId}`}
+                                            type="number"
+                                            className="text-right"
+                                            value={item.quantity}
+                                            onChange={(e) => handleItemChange(item.itemId, 'quantity', e.target.value)}
+                                            placeholder="0"
+                                        />
+                                        <Input
+                                            id={`item-price-${item.itemId}`}
+                                            type="text"
+                                            className="text-right"
+                                            value={item.price}
+                                            onChange={(e) => handleItemChange(item.itemId, 'price', e.target.value)}
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </ScrollArea>
                     </CardContent>
                 </Card>
             )}
@@ -212,6 +244,88 @@ export default function PurchasesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!selectedPo} onOpenChange={(isOpen) => !isOpen && setSelectedPo(null)}>
+        <DialogContent className="sm:max-w-xl">
+            <DialogHeader>
+                <DialogTitle>Purchase Order: {selectedPo?.poId}</DialogTitle>
+                <DialogDescription>
+                   For supplier <span className="font-semibold">{selectedPo?.supplier}</span>, dated {selectedPo && formatDate(selectedPo.date)}.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+                <Card>
+                    <CardContent className="p-4">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Item</TableHead>
+                                    <TableHead className="text-right">Qty</TableHead>
+                                    <TableHead className="text-right">Price</TableHead>
+                                    <TableHead className="text-right">Total</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {selectedPo?.items.map(item => (
+                                    <TableRow key={item.itemId}>
+                                        <TableCell>{item.name}</TableCell>
+                                        <TableCell className="text-right">{item.quantity}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(item.price)}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(item.price * item.quantity)}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                    <CardFooter className="flex justify-end bg-muted/50 p-4">
+                        <div className="text-right">
+                           <p className="text-muted-foreground">Grand Total</p>
+                           <p className="text-xl font-bold">{formatCurrency(selectedPo?.total || 0)}</p>
+                        </div>
+                    </CardFooter>
+                </Card>
+            </div>
+            <DialogFooter className="justify-between">
+                <div>
+                   {selectedPo?.status === 'Pending' && (
+                       <Button variant="destructive" onClick={() => { setPoToCancel(selectedPo); }}>
+                           <Trash2 className="mr-2 h-4 w-4" />
+                           Cancel Order
+                       </Button>
+                   )}
+                </div>
+                <div className="flex gap-2">
+                    <DialogClose asChild>
+                        <Button variant="outline">Close</Button>
+                    </DialogClose>
+                    {selectedPo?.status === 'Pending' && (
+                        <Button onClick={() => handleMarkAsCompleted(selectedPo.poId)}>
+                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                            Mark as Completed
+                        </Button>
+                    )}
+                </div>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      <AlertDialog open={!!poToCancel} onOpenChange={() => setPoToCancel(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This will cancel the purchase order <span className="font-semibold">{poToCancel?.poId}</span>. This action cannot be undone.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Close</AlertDialogCancel>
+                <AlertDialogAction onClick={handleConfirmCancel} className="bg-destructive hover:bg-destructive/90">
+                    Confirm Cancellation
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
