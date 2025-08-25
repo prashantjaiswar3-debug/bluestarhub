@@ -1,4 +1,5 @@
 
+
 export type Complaint = {
   ticketId: string;
   customer?: {
@@ -118,5 +119,34 @@ export type JobEnquiry = {
     date: string;
     bargainRate?: number;
     assignedTo?: string;
+};
+
+export type InventoryCategory = 'Camera' | 'DVR/NVR' | 'Cable' | 'Accessory';
+
+export type InventoryItem = {
+    id: string;
+    name: string;
+    category: InventoryCategory;
+    stock: number;
+    price: number;
+    supplier?: string;
+    partNumber?: string;
+};
+
+export type PurchaseOrderItem = {
+    itemId: string;
+    name: string;
+    quantity: number;
+    price: number;
+};
+
+export type PurchaseOrder = {
+    poId: string;
+    supplier: string;
+    items: PurchaseOrderItem[];
+    total: number;
+    status: 'Pending' | 'Completed' | 'Cancelled';
+    date: string;
+    receivedDate?: string;
 };
     

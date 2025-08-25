@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from "next/link";
@@ -27,6 +28,8 @@ import {
   Upload,
   Home,
   UserCog,
+  ShoppingCart,
+  Boxes,
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -70,6 +73,8 @@ const allNavItems = [
   { href: "/dashboard/customer", icon: Users, label: "My Portal", roles: ['customer'] },
   { href: "/dashboard/quotations", icon: FileText, label: "Quotations", roles: ['sales', 'supervisor'] },
   { href: "/dashboard/invoices", icon: FilePlus2, label: "Invoices", roles: ['admin', 'sales', 'supervisor'] },
+  { href: "/dashboard/purchases", icon: ShoppingCart, label: "Purchases", roles: ['admin', 'sales', 'supervisor'] },
+  { href: "/dashboard/inventory", icon: Boxes, label: "Inventory", roles: ['admin', 'sales', 'supervisor'] },
   { href: "/dashboard/admin/users", icon: UserCog, label: "User Management", roles: ['admin'] },
 ];
 
@@ -124,7 +129,7 @@ export default function DashboardLayout({
     if (pathname.startsWith('/dashboard/technician/freelance')) return 'freelance';
     if (pathname.startsWith('/dashboard/technician')) return 'technician';
     if (pathname.startsWith('/dashboard/customer')) return 'customer';
-    if (pathname.startsWith('/dashboard/sales') || pathname.startsWith('/dashboard/invoices') || pathname.startsWith('/dashboard/quotations')) {
+    if (pathname.startsWith('/dashboard/sales') || pathname.startsWith('/dashboard/invoices') || pathname.startsWith('/dashboard/quotations') || pathname.startsWith('/dashboard/purchases') || pathname.startsWith('/dashboard/inventory')) {
         const supervisor = initialRoleInfo.supervisor;
         if (supervisor.name === "Raj Patel") return 'supervisor';
         return 'sales';
