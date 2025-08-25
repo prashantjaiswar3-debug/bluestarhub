@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState } from "react";
@@ -38,9 +39,9 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import type { Complaint, Technician, Review, JobEnquiry } from "@/lib/types";
+import type { Complaint, Technician, Review, JobEnquiry, Expense } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { Star, PlusCircle, Check, X } from "lucide-react";
+import { Star, PlusCircle, Check, X, ThumbsDown, ThumbsUp } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const initialComplaints: Complaint[] = [
@@ -70,6 +71,13 @@ const initialEnquiries: JobEnquiry[] = [
     { id: "ENQ-003", title: "Weekend Shift Cover", description: "Cover a weekend shift for CCTV monitoring.", location: "Any", proposedRate: 3000, status: "Accepted", date: "2023-10-30", assignedTo: "TECH-FREELANCE-02" },
 ]
 
+const initialExpenses: Expense[] = [
+    { id: 'EXP-001', technicianId: 'TECH-01', technicianName: 'Raj Patel', date: '2023-10-28', category: 'Travel', amount: 350, description: 'Travel to client site in South Zone', status: 'Pending' },
+    { id: 'EXP-002', technicianId: 'TECH-02', technicianName: 'Amit Singh', date: '2023-10-27', category: 'Food', amount: 200, description: 'Lunch during full-day installation', status: 'Approved' },
+    { id: 'EXP-003', technicianId: 'TECH-03', technicianName: 'Suresh Kumar', date: '2023-10-29', category: 'Materials', amount: 1200, description: 'Purchase of extra cables for urgent repair', status: 'Pending' },
+    { id: 'EXP-004', technicianId: 'TECH-01', technicianName: 'Raj Patel', date: '2023-10-29', category: 'Other', amount: 150, description: 'Stationery and printouts for site report', status: 'Rejected' },
+]
+
 const priorityVariant: { [key in Complaint["priority"]]: "destructive" | "secondary" | "default" } = {
   High: "destructive",
   Medium: "secondary",
@@ -83,6 +91,12 @@ const enquiryStatusVariant: { [key in JobEnquiry["status"]]: "default" | "second
   Rejected: "destructive",
 };
 
+const expenseStatusVariant: { [key in Expense["status"]]: "default" | "secondary" | "destructive" } = {
+  Pending: "default",
+  Approved: "secondary",
+  Rejected: "destructive",
+};
+
 export default function AdminDashboard() {
   const { toast } = useToast();
   const [complaints, setComplaints] = useState<Complaint[]>(initialComplaints);
@@ -92,6 +106,7 @@ export default function AdminDashboard() {
   const [enquiries, setEnquiries] = useState<JobEnquiry[]>(initialEnquiries);
   const [isCreateEnquiryOpen, setIsCreateEnquiryOpen] = useState(false);
   const [newEnquiry, setNewEnquiry] = useState({ title: "", description: "", location: "", proposedRate: "" });
+  const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
 
   const fixedTechnicians = technicians.filter(t => t.type === 'Fixed');
 
@@ -164,6 +179,19 @@ export default function AdminDashboard() {
           description: `The counter-offer for enquiry ${enquiryId} has been ${action === 'accept' ? 'accepted' : 'rejected'}.`,
       });
   }
+
+   const handleExpenseAction = (expenseId: string, action: 'approve' | 'reject') => {
+    setExpenses(prev => prev.map(e => {
+        if (e.id === expenseId) {
+            return { ...e, status: action === 'approve' ? 'Approved' : 'Rejected' };
+        }
+        return e;
+    }));
+    toast({
+        title: `Expense ${action === 'approve' ? 'Approved' : 'Rejected'}`,
+        description: `The expense claim has been ${action === 'approve' ? 'approved' : 'rejected'}.`,
+    });
+  };
   
   const assignedComplaints = complaints.filter(c => c.status === 'Assigned');
   
@@ -181,6 +209,7 @@ export default function AdminDashboard() {
   }
 
   const openComplaints = complaints.filter(c => c.status === 'Open');
+  const pendingExpenses = expenses.filter(e => e.status === 'Pending');
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
@@ -352,6 +381,56 @@ export default function AdminDashboard() {
                   )) : (
                      <TableRow>
                       <TableCell colSpan={6} className="text-center">No complaints assigned yet.</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Expense Approval</CardTitle>
+            <CardDescription>
+              Review and approve or reject expense claims from technicians.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+             <ScrollArea className="w-full">
+              <Table className="min-w-[600px] whitespace-nowrap">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Technician</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pendingExpenses.length > 0 ? pendingExpenses.map((expense) => (
+                    <TableRow key={expense.id}>
+                      <TableCell className="font-medium">{expense.technicianName}</TableCell>
+                      <TableCell>{formatDate(expense.date)}</TableCell>
+                      <TableCell><Badge variant="outline">{expense.category}</Badge></TableCell>
+                      <TableCell className="max-w-xs truncate">{expense.description}</TableCell>
+                      <TableCell className="text-right font-medium">{formatCurrency(expense.amount)}</TableCell>
+                      <TableCell className="text-right">
+                         <div className="flex gap-2 justify-end">
+                            <Button size="icon" variant="outline" className="h-8 w-8 bg-green-100 text-green-700 hover:bg-green-200" onClick={() => handleExpenseAction(expense.id, 'approve')}>
+                                <ThumbsUp className="h-4 w-4" />
+                            </Button>
+                            <Button size="icon" variant="outline" className="h-8 w-8 bg-red-100 text-red-700 hover:bg-red-200" onClick={() => handleExpenseAction(expense.id, 'reject')}>
+                                <ThumbsDown className="h-4 w-4" />
+                            </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )) : (
+                     <TableRow>
+                      <TableCell colSpan={6} className="text-center">No pending expenses to review.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>

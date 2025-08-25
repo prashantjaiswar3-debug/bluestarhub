@@ -160,4 +160,16 @@ export type Vendor = {
   category: 'CCTV Supplier' | 'Cable Provider' | 'IT Hardware' | 'General Supplier' | 'Other';
   status: 'Active' | 'Inactive';
 };
+
+export type Expense = {
+  id: string;
+  technicianId: string;
+  technicianName: string;
+  date: string;
+  category: 'Travel' | 'Food' | 'Materials' | 'Tools' | 'Other';
+  amount: number;
+  description: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  receiptUrl?: string;
+};
     

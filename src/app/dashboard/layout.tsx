@@ -31,6 +31,7 @@ import {
   ShoppingCart,
   Boxes,
   Building,
+  Receipt,
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -71,6 +72,7 @@ const allNavItems = [
   { href: "/dashboard", icon: Home, label: "Dashboard", roles: ['admin', 'sales', 'technician', 'customer', 'supervisor', 'freelance'] },
   { href: "/dashboard/sales", icon: LayoutGrid, label: "Jobs Management", roles: ['admin','sales', 'supervisor'] },
   { href: "/dashboard/technician", icon: Wrench, label: "My Jobs", roles: ['technician', 'freelance'] },
+  { href: "/dashboard/technician/expenses", icon: Receipt, label: "My Expenses", roles: ['technician', 'freelance'] },
   { href: "/dashboard/customer", icon: Users, label: "My Portal", roles: ['customer'] },
   { href: "/dashboard/quotations", icon: FileText, label: "Quotations", roles: ['sales', 'supervisor'] },
   { href: "/dashboard/invoices", icon: FilePlus2, label: "Invoices", roles: ['admin', 'sales', 'supervisor'] },
@@ -79,6 +81,13 @@ const allNavItems = [
   { href: "/dashboard/vendors", icon: Building, label: "Vendors", roles: ['admin', 'sales', 'supervisor'] },
   { href: "/dashboard/admin/users", icon: UserCog, label: "User Management", roles: ['admin'] },
 ];
+
+const initialCompanyInfo = {
+    name: "Bluestar Electronics",
+    logo: "https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png",
+    email: "bluestar.elec@gmail.com",
+    phone: "+91 9766661333",
+};
 
 const initialRoleInfo = {
     admin: { name: "Vaibhav Rodge", email: "vaibhav.rodge@bluestar.com", fallback: "VR", id: "ADM-001", avatar: "https://placehold.co/100x100.png", phone: "9876543210" },
@@ -98,6 +107,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const { toast } = useToast();
   const [roleInfo, setRoleInfo] = React.useState(initialRoleInfo);
+  const [companyInfo, setCompanyInfo] = React.useState(initialCompanyInfo);
 
   const [isRegisterCustomerOpen, setIsRegisterCustomerOpen] = React.useState(false);
   const [newCustomer, setNewCustomer] = React.useState({
@@ -124,6 +134,7 @@ export default function DashboardLayout({
   const avatarInputRef = React.useRef<HTMLInputElement>(null);
 
   const [isManageOffersOpen, setIsManageOffersOpen] = React.useState(false);
+  const [isCompanyProfileOpen, setIsCompanyProfileOpen] = React.useState(false);
 
 
   const getRole = () => {
@@ -235,11 +246,12 @@ export default function DashboardLayout({
   }
 
   const currentRole = getRole();
-  const navItems = allNavItems.filter(item => item.roles.includes(currentRole));
+  const navItems = allNavItems.filter(item => {
+    if (item.href === '/dashboard/technician' && currentRole === 'freelance') return false;
+    return item.roles.includes(currentRole)
+  });
 
-  const dashboardLabel = navItems.find(item => item.href === pathname)?.label || 
-                       navItems.find(item => pathname.startsWith(item.href) && item.href !== '/dashboard')?.label || 
-                       'Dashboard';
+  const dashboardLabel = navItems.find(item => pathname.startsWith(item.href) && item.href !== '/dashboard')?.label || 'Dashboard';
   const currentUser = roleInfo[currentRole as keyof typeof roleInfo] || roleInfo.default;
 
   const vCard = `BEGIN:VCARD
@@ -256,28 +268,33 @@ END:VCARD`;
           <SidebarContent>
             <SidebarHeader>
               <div className="flex items-center gap-2 p-2">
-                 <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={40} height={40} />
-                <h1 className="text-xl font-semibold">Bluestar Hub</h1>
+                 <Image src={companyInfo.logo} alt="Bluestar Logo" width={40} height={40} />
+                <h1 className="text-xl font-semibold">{companyInfo.name}</h1>
               </div>
             </SidebarHeader>
             <SidebarMenu>
               {navItems.map((item) => {
                 const isActive = item.href === '/dashboard' ? pathname === item.href : pathname.startsWith(item.href);
-                if(currentRole === 'freelance' && item.href === '/dashboard/technician') {
+                 if(item.href === '/dashboard/technician' && currentRole === 'technician') {
+                    // Default to My Jobs for fixed technicians
                     return (
                       <SidebarMenuItem key={item.href}>
-                        <Link href="/dashboard/technician/freelance">
+                        <Link href="/dashboard/technician">
                            <SidebarMenuButton
                             isActive={isActive}
-                            tooltip={{ children: "Job Enquiries" }}
+                            tooltip={{ children: item.label }}
                           >
                             <item.icon className="shrink-0"/>
-                            <span>Job Enquiries</span>
+                            <span>{item.label}</span>
                           </SidebarMenuButton>
                         </Link>
                       </SidebarMenuItem>
                     )
                 }
+                 if(item.href === '/dashboard/technician/expenses' && isEditingProfile) {
+                     return null;
+                 }
+                
                 return (
                   <SidebarMenuItem key={item.href}>
                     <Link href={item.href}>
@@ -305,6 +322,12 @@ END:VCARD`;
               )}
                {currentRole === 'admin' && (
                 <>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => setIsCompanyProfileOpen(true)} tooltip={{ children: "Company Profile" }}>
+                      <Building className="shrink-0" />
+                      <span>Company Profile</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton onClick={() => setIsManageOffersOpen(true)} tooltip={{ children: "Manage Offers" }}>
                       <Gift className="shrink-0" />
@@ -384,6 +407,43 @@ END:VCARD`;
           <main className="flex-1 overflow-y-auto p-2 sm:p-4 md:p-6">{children}</main>
         </SidebarInset>
       </div>
+       <Dialog open={isCompanyProfileOpen} onOpenChange={setIsCompanyProfileOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Company Profile</DialogTitle>
+                <DialogDescription>
+                    Update your company's details. These will be reflected across the app.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="space-y-2">
+                    <Label htmlFor="company-name-edit">Company Name</Label>
+                    <Input id="company-name-edit" value={companyInfo.name} onChange={(e) => setCompanyInfo(prev => ({...prev, name: e.target.value}))} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="company-logo-edit">Logo URL</Label>
+                    <Input id="company-logo-edit" value={companyInfo.logo} onChange={(e) => setCompanyInfo(prev => ({...prev, logo: e.target.value}))} />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="company-email-edit">Email</Label>
+                    <Input id="company-email-edit" type="email" value={companyInfo.email} onChange={(e) => setCompanyInfo(prev => ({...prev, email: e.target.value}))} />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="company-phone-edit">Phone</Label>
+                    <Input id="company-phone-edit" value={companyInfo.phone} onChange={(e) => setCompanyInfo(prev => ({...prev, phone: e.target.value}))} />
+                </div>
+            </div>
+            <DialogFooter>
+                 <DialogClose asChild>
+                    <Button variant="outline">Close</Button>
+                </DialogClose>
+                 <Button onClick={() => {
+                    toast({title: "Company Profile Updated", description: "Your company details have been saved."});
+                    setIsCompanyProfileOpen(false);
+                 }}>Save Changes</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog open={isManageOffersOpen} onOpenChange={setIsManageOffersOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
@@ -626,7 +686,7 @@ END:VCARD`;
                     <div className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-sm mx-auto h-full flex flex-col">
                         <div className="p-6 flex flex-col items-center gap-4 bg-primary text-primary-foreground rounded-t-lg">
                            <div className="flex items-center gap-2">
-                             <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={32} height={32} />
+                             <Image src={companyInfo.logo} alt="Company Logo" width={32} height={32} />
                            </div>
                            <Avatar className="h-24 w-24 border-4 border-background">
                                <AvatarImage src={currentUser.avatar} alt="@user" />
@@ -650,7 +710,7 @@ END:VCARD`;
                                   viewBox={`0 0 80 80`}
                                 />
                             </div>
-                            <p className="text-xs text-muted-foreground">This card is the property of Bluestar Hub. If found, please return to the nearest office.</p>
+                            <p className="text-xs text-muted-foreground">This card is the property of {companyInfo.name}. If found, please return to the nearest office.</p>
                         </div>
                          <div className="px-6 py-4 border-t flex items-center justify-center gap-2 text-primary">
                             <ShieldCheck className="h-5 w-5"/>
