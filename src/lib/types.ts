@@ -149,4 +149,15 @@ export type PurchaseOrder = {
     date: string;
     receivedDate?: string;
 };
+
+export type Vendor = {
+  id: string;
+  name: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  address: string;
+  category: 'CCTV Supplier' | 'Cable Provider' | 'IT Hardware' | 'General Supplier' | 'Other';
+  status: 'Active' | 'Inactive';
+};
     
