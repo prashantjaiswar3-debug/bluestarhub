@@ -107,6 +107,7 @@ export default function AdminDashboard() {
   const [isCreateEnquiryOpen, setIsCreateEnquiryOpen] = useState(false);
   const [newEnquiry, setNewEnquiry] = useState({ title: "", description: "", location: "", proposedRate: "" });
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
+  const [expenseReport, setExpenseReport] = useState<{ from: string, to: string }>({ from: '', to: '' });
 
   const fixedTechnicians = technicians.filter(t => t.type === 'Fixed');
 
@@ -196,8 +197,10 @@ export default function AdminDashboard() {
   const assignedComplaints = complaints.filter(c => c.status === 'Assigned');
   
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      timeZone: 'Asia/Kolkata',
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Date';
+    return date.toLocaleDateString('en-IN', {
+      year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Asia/Kolkata'
     });
   };
   
@@ -210,6 +213,20 @@ export default function AdminDashboard() {
 
   const openComplaints = complaints.filter(c => c.status === 'Open');
   const pendingExpenses = expenses.filter(e => e.status === 'Pending');
+
+  const filteredExpensesForReport = expenses.filter(expense => {
+    const expenseDate = new Date(expense.date);
+    const fromDate = expenseReport.from ? new Date(expenseReport.from) : null;
+    const toDate = expenseReport.to ? new Date(expenseReport.to) : null;
+    
+    if (fromDate && isNaN(fromDate.getTime())) return false;
+    if (toDate && isNaN(toDate.getTime())) return false;
+
+    if (fromDate && expenseDate < fromDate) return false;
+    if (toDate && expenseDate > toDate) return false;
+    
+    return true;
+  });
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
@@ -226,50 +243,52 @@ export default function AdminDashboard() {
             </Button>
           </CardHeader>
           <CardContent>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Rate</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Assigned To</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {enquiries.map(enquiry => (
-                        <TableRow key={enquiry.id}>
-                            <TableCell className="font-medium">{enquiry.title}</TableCell>
-                            <TableCell>
-                                {enquiry.status === 'Bargaining' ? (
-                                    <div className="flex items-center gap-2">
-                                        <span className="line-through text-muted-foreground">{formatCurrency(enquiry.proposedRate)}</span>
-                                        <span className="font-semibold">{formatCurrency(enquiry.bargainRate!)}</span>
-                                    </div>
-                                ) : (
-                                    formatCurrency(enquiry.proposedRate)
-                                )}
-                            </TableCell>
-                            <TableCell>
-                                <Badge variant={enquiryStatusVariant[enquiry.status]}>{enquiry.status}</Badge>
-                            </TableCell>
-                            <TableCell>{enquiry.assignedTo || 'N/A'}</TableCell>
-                            <TableCell className="text-right">
-                                {enquiry.status === 'Bargaining' && (
-                                    <div className="flex gap-2 justify-end">
-                                        <Button size="icon" variant="outline" className="h-8 w-8 bg-green-100 text-green-700 hover:bg-green-200" onClick={() => handleBargainAction(enquiry.id, 'accept')}>
-                                            <Check className="h-4 w-4" />
-                                        </Button>
-                                        <Button size="icon" variant="outline" className="h-8 w-8 bg-red-100 text-red-700 hover:bg-red-200" onClick={() => handleBargainAction(enquiry.id, 'reject')}>
-                                            <X className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                )}
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+            <ScrollArea className="w-full">
+              <Table className="min-w-[600px] whitespace-nowrap">
+                  <TableHeader>
+                      <TableRow>
+                          <TableHead>Title</TableHead>
+                          <TableHead>Rate</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Assigned To</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                      {enquiries.map(enquiry => (
+                          <TableRow key={enquiry.id}>
+                              <TableCell className="font-medium">{enquiry.title}</TableCell>
+                              <TableCell>
+                                  {enquiry.status === 'Bargaining' ? (
+                                      <div className="flex items-center gap-2">
+                                          <span className="line-through text-muted-foreground">{formatCurrency(enquiry.proposedRate)}</span>
+                                          <span className="font-semibold">{formatCurrency(enquiry.bargainRate!)}</span>
+                                      </div>
+                                  ) : (
+                                      formatCurrency(enquiry.proposedRate)
+                                  )}
+                              </TableCell>
+                              <TableCell>
+                                  <Badge variant={enquiryStatusVariant[enquiry.status]}>{enquiry.status}</Badge>
+                              </TableCell>
+                              <TableCell>{enquiry.assignedTo || 'N/A'}</TableCell>
+                              <TableCell className="text-right">
+                                  {enquiry.status === 'Bargaining' && (
+                                      <div className="flex gap-2 justify-end">
+                                          <Button size="icon" variant="outline" className="h-8 w-8 bg-green-100 text-green-700 hover:bg-green-200" onClick={() => handleBargainAction(enquiry.id, 'accept')}>
+                                              <Check className="h-4 w-4" />
+                                          </Button>
+                                          <Button size="icon" variant="outline" className="h-8 w-8 bg-red-100 text-red-700 hover:bg-red-200" onClick={() => handleBargainAction(enquiry.id, 'reject')}>
+                                              <X className="h-4 w-4" />
+                                          </Button>
+                                      </div>
+                                  )}
+                              </TableCell>
+                          </TableRow>
+                      ))}
+                  </TableBody>
+              </Table>
+            </ScrollArea>
           </CardContent>
         </Card>
         
@@ -441,6 +460,61 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader>
+            <CardTitle>Expense Report</CardTitle>
+            <CardDescription>
+              Filter and view all expenses within a specific date range.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+              <div className="grid gap-2">
+                <Label htmlFor="from-date">From</Label>
+                <Input id="from-date" type="date" value={expenseReport.from} onChange={(e) => setExpenseReport(prev => ({...prev, from: e.target.value}))}/>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="to-date">To</Label>
+                <Input id="to-date" type="date" value={expenseReport.to} onChange={(e) => setExpenseReport(prev => ({...prev, to: e.target.value}))}/>
+              </div>
+            </div>
+            <ScrollArea className="w-full">
+              <Table className="min-w-[600px] whitespace-nowrap">
+                  <TableHeader>
+                      <TableRow>
+                          <TableHead>Technician</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Description</TableHead>
+                          <TableHead className="text-right">Amount</TableHead>
+                          <TableHead className="text-right">Status</TableHead>
+                      </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                      {filteredExpensesForReport.length > 0 ? filteredExpensesForReport.map((expense) => (
+                          <TableRow key={expense.id}>
+                              <TableCell>{expense.technicianName}</TableCell>
+                              <TableCell>{formatDate(expense.date)}</TableCell>
+                              <TableCell><Badge variant="outline">{expense.category}</Badge></TableCell>
+                              <TableCell className="max-w-xs truncate">{expense.description}</TableCell>
+                              <TableCell className="text-right font-medium">{formatCurrency(expense.amount)}</TableCell>
+                              <TableCell className="text-right">
+                                  <Badge variant={expenseStatusVariant[expense.status]}>{expense.status}</Badge>
+                              </TableCell>
+                          </TableRow>
+                      )) : (
+                          <TableRow>
+                              <TableCell colSpan={6} className="text-center h-24">
+                                  No expenses found for the selected period.
+                              </TableCell>
+                          </TableRow>
+                      )}
+                  </TableBody>
+              </Table>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle>Customer Reviews</CardTitle>
             <CardDescription>
               Feedback submitted by customers.
@@ -560,3 +634,5 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+    
