@@ -310,7 +310,7 @@ export default function InvoicesPage() {
 
   const totalAfterDiscount = useMemo(() => {
     return subTotal - discountAmount;
-  }, [subTotal, discountAmount]);
+  }, [subTotal, newInvoice.discount]);
 
   const gstAmount = useMemo(() => {
     return newInvoice.items.reduce((sum, item) => {
@@ -849,7 +849,7 @@ export default function InvoicesPage() {
                             <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div>
-                                        <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={120} height={120} style={{ width: '120px', height: 'auto' }} />
+                                        <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={136} height={136} style={{ width: '136px', height: 'auto' }} />
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
                                         <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>INVOICE</h2>
@@ -1089,5 +1089,7 @@ export default function InvoicesPage() {
     </>
   );
 }
+
+    
 
     
