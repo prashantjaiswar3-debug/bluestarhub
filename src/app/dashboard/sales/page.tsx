@@ -253,7 +253,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <ScrollArea className="w-full">
-              <Table className="min-w-[600px]">
+              <Table className="min-w-[600px] whitespace-nowrap">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Ticket ID</TableHead>
@@ -277,7 +277,7 @@ export default function AdminDashboard() {
                       <TableCell className="text-right">
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 justify-end">
                           <Select onValueChange={(techId) => handleTechnicianSelect(complaint.ticketId, techId)}>
-                            <SelectTrigger id={`assign-${complaint.ticketId}`} aria-label="Select technician">
+                            <SelectTrigger id={`assign-${complaint.ticketId}`} aria-label="Select technician" className="min-w-[150px]">
                               <SelectValue placeholder="Select Tech" />
                             </SelectTrigger>
                             <SelectContent>
@@ -310,7 +310,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
              <ScrollArea className="w-full">
-              <Table className="min-w-[600px]">
+              <Table className="min-w-[600px] whitespace-nowrap">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Ticket ID</TableHead>
@@ -318,7 +318,7 @@ export default function AdminDashboard() {
                     <TableHead>Issue</TableHead>
                     <TableHead>Priority</TableHead>
                     <TableHead>Assigned To</TableHead>
-                    <TableHead>Assign</TableHead>
+                    <TableHead className="text-right">Assign</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -336,7 +336,7 @@ export default function AdminDashboard() {
                        <TableCell className="text-right">
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 justify-end">
                           <Select onValueChange={(techId) => handleTechnicianSelect(complaint.ticketId, techId)}>
-                            <SelectTrigger id={`assign-${complaint.ticketId}`} aria-label="Select technician">
+                            <SelectTrigger id={`assign-${complaint.ticketId}`} aria-label="Select technician" className="min-w-[150px]">
                               <SelectValue placeholder="Re-assign" />
                             </SelectTrigger>
                             <SelectContent>
