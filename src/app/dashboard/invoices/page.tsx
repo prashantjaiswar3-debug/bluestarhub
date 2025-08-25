@@ -819,7 +819,7 @@ export default function InvoicesPage() {
       </div>
       
       <Dialog open={!!selectedInvoice} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-4xl p-0" data-slot="header-plain">
+        <DialogContent className="sm:max-w-4xl flex flex-col p-0" data-slot="header-plain">
             <div className="p-6">
                 <DialogHeader>
                     <DialogTitle>Invoice Details</DialogTitle>
@@ -828,7 +828,7 @@ export default function InvoicesPage() {
                     </DialogDescription>
                 </DialogHeader>
             </div>
-            <ScrollArea className="max-h-[70vh] px-6">
+            <ScrollArea className="flex-1 px-6">
                  <div ref={invoiceRef} className="bg-white text-black p-8 font-sans w-[210mm]">
                   {selectedInvoice && (() => {
                     const { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal, amountPaid, amountDue } = calculateInvoiceTotals(selectedInvoice);
@@ -939,7 +939,7 @@ export default function InvoicesPage() {
                     );
                   })()}
                 </div>
-                <div className="p-4 border rounded-md">
+                 <div className="p-4 border rounded-md mx-6">
                     <RadioGroup defaultValue="Original Copy" className="flex items-center gap-4" onValueChange={(value: 'Original Copy' | "Customer's Copy") => setCopyType(value)}>
                         <h4 className="text-sm font-medium">Select Copy Type:</h4>
                         <div className="flex items-center space-x-2">
@@ -953,7 +953,7 @@ export default function InvoicesPage() {
                     </RadioGroup>
                 </div>
                  {selectedInvoice?.payments && selectedInvoice.payments.length > 0 && (
-                    <div className="p-4 border rounded-md">
+                    <div className="p-4 border rounded-md mx-6">
                         <h4 className="font-semibold mb-2">Payment History</h4>
                         <Table>
                             <TableHeader>

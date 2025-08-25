@@ -592,8 +592,8 @@ END:VCARD`;
         </DialogContent>
       </Dialog>
       <Dialog open={isProfileOpen} onOpenChange={(open) => { setIsProfileOpen(open); if (!open) { setIsEditingProfile(false); setNewAvatar(null); } }}>
-        <DialogContent className="sm:max-w-md w-full h-full sm:h-auto p-0 sm:p-6">
-            <DialogHeader className="p-6 pb-0 sm:p-0 sm:pb-6 flex-row items-center justify-between">
+        <DialogContent className="sm:max-w-md w-full h-full sm:h-auto p-0 flex flex-col">
+            <DialogHeader className="p-6 pb-0 sm:pb-6 flex-row items-center justify-between">
                 <div>
                     <DialogTitle>My Profile</DialogTitle>
                     <DialogDescription>
@@ -607,9 +607,9 @@ END:VCARD`;
                     </Button>
                 )}
             </DialogHeader>
-            <div className="py-4 h-full sm:h-auto">
+            <div className="py-4 px-6 flex-1 overflow-y-auto">
                 {isEditingProfile ? (
-                    <div className="flex flex-col items-center gap-4 px-6">
+                    <div className="flex flex-col items-center gap-4">
                          <input type="file" ref={avatarInputRef} onChange={handleAvatarChange} accept="image/*" className="hidden" />
                          <Avatar className="h-32 w-32 cursor-pointer" onClick={() => avatarInputRef.current?.click()}>
                             <AvatarImage src={newAvatar || currentUser.avatar} alt="@user" />
@@ -668,7 +668,7 @@ END:VCARD`;
                     </div>
                 )}
             </div>
-             <DialogFooter className="p-6 pt-0 sm:pt-6 sm:p-0 sm:border-t">
+             <DialogFooter className="p-6 pt-0">
                 {isEditingProfile ? (
                      <div className="flex justify-end gap-2 w-full">
                         <Button variant="outline" onClick={() => { setIsEditingProfile(false); setNewAvatar(null); }}>Cancel</Button>

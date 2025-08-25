@@ -445,7 +445,7 @@ export default function QuotationsPage() {
       </div>
       
       <Dialog open={!!selectedQuote} onOpenChange={(isOpen) => !isOpen && setSelectedQuote(null)}>
-        <DialogContent className="sm:max-w-4xl p-0" data-slot="header-plain">
+        <DialogContent className="sm:max-w-4xl p-0 flex flex-col" data-slot="header-plain">
             <div className="p-6">
                 <DialogHeader>
                     <DialogTitle>Quotation Details</DialogTitle>
@@ -454,7 +454,7 @@ export default function QuotationsPage() {
                     </DialogDescription>
                 </DialogHeader>
             </div>
-            <ScrollArea className="max-h-[70vh] px-6">
+            <ScrollArea className="flex-1 px-6">
                 <div className="space-y-4 pb-6">
                     <div ref={quoteRef} className="bg-white text-black font-sans w-[210mm]">
                     {selectedQuote && (() => {
@@ -566,7 +566,7 @@ export default function QuotationsPage() {
                         );
                     })()}
                     </div>
-                     <div className="p-4 border rounded-md">
+                     <div className="p-4 border rounded-md mx-6">
                         <RadioGroup defaultValue="Original Copy" className="flex items-center gap-4" onValueChange={(value: 'Original Copy' | "Customer's Copy") => setCopyType(value)}>
                             <h4 className="text-sm font-medium">Select Copy Type:</h4>
                             <div className="flex items-center space-x-2">
