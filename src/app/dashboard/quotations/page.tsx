@@ -468,8 +468,8 @@ export default function QuotationsPage() {
                             <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '100%', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
                                  <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                        <div>
-                                            <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={136} height={136} style={{ width: '136px', height: 'auto' }} />
+                                        <div style={{ width: '250px' }}>
+                                            <Image src="https://placehold.co/500x200.png" alt="Bluestar Logo" width={200} height={80} style={{ width: '200px', height: 'auto' }} />
                                         </div>
                                         <div style={{ textAlign: 'right' }}>
                                             <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>QUOTATION</h2>
@@ -598,6 +598,8 @@ export default function QuotationsPage() {
     </div>
   );
 }
+
+    
 
     
 

@@ -84,7 +84,7 @@ const allNavItems = [
 
 const initialCompanyInfo = {
     name: "Bluestar Electronics",
-    logo: "https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png",
+    logo: "https://placehold.co/500x200.png",
     email: "bluestar.elec@gmail.com",
     phone: "+91 9766661333",
 };
@@ -268,7 +268,7 @@ END:VCARD`;
           <SidebarContent>
             <SidebarHeader>
               <div className="flex items-center justify-center p-2">
-                 <Image src={companyInfo.logo} alt="Bluestar Logo" width={136} height={136} className="w-32 h-auto" />
+                 <Image src={companyInfo.logo} alt="Bluestar Logo" width={200} height={80} className="w-48 h-auto" />
               </div>
             </SidebarHeader>
             <SidebarMenu>
@@ -684,8 +684,8 @@ END:VCARD`;
                 ) : ['technician', 'sales', 'admin', 'supervisor', 'freelance'].includes(currentRole) ? (
                     <div className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-sm mx-auto h-full flex flex-col">
                         <div className="p-6 flex flex-col items-center gap-4 bg-primary text-primary-foreground rounded-t-lg">
-                           <div className="flex items-center gap-2">
-                             <Image src={companyInfo.logo} alt="Company Logo" width={32} height={32} />
+                           <div className="w-32 h-auto">
+                             <Image src={companyInfo.logo} alt="Company Logo" width={160} height={64} className="w-full h-auto" />
                            </div>
                            <Avatar className="h-24 w-24 border-4 border-background">
                                <AvatarImage src={currentUser.avatar} alt="@user" />
@@ -746,6 +746,8 @@ END:VCARD`;
     </SidebarProvider>
   );
 }
+
+    
 
     
 

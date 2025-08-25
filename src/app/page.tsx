@@ -30,7 +30,7 @@ export default function LoginPage() {
         <Card className="shadow-lg">
           <CardHeader className="space-y-4 text-center">
             <div className="mx-auto flex items-center justify-center">
-              <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/59e7a097fa8d6f00e77b2e3eaa7dbece369779f5/bluestarlogo1.png" alt="Bluestar Logo" width={136} height={136} />
+              <Image src="https://placehold.co/500x200.png" alt="Bluestar Logo" width={200} height={80} />
             </div>
             <CardDescription>
               Sign in to Bluestar Hub
@@ -96,6 +96,8 @@ export default function LoginPage() {
     </main>
   );
 }
+
+    
 
     
 
