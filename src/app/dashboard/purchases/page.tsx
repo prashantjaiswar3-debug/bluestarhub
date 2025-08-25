@@ -142,7 +142,7 @@ export default function PurchasesPage() {
             </Button>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <ScrollArea className="w-full whitespace-nowrap">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -172,7 +172,7 @@ export default function PurchasesPage() {
                 ))}
               </TableBody>
             </Table>
-           </div>
+           </ScrollArea>
         </CardContent>
       </Card>
       
@@ -201,9 +201,9 @@ export default function PurchasesPage() {
                     <CardHeader>
                         <CardTitle className="text-base">Items from {newPo.supplier}</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-4 pt-0 max-h-[40vh] overflow-y-auto">
-                        <ScrollArea className="h-full">
-                            <div className="space-y-4 pr-4">
+                    <CardContent className="p-4 pt-0">
+                        <ScrollArea className="h-full max-h-[40vh] pr-4">
+                            <div className="space-y-4">
                                <div className="grid grid-cols-[1fr_80px_100px] gap-4 items-center font-medium text-sm text-muted-foreground">
                                     <span>Item Name</span>
                                     <span className="text-right">Quantity</span>
