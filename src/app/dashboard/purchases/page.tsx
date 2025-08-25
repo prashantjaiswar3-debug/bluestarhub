@@ -52,6 +52,7 @@ import { PlusCircle, Trash2, Eye, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { PurchaseOrder, InventoryItem, PurchaseOrderItem } from "@/lib/types";
 import { initialPurchaseOrders, initialInventory } from "@/lib/data";
+import { initialVendors } from "@/lib/vendordata";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const statusVariant: { [key in PurchaseOrder['status']]: "default" | "secondary" | "destructive" } = {
@@ -71,7 +72,7 @@ export default function PurchasesPage() {
   const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
   const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
 
-  const suppliers = React.useMemo(() => [...new Set(initialInventory.map(i => i.supplier).filter(Boolean))], []);
+  const activeVendors = React.useMemo(() => initialVendors.filter(v => v.status === 'Active'), []);
 
   const handleCreatePO = () => {
       const poItems = newPo.items.map(item => ({...item, price: parseFloat(item.price) || 0})).filter(item => item.quantity > 0 && item.price > 0);
@@ -192,7 +193,7 @@ export default function PurchasesPage() {
                       <SelectValue placeholder="Select a supplier" />
                   </SelectTrigger>
                   <SelectContent>
-                      {suppliers.map((s, i) => <SelectItem key={`${s}-${i}`} value={s!}>{s}</SelectItem>)}
+                      {activeVendors.map((vendor) => <SelectItem key={vendor.id} value={vendor.name}>{vendor.name}</SelectItem>)}
                   </SelectContent>
               </Select>
             </div>
