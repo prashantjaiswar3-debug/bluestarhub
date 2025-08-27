@@ -49,7 +49,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Send, Eye, PlusCircle, Trash2, Download, Share2, CreditCard, DollarSign, QrCode, Zap } from "lucide-react";
+import { Send, Eye, PlusCircle, Trash2, Download, Share2, DollarSign, QrCode, Zap, Edit } from "lucide-react";
 import type { Invoice, QuotationItem, Customer, Payment } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
@@ -200,6 +200,8 @@ const BarcodeScanner = ({ onScanSuccess, onScanFailure }: { onScanSuccess: (text
 export default function InvoicesPage() {
   const { toast } = useToast();
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
+  const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("recent");
   const [newInvoice, setNewInvoice] = useState<{
     customer: { name: string; email: string; address: string };
     items: NewInvoiceItem[];
@@ -238,6 +240,27 @@ export default function InvoicesPage() {
         });
     }
   }, []);
+  
+  const handleModifyInvoice = (invoiceId: string) => {
+    const invoiceToEdit = invoices.find(inv => inv.invoiceId === invoiceId);
+    if(invoiceToEdit) {
+        setEditingInvoiceId(invoiceToEdit.invoiceId);
+        setNewInvoice({
+            customer: invoiceToEdit.customer,
+            items: invoiceToEdit.items.map(item => ({
+                ...item,
+                price: item.price ?? '',
+                quantity: item.quantity ?? '',
+                gstRate: item.gstRate ?? '',
+            })),
+            laborCost: invoiceToEdit.laborCost,
+            discount: invoiceToEdit.discount,
+            quoteId: invoiceToEdit.quoteId || "",
+            poNumber: invoiceToEdit.poNumber || "",
+        });
+        setActiveTab("create");
+    }
+  };
 
   const handleOpenScanner = async (itemId: string, serialIndex: number) => {
     try {
@@ -407,9 +430,10 @@ export default function InvoicesPage() {
         quoteId: "",
         poNumber: "",
       });
+      setEditingInvoiceId(null);
   }
 
-  const handleCreateInvoice = () => {
+  const handleCreateOrUpdateInvoice = () => {
     const finalItems: QuotationItem[] = newInvoice.items.map(i => ({
         ...i,
         quantity: Number(i.quantity) || 0,
@@ -425,29 +449,53 @@ export default function InvoicesPage() {
         });
         return;
     }
-    const newInvoiceData: Invoice = {
-      invoiceId: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 100) + 16}`,
-      customer: newInvoice.customer,
-      items: finalItems,
-      laborCost: newInvoice.laborCost,
-      discount: newInvoice.discount,
-      totalAmount,
-      status: "Pending",
-      date: new Date().toISOString().split('T')[0],
-      quoteId: newInvoice.quoteId,
-      poNumber: newInvoice.poNumber,
-      payments: [],
-    };
     
-    const updatedInvoices = [newInvoiceData, ...invoices];
-    setInvoices(updatedInvoices);
-    localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+    if(editingInvoiceId) {
+        // Update existing invoice
+        const updatedInvoiceData = {
+            customer: newInvoice.customer,
+            items: finalItems,
+            laborCost: newInvoice.laborCost,
+            discount: newInvoice.discount,
+            totalAmount,
+            quoteId: newInvoice.quoteId,
+            poNumber: newInvoice.poNumber,
+        };
+        const updatedInvoices = invoices.map(inv => inv.invoiceId === editingInvoiceId ? { ...inv, ...updatedInvoiceData } : inv);
+        setInvoices(updatedInvoices);
+        localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+        toast({
+            title: "Invoice Updated",
+            description: `Invoice ${editingInvoiceId} for ${updatedInvoiceData.customer.name} has been updated.`,
+        });
+
+    } else {
+        // Create new invoice
+        const newInvoiceData: Invoice = {
+          invoiceId: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 100) + 16}`,
+          customer: newInvoice.customer,
+          items: finalItems,
+          laborCost: newInvoice.laborCost,
+          discount: newInvoice.discount,
+          totalAmount,
+          status: "Pending",
+          date: new Date().toISOString().split('T')[0],
+          quoteId: newInvoice.quoteId,
+          poNumber: newInvoice.poNumber,
+          payments: [],
+        };
+        
+        const updatedInvoices = [newInvoiceData, ...invoices];
+        setInvoices(updatedInvoices);
+        localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+        toast({
+            title: "Invoice Created",
+            description: `Invoice for ${newInvoiceData.customer.name} has been created.`,
+        });
+    }
 
     resetForm();
-    toast({
-        title: "Invoice Created",
-        description: `Invoice for ${newInvoiceData.customer.name} has been created.`,
-    });
+    setActiveTab("recent");
   }
   
     const handleCustomerSelect = (customerId: string) => {
@@ -604,10 +652,15 @@ export default function InvoicesPage() {
 
   return (
     <>
-    <Tabs defaultValue="recent" className="flex flex-1 flex-col">
+    <Tabs value={activeTab} onValueChange={(value) => {
+        setActiveTab(value);
+        if (value === 'recent') {
+            resetForm();
+        }
+    }} className="flex flex-1 flex-col">
         <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="recent">Recent Invoices</TabsTrigger>
-            <TabsTrigger value="create">Create Invoice</TabsTrigger>
+            <TabsTrigger value="create">{editingInvoiceId ? "Modify Invoice" : "Create Invoice"}</TabsTrigger>
         </TabsList>
         <TabsContent value="recent" className="flex-1">
           <Card className="flex h-full flex-1 flex-col">
@@ -641,9 +694,9 @@ export default function InvoicesPage() {
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
                              {invoice.status !== "Paid" && invoice.status !== "Cancelled" && (
-                                  <Button size="sm" onClick={() => { setSelectedInvoice(invoice); setIsAddPaymentOpen(true); }}>
-                                      <DollarSign className="mr-2 h-3 w-3" />
-                                      Add Payment
+                                  <Button size="sm" variant="outline" onClick={() => handleModifyInvoice(invoice.invoiceId)}>
+                                      <Edit className="mr-2 h-3 w-3" />
+                                      Modify
                                   </Button>
                               )}
                               <Button variant="ghost" size="icon" onClick={() => setSelectedInvoice(invoice)}>
@@ -669,8 +722,8 @@ export default function InvoicesPage() {
         <TabsContent value="create" className="flex-1">
             <Card className="flex h-full flex-1 flex-col">
                 <CardHeader>
-                    <CardTitle>Create Invoice</CardTitle>
-                    <CardDescription>Fill in the details to generate a new invoice.</CardDescription>
+                    <CardTitle>{editingInvoiceId ? "Modify Invoice" : "Create Invoice"}</CardTitle>
+                    <CardDescription>{editingInvoiceId ? `Editing invoice ${editingInvoiceId}.` : "Fill in the details to generate a new invoice."}</CardDescription>
                 </CardHeader>
                 <ScrollArea className="flex-1">
                     <CardContent className="grid gap-6">
@@ -815,9 +868,9 @@ export default function InvoicesPage() {
                     </CardContent>
                 </ScrollArea>
                 <CardFooter className="flex justify-end pt-6">
-                    <Button onClick={handleCreateInvoice}>
+                    <Button onClick={handleCreateOrUpdateInvoice}>
                         <Send className="mr-2 h-4 w-4" />
-                        Create Invoice
+                        {editingInvoiceId ? "Update Invoice" : "Create Invoice"}
                     </Button>
                 </CardFooter>
             </Card>
@@ -838,7 +891,7 @@ export default function InvoicesPage() {
                  <div className="px-6">
                     <div ref={invoiceRef} className="bg-white text-black p-8 font-sans w-[210mm]">
                     {selectedInvoice && (() => {
-                        const { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal, amountPaid, amountDue } = calculateInvoiceTotals(selectedInvoice);
+                        const { subTotal, discountAmount, gstAmount, grandTotal, amountPaid, amountDue } = calculateInvoiceTotals(selectedInvoice);
                         const invoiceDate = new Date(selectedInvoice.date);
                         const dueDate = new Date(invoiceDate);
                         dueDate.setDate(invoiceDate.getDate() + 15);
@@ -849,7 +902,7 @@ export default function InvoicesPage() {
                             <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div style={{ width: '250px' }}>
-                                        <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/refs/heads/main/bluestarlogo1.png" alt="Bluestar Logo" width={200} height={80} style={{ width: '200px', height: 'auto' }} />
+                                         <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/refs/heads/main/bluestarlogo1.png" alt="Bluestar Logo" width={200} height={80} style={{ width: '200px', height: 'auto' }} />
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
                                         <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>INVOICE</h2>
@@ -1089,3 +1142,5 @@ export default function InvoicesPage() {
     </>
   );
 }
+
+    

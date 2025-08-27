@@ -458,10 +458,10 @@ export default function QuotationsPage() {
                 <div className="px-6">
                     <div ref={quoteRef} className="bg-white text-black font-sans w-[210mm]">
                     {selectedQuote && (() => {
-                        const { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
+                        const { subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
                         const quoteDate = new Date(selectedQuote.date);
                         const dueDate = new Date(quoteDate);
-                        dueDate.setDate(quoteDate.getDate() + 15);
+dueDate.setDate(quoteDate.getDate() + 15);
                         const formatDate = (date: Date) => date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
 
                         return (
@@ -598,3 +598,5 @@ export default function QuotationsPage() {
     </div>
   );
 }
+
+    
