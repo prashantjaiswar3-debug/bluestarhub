@@ -50,8 +50,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 
 const registeredCustomers: Customer[] = [
-    { id: "CUST-001", name: "Green Valley Apartments", contactPerson: "Mr. Sharma", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City" },
-    { id: "CUST-002", name: "ABC Corporation", contactPerson: "Ms. Priya", email: "contact@abc.com", phone: "555-0102", address: "123 Business Rd, Corp Town" },
+    { id: "CUST-001", name: "Green Valley Apartments", contactPerson: "Mr. Sharma", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City", gstin: "27AAAAA0000A1Z5" },
+    { id: "CUST-002", name: "ABC Corporation", contactPerson: "Ms. Priya", email: "contact@abc.com", phone: "555-0102", address: "123 Business Rd, Corp Town", gstin: "29BBBBB1111B2Z6" },
     { id: "CUST-003", name: "John Doe", email: "john.doe@example.com", phone: "555-0103", address: "789 Pine Ln, Sometown" },
 ];
 
@@ -68,13 +68,13 @@ export default function QuotationsPage() {
   const { toast } = useToast();
   const [quotations, setQuotations] = useState<Quotation[]>(initialQuotations);
   const [newQuote, setNewQuote] = useState<{
-    customer: { name: string; email: string; address: string; phone: string; contactPerson?: string };
+    customer: { name: string; email: string; address: string; phone: string; contactPerson?: string; gstin?: string; };
     items: (Omit<QuotationItem, 'price' | 'quantity'> & { price: number | ''; quantity: number | '' })[];
     laborCost: number;
     discount: number;
     poNumber: string;
   }>({
-    customer: { name: "", email: "", address: "", phone: "" },
+    customer: { name: "", email: "", address: "", phone: "", gstin: "" },
     items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18, serialNumbers: [] }],
     laborCost: 0,
     discount: 0,
@@ -144,7 +144,7 @@ export default function QuotationsPage() {
   
   const resetForm = () => {
       setNewQuote({
-        customer: { name: "", email: "", address: "", phone: "" },
+        customer: { name: "", email: "", address: "", phone: "", gstin: "" },
         items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18, serialNumbers: [] }],
         laborCost: 0,
         discount: 0,
@@ -193,6 +193,7 @@ export default function QuotationsPage() {
                 address: customer.address,
                 phone: customer.phone,
                 contactPerson: customer.contactPerson,
+                gstin: customer.gstin,
             }
         }));
     }
@@ -312,6 +313,10 @@ export default function QuotationsPage() {
                        <div className="space-y-2">
                         <Label htmlFor="customer-address">Address</Label>
                         <Textarea id="customer-address" placeholder="e.g., 123 Business Road, Mumbai" value={newQuote.customer.address} onChange={(e) => setNewQuote(prev => ({...prev, customer: {...prev.customer, address: e.target.value}}))} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="customer-gstin">Customer GSTIN (Optional)</Label>
+                        <Input id="customer-gstin" placeholder="e.g., 27AAAAA0000A1Z5" value={newQuote.customer.gstin || ""} onChange={(e) => setNewQuote(prev => ({...prev, customer: {...prev.customer, gstin: e.target.value}}))} />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="po-number">Purchase Order Number (Optional)</Label>
@@ -477,6 +482,7 @@ dueDate.setDate(quoteDate.getDate() + 15);
                                             <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
                                                 <p><strong>Email:</strong> bluestar.elec@gmail.com</p>
                                                 <p><strong>Contact:</strong> +91 9766661333</p>
+                                                <p><strong>GSTIN:</strong> 27AAPFU0939F1Z5</p>
                                             </div>
                                         </div>
                                     </div>
@@ -491,6 +497,7 @@ dueDate.setDate(quoteDate.getDate() + 15);
                                           <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.address}</p>
                                           <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>Email:</strong> {selectedQuote.customer.email}</p>
                                           {selectedQuote.customer.phone && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>Contact:</strong> {selectedQuote.customer.phone}</p>}
+                                          {selectedQuote.customer.gstin && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>GSTIN:</strong> {selectedQuote.customer.gstin}</p>}
                                       </div>
                                       <div style={{ width: '220px' }}>
                                           <div style={{ fontSize: '12px', textAlign: 'right' }}>

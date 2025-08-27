@@ -64,15 +64,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
 const registeredCustomers: Customer[] = [
-    { id: "CUST-001", name: "Green Valley Apartments", contactPerson: "Mr. Sharma", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City" },
-    { id: "CUST-002", name: "ABC Corporation", contactPerson: "Ms. Priya", email: "contact@abc.com", phone: "555-0102", address: "123 Business Rd, Corp Town" },
+    { id: "CUST-001", name: "Green Valley Apartments", contactPerson: "Mr. Sharma", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City", gstin: "27AAAAA0000A1Z5" },
+    { id: "CUST-002", name: "ABC Corporation", contactPerson: "Ms. Priya", email: "contact@abc.com", phone: "555-0102", address: "123 Business Rd, Corp Town", gstin: "29BBBBB1111B2Z6" },
     { id: "CUST-003", name: "John Doe", email: "john.doe@example.com", phone: "555-0103", address: "789 Pine Ln, Sometown" },
 ];
 
 const initialInvoices: Invoice[] = [
     {
         invoiceId: "INV-2023-0012",
-        customer: { name: "Green Valley Apartments", email: "manager@gva.com", address: "456 Park Ave, Residence City", contactPerson: "Mr. Sharma" },
+        customer: { name: "Green Valley Apartments", email: "manager@gva.com", address: "456 Park Ave, Residence City", contactPerson: "Mr. Sharma", gstin: "27AAAAA0000A1Z5" },
         items: [{ id: "item-1", description: "16-Channel NVR System", quantity: 1, unit: "nos", price: 80000, gstRate: 18, serialNumbers: ["NVR-GVA-001"] }, { id: "item-2", description: "12x Bullet Cameras", quantity: 1, unit: "nos", price: 40000, gstRate: 18, serialNumbers: ["CAM-GVA-001"] }],
         laborCost: 20000,
         discount: 5,
@@ -86,7 +86,7 @@ const initialInvoices: Invoice[] = [
     },
     {
         invoiceId: "INV-2023-0015",
-        customer: { name: "ABC Corporation", email: "contact@abc.com", address: "123 Business Rd, Corp Town", contactPerson: "Ms. Priya" },
+        customer: { name: "ABC Corporation", email: "contact@abc.com", address: "123 Business Rd, Corp Town", contactPerson: "Ms. Priya", gstin: "29BBBBB1111B2Z6" },
         items: [{ id: "item-1", description: "4x Hikvision 5MP Dome Cameras", quantity: 1, unit: "nos", price: 18000, gstRate: 18, serialNumbers: ["CAM-ABC-001"] }],
         laborCost: 5000,
         discount: 10,
@@ -203,14 +203,14 @@ export default function InvoicesPage() {
   const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("recent");
   const [newInvoice, setNewInvoice] = useState<{
-    customer: { name: string; email: string; address: string };
+    customer: { name: string; email: string; address: string; gstin?: string; };
     items: NewInvoiceItem[];
     laborCost: number;
     discount: number;
     quoteId: string;
     poNumber: string;
   }>({
-    customer: { name: "", email: "", address: "" },
+    customer: { name: "", email: "", address: "", gstin: "" },
     items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18, serialNumbers: [] }],
     laborCost: 0,
     discount: 0,
@@ -224,8 +224,8 @@ export default function InvoicesPage() {
   const [copyType, setCopyType] = useState<'Original Copy' | "Customer's Copy">('Original Copy');
   const invoiceRef = useRef<HTMLDivElement>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [activeScannerState, setActiveScannerState] = useState<{itemId: string, serialIndex: number} | null>(null);
-  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const [activeScannerState, setActiveScannerState] = React.useState<{itemId: string, serialIndex: number} | null>(null);
+  const [hasCameraPermission, setHasCameraPermission] = React.useState<boolean | null>(null);
 
   useEffect(() => {
     const storedInvoicesStr = localStorage.getItem('invoices');
@@ -423,7 +423,7 @@ export default function InvoicesPage() {
   
   const resetForm = () => {
       setNewInvoice({
-        customer: { name: "", email: "", address: "" },
+        customer: { name: "", email: "", address: "", gstin: "" },
         items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18, serialNumbers: [] }],
         laborCost: 0,
         discount: 0,
@@ -507,7 +507,8 @@ export default function InvoicesPage() {
                     name: customer.name,
                     email: customer.email,
                     address: customer.address,
-                    contactPerson: customer.contactPerson
+                    contactPerson: customer.contactPerson,
+                    gstin: customer.gstin,
                 }
             }));
         }
@@ -775,6 +776,10 @@ export default function InvoicesPage() {
                             <Label htmlFor="customer-address">Address</Label>
                             <Textarea id="customer-address" placeholder="e.g., 123 Business Road, Mumbai" value={newInvoice.customer.address} onChange={(e) => setNewInvoice(prev => ({...prev, customer: {...prev.customer, address: e.target.value}}))} />
                           </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="customer-gstin">Customer GSTIN (Optional)</Label>
+                            <Input id="customer-gstin" placeholder="e.g., 27AAAAA0000A1Z5" value={newInvoice.customer.gstin} onChange={(e) => setNewInvoice(prev => ({...prev, customer: {...prev.customer, gstin: e.target.value}}))}/>
+                          </div>
                       </div>
 
                       <div className="space-y-4">
@@ -910,6 +915,7 @@ export default function InvoicesPage() {
                                         <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
                                             <p><strong>Email:</strong> bluestar.elec@gmail.com</p>
                                             <p><strong>Contact:</strong> +91 9766661333</p>
+                                            <p><strong>GSTIN:</strong> 27AAPFU0939F1Z5</p>
                                         </div>
                                     </div>
                                 </div>
@@ -923,6 +929,7 @@ export default function InvoicesPage() {
                                         {selectedInvoice.customer.contactPerson && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>Attn: {selectedInvoice.customer.contactPerson}</p>}
                                         <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedInvoice.customer.address}</p>
                                         <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>Email:</strong> {selectedInvoice.customer.email}</p>
+                                        {selectedInvoice.customer.gstin && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>GSTIN:</strong> {selectedInvoice.customer.gstin}</p>}
                                     </div>
                                     <div style={{ width: '220px' }}>
                                         <div style={{ fontSize: '12px', textAlign: 'right' }}>

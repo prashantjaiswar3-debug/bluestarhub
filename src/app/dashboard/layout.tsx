@@ -86,6 +86,7 @@ const initialCompanyInfo = {
     logo: "https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/refs/heads/main/bluestarlogo1.png",
     email: "bluestar.elec@gmail.com",
     phone: "+91 9766661333",
+    gstin: "27AAPFU0939F1Z5",
 };
 
 const initialRoleInfo = {
@@ -115,7 +116,8 @@ export default function DashboardLayout({
     phone: "",
     address: "",
     isCompany: false,
-    companyName: ""
+    companyName: "",
+    gstin: "",
   });
 
   const [isRegisterTechnicianOpen, setIsRegisterTechnicianOpen] = React.useState(false);
@@ -167,7 +169,7 @@ export default function DashboardLayout({
       duration: 9000,
     });
     setIsRegisterCustomerOpen(false);
-    setNewCustomer({ name: "", email: "", phone: "", address: "", isCompany: false, companyName: "" });
+    setNewCustomer({ name: "", email: "", phone: "", address: "", isCompany: false, companyName: "", gstin: "" });
   }
 
   const handleRegisterTechnician = () => {
@@ -430,6 +432,10 @@ END:VCARD`;
                     <Label htmlFor="company-phone-edit">Phone</Label>
                     <Input id="company-phone-edit" value={companyInfo.phone} onChange={(e) => setCompanyInfo(prev => ({...prev, phone: e.target.value}))} />
                 </div>
+                <div className="space-y-2">
+                    <Label htmlFor="company-gstin-edit">GSTIN</Label>
+                    <Input id="company-gstin-edit" value={companyInfo.gstin} onChange={(e) => setCompanyInfo(prev => ({...prev, gstin: e.target.value}))} />
+                </div>
             </div>
             <DialogFooter>
                  <DialogClose asChild>
@@ -532,6 +538,10 @@ END:VCARD`;
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
               <Input id="phone" value={newCustomer.phone} onChange={(e) => setNewCustomer({...newCustomer, phone: e.target.value})} placeholder="e.g., 9876543210" />
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="gstin">GSTIN (Optional)</Label>
+              <Input id="gstin" value={newCustomer.gstin} onChange={(e) => setNewCustomer({...newCustomer, gstin: e.target.value})} placeholder="e.g., 27AAPFU0939F1Z5" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="address">Address</Label>

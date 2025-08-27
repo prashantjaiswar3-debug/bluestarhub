@@ -32,6 +32,7 @@ export type Customer = {
   address: string;
   isCompany?: boolean;
   companyName?: string;
+  gstin?: string;
 };
 
 export type QuotationItem = {
@@ -58,6 +59,7 @@ export type Invoice = {
     email: string;
     address: string;
     contactPerson?: string;
+    gstin?: string;
   };
   items: QuotationItem[];
   laborCost: number;
@@ -79,6 +81,7 @@ export type Quotation = {
     address: string;
     contactPerson?: string;
     phone?: string;
+    gstin?: string;
   };
   items: QuotationItem[];
   laborCost: number;
