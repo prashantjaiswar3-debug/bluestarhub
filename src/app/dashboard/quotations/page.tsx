@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,7 +40,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Send, Eye, PlusCircle, Trash2, Download, Share2, FileText } from "lucide-react";
-import type { Quotation, QuotationItem, Customer, Invoice, Complaint } from "@/lib/types";
+import type { Quotation, QuotationItem, Customer, Invoice, CompanyInfo } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
 import type html2canvas from 'html2canvas';
@@ -83,7 +83,14 @@ export default function QuotationsPage() {
   const [selectedQuote, setSelectedQuote] = useState<Quotation | null>(null);
   const [copyType, setCopyType] = useState<'Original Copy' | "Customer's Copy">('Original Copy');
   const quoteRef = useRef<HTMLDivElement>(null);
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
 
+  useEffect(() => {
+    const storedCompanyInfoStr = localStorage.getItem('companyInfo');
+    if(storedCompanyInfoStr) {
+        setCompanyInfo(JSON.parse(storedCompanyInfoStr));
+    }
+  }, []);
 
  const subTotal = useMemo(() => {
     const itemsTotal = newQuote.items.reduce((sum, item) => sum + ((Number(item.quantity) || 0) * (Number(item.price) || 0)), 0);
@@ -462,7 +469,7 @@ export default function QuotationsPage() {
             <ScrollArea className="flex-1">
                 <div className="px-6">
                     <div ref={quoteRef} className="bg-white text-black font-sans w-[210mm]">
-                    {selectedQuote && (() => {
+                    {selectedQuote && companyInfo && (() => {
                         const { subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
                         const quoteDate = new Date(selectedQuote.date);
                         const dueDate = new Date(quoteDate);
@@ -474,15 +481,15 @@ dueDate.setDate(quoteDate.getDate() + 15);
                                  <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                         <div style={{ width: '250px' }}>
-                                            <Image unoptimized src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/refs/heads/main/bluestarlogo1.png" alt="Bluestar Logo" width={200} height={80} style={{ width: '200px', height: 'auto' }} />
+                                            <img src={companyInfo.logo} alt="Company Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
                                         </div>
                                         <div style={{ textAlign: 'right' }}>
                                             <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>QUOTATION</h2>
                                             <p style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>{copyType}</p>
                                             <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
-                                                <p><strong>Email:</strong> bluestar.elec@gmail.com</p>
-                                                <p><strong>Contact:</strong> +91 9766661333</p>
-                                                <p><strong>GSTIN:</strong> 27AAPFU0939F1Z5</p>
+                                                <p><strong>Email:</strong> {companyInfo.email}</p>
+                                                <p><strong>Contact:</strong> {companyInfo.phone}</p>
+                                                <p><strong>GSTIN:</strong> {companyInfo.gstin}</p>
                                             </div>
                                         </div>
                                     </div>

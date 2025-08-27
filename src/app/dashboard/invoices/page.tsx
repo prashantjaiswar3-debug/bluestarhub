@@ -984,7 +984,7 @@ export default function InvoicesPage() {
                   <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div style={{ width: '250px' }}>
-                               <Image unoptimized src={companyInfo.logo} alt="Bluestar Logo" width={200} height={80} style={{ width: '200px', height: 'auto' }} />
+                               <img src={companyInfo.logo} alt="Company Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
                           </div>
                           <div style={{ textAlign: 'right' }}>
                               <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>INVOICE</h2>
