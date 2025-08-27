@@ -224,8 +224,8 @@ export default function InvoicesPage() {
   const [copyType, setCopyType] = useState<'Original Copy' | "Customer's Copy">('Original Copy');
   const invoiceRef = useRef<HTMLDivElement>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [activeScannerState, setActiveScannerState] = React.useState<{itemId: string, serialIndex: number} | null>(null);
-  const [hasCameraPermission, setHasCameraPermission] = React.useState<boolean | null>(null);
+  const [activeScannerState, setActiveScannerState] = useState<{itemId: string, serialIndex: number} | null>(null);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
 
 
@@ -984,7 +984,7 @@ export default function InvoicesPage() {
                   <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div style={{ width: '250px' }}>
-                               <Image src={companyInfo.logo} alt="Bluestar Logo" width={500} height={200} style={{ width: '200px', height: 'auto' }} data-ai-hint="logo" />
+                               <img src={companyInfo.logo} alt="Bluestar Logo" style={{ width: '200px', height: 'auto' }} />
                           </div>
                           <div style={{ textAlign: 'right' }}>
                               <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>INVOICE</h2>
@@ -1070,7 +1070,7 @@ export default function InvoicesPage() {
                           {companyInfo.bank?.qrCode && (
                           <div style={{ textAlign: 'center' }}>
                               <p style={{ fontSize: '12px', fontWeight: 'bold' }}>Scan QR Code to Pay</p>
-                              <Image src={companyInfo.bank.qrCode} alt="Payment QR Code" width={100} height={100} style={{ marginTop: '8px' }} />
+                              <img src={companyInfo.bank.qrCode} alt="Payment QR Code" style={{ marginTop: '8px', width: '100px', height: '100px' }} />
                           </div>
                           )}
                       </div>
