@@ -218,7 +218,6 @@ export default function InvoicesPage() {
     poNumber: "",
   });
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
-  const [isPrinting, setIsPrinting] = useState<boolean>(false);
   const [invoiceToCancel, setInvoiceToCancel] = useState<Invoice | null>(null);
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState<boolean>(false);
   const [newPayment, setNewPayment] = useState({ amount: 0, method: "Online" as Payment["method"]});
@@ -560,48 +559,41 @@ export default function InvoicesPage() {
     return { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal, amountPaid, amountDue };
   }
 
-  const handleDownloadPdf = (invoice: Invoice) => {
+  const handleDownloadInvoice = async (invoice: Invoice) => {
     setSelectedInvoice(invoice);
-    setIsPrinting(true);
-  };
-  
-  useEffect(() => {
-    if (isPrinting && selectedInvoice && invoiceRef.current) {
-        const generatePdf = async () => {
-            const invoiceContent = invoiceRef.current;
-            if (invoiceContent) {
-                try {
-                    const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-                      import('jspdf'),
-                      import('html2canvas'),
-                    ]);
-                    const canvas = await html2canvas(invoiceContent, { scale: 2 });
-                    const imgData = canvas.toDataURL('image/png');
-                    const pdf = new jsPDF('p', 'mm', 'a4');
-                    const pdfWidth = pdf.internal.pageSize.getWidth();
-                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        
-                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                    pdf.save(`invoice-${selectedInvoice?.invoiceId}.pdf`);
-                    toast({
-                        title: "Download Started",
-                        description: `Your invoice ${selectedInvoice?.invoiceId} is downloading.`,
-                    });
-                } catch (error) {
-                    console.error("Error generating PDF:", error);
-                    toast({
-                        variant: "destructive",
-                        title: "Download Failed",
-                        description: "There was an error generating the PDF.",
-                    });
-                } finally {
-                    setIsPrinting(false);
-                }
-            }
-        };
-        generatePdf();
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    const invoiceContent = invoiceRef.current;
+    if (invoiceContent) {
+        try {
+            const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+              import('jspdf'),
+              import('html2canvas'),
+            ]);
+            const canvas = await html2canvas(invoiceContent, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`invoice-${invoice.invoiceId}.pdf`);
+            toast({
+                title: "Download Started",
+                description: `Your invoice ${invoice.invoiceId} is downloading.`,
+            });
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+            toast({
+                variant: "destructive",
+                title: "Download Failed",
+                description: "There was an error generating the PDF for your invoice.",
+            });
+        } finally {
+             setSelectedInvoice(null);
+        }
     }
-  }, [isPrinting, selectedInvoice, toast]);
+  }
 
 
   const handleAddPayment = () => {
@@ -904,7 +896,7 @@ export default function InvoicesPage() {
         </TabsContent>
     </Tabs>
       
-      <Dialog open={!!selectedInvoice && !isPrinting} onOpenChange={handleOpenChange}>
+      <Dialog open={!!selectedInvoice} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-4xl p-0 flex flex-col" data-slot="header-plain">
             <div className="p-6">
                 <DialogHeader>
@@ -915,10 +907,7 @@ export default function InvoicesPage() {
                 </DialogHeader>
             </div>
             <ScrollArea className="flex-1">
-                 <div className="px-6">
-                    {/* Content for display inside dialog */}
-                 </div>
-                 <div className="p-4 border rounded-md mx-6">
+                 <div className="p-4 border rounded-md mx-6 my-4">
                     <RadioGroup defaultValue="Original Copy" className="flex items-center gap-4" onValueChange={(value: 'Original Copy' | "Customer's Copy") => setCopyType(value)}>
                         <h4 className="text-sm font-medium">Select Copy Type:</h4>
                         <div className="flex items-center space-x-2">
@@ -932,7 +921,7 @@ export default function InvoicesPage() {
                     </RadioGroup>
                 </div>
                  {selectedInvoice?.payments && selectedInvoice.payments.length > 0 && (
-                    <div className="p-4 border rounded-md mx-6">
+                    <div className="p-4 border rounded-md mx-6 my-4">
                         <h4 className="font-semibold mb-2">Payment History</h4>
                         <Table>
                             <TableHeader>
@@ -957,7 +946,7 @@ export default function InvoicesPage() {
             </ScrollArea>
           <DialogFooter className="px-6 py-4 flex-row justify-between w-full border-t">
             <div className="flex gap-2">
-                <Button variant="secondary" onClick={() => selectedInvoice && handleDownloadPdf(selectedInvoice)}>
+                <Button variant="secondary" onClick={() => selectedInvoice && handleDownloadInvoice(selectedInvoice)}>
                     <Download className="mr-2 h-4 w-4" />
                     Download PDF
                 </Button>
@@ -980,7 +969,7 @@ export default function InvoicesPage() {
       </Dialog>
       
       {/* Hidden Invoice for PDF Generation */}
-      {(isPrinting && selectedInvoice) && (
+      {selectedInvoice && (
         <div style={{ position: 'absolute', left: '-9999px', top: '0px' }}>
           <div ref={invoiceRef} className="bg-white text-black p-8 font-sans w-[210mm]">
           {selectedInvoice && companyInfo && (() => {
@@ -995,7 +984,7 @@ export default function InvoicesPage() {
                   <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div style={{ width: '250px' }}>
-                               <Image src={companyInfo.logo} alt="Bluestar Logo" width={200} height={80} style={{ width: '200px', height: 'auto' }} />
+                               <Image src={companyInfo.logo} alt="Bluestar Logo" width={500} height={200} style={{ width: '200px', height: 'auto' }} data-ai-hint="logo" />
                           </div>
                           <div style={{ textAlign: 'right' }}>
                               <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>INVOICE</h2>
@@ -1193,5 +1182,7 @@ export default function InvoicesPage() {
     </>
   );
 }
+
+    
 
     
