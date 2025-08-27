@@ -64,7 +64,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import QRCode from "react-qr-code";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Technician } from "@/lib/types";
+import { CompanyInfo, Technician } from "@/lib/types";
 
 
 const allNavItems = [
@@ -81,12 +81,19 @@ const allNavItems = [
   { href: "/dashboard/admin/users", icon: UserCog, label: "User Management", roles: ['admin'] },
 ];
 
-const initialCompanyInfo = {
+const initialCompanyInfo: CompanyInfo = {
     name: "Bluestar Electronics",
     logo: "https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/refs/heads/main/bluestarlogo1.png",
     email: "bluestar.elec@gmail.com",
     phone: "+91 9766661333",
     gstin: "27AAPFU0939F1Z5",
+    bank: {
+        accountHolder: 'Bluestar Electronics',
+        accountNumber: '123456789012',
+        bankName: 'Global Bank',
+        ifscCode: 'GBL0000123',
+        qrCode: ''
+    }
 };
 
 const initialRoleInfo = {
@@ -136,7 +143,20 @@ export default function DashboardLayout({
 
   const [isManageOffersOpen, setIsManageOffersOpen] = React.useState(false);
   const [isCompanyProfileOpen, setIsCompanyProfileOpen] = React.useState(false);
+  
+  const [editableCompanyInfo, setEditableCompanyInfo] = React.useState(companyInfo);
+  const qrCodeInputRef = React.useRef<HTMLInputElement>(null);
+  
+  React.useEffect(() => {
+    const storedCompanyInfo = localStorage.getItem('companyInfo');
+    if (storedCompanyInfo) {
+      setCompanyInfo(JSON.parse(storedCompanyInfo));
+    }
+  }, []);
 
+  React.useEffect(() => {
+    setEditableCompanyInfo(companyInfo);
+  }, [companyInfo, isCompanyProfileOpen]);
 
   const getRole = () => {
     if (pathname.startsWith('/dashboard/admin')) return 'admin';
@@ -233,6 +253,16 @@ export default function DashboardLayout({
       reader.readAsDataURL(e.target.files[0]);
     }
   };
+  
+  const handleQrCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setEditableCompanyInfo(prev => ({ ...prev, bank: { ...prev.bank!, qrCode: event.target?.result as string }}));
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
 
   const handleProfileSave = () => {
     if (newAvatar) {
@@ -244,6 +274,13 @@ export default function DashboardLayout({
     toast({ title: "Profile Updated", description: "Your profile has been successfully updated." });
     setIsEditingProfile(false);
     setNewAvatar(null);
+  }
+  
+  const handleCompanyProfileSave = () => {
+    setCompanyInfo(editableCompanyInfo);
+    localStorage.setItem('companyInfo', JSON.stringify(editableCompanyInfo));
+    toast({title: "Company Profile Updated", description: "Your company details have been saved."});
+    setIsCompanyProfileOpen(false);
   }
 
   const currentRole = getRole();
@@ -408,43 +445,77 @@ END:VCARD`;
         </SidebarInset>
       </div>
        <Dialog open={isCompanyProfileOpen} onOpenChange={setIsCompanyProfileOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-2xl">
             <DialogHeader>
                 <DialogTitle>Company Profile</DialogTitle>
                 <DialogDescription>
                     Update your company's details. These will be reflected across the app.
                 </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-4">
                 <div className="space-y-2">
                     <Label htmlFor="company-name-edit">Company Name</Label>
-                    <Input id="company-name-edit" value={companyInfo.name} onChange={(e) => setCompanyInfo(prev => ({...prev, name: e.target.value}))} />
+                    <Input id="company-name-edit" value={editableCompanyInfo.name} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, name: e.target.value}))} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="company-logo-edit">Logo URL</Label>
-                    <Input id="company-logo-edit" value={companyInfo.logo} onChange={(e) => setCompanyInfo(prev => ({...prev, logo: e.target.value}))} />
+                    <Input id="company-logo-edit" value={editableCompanyInfo.logo} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, logo: e.target.value}))} />
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="company-email-edit">Email</Label>
-                    <Input id="company-email-edit" type="email" value={companyInfo.email} onChange={(e) => setCompanyInfo(prev => ({...prev, email: e.target.value}))} />
+                    <Input id="company-email-edit" type="email" value={editableCompanyInfo.email} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, email: e.target.value}))} />
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="company-phone-edit">Phone</Label>
-                    <Input id="company-phone-edit" value={companyInfo.phone} onChange={(e) => setCompanyInfo(prev => ({...prev, phone: e.target.value}))} />
+                    <Input id="company-phone-edit" value={editableCompanyInfo.phone} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, phone: e.target.value}))} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="company-gstin-edit">GSTIN</Label>
-                    <Input id="company-gstin-edit" value={companyInfo.gstin} onChange={(e) => setCompanyInfo(prev => ({...prev, gstin: e.target.value}))} />
+                    <Input id="company-gstin-edit" value={editableCompanyInfo.gstin} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, gstin: e.target.value}))} />
+                </div>
+
+                <div className="space-y-4 rounded-md border p-4">
+                  <h4 className="font-medium text-sm">Bank Details for Payments</h4>
+                  <div className="space-y-2">
+                      <Label htmlFor="bank-account-holder">Account Holder Name</Label>
+                      <Input id="bank-account-holder" value={editableCompanyInfo.bank?.accountHolder} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, bank: {...prev.bank!, accountHolder: e.target.value}}))} />
+                  </div>
+                  <div className="space-y-2">
+                      <Label htmlFor="bank-name">Bank Name</Label>
+                      <Input id="bank-name" value={editableCompanyInfo.bank?.bankName} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, bank: {...prev.bank!, bankName: e.target.value}}))} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                          <Label htmlFor="bank-account-number">Account Number</Label>
+                          <Input id="bank-account-number" value={editableCompanyInfo.bank?.accountNumber} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, bank: {...prev.bank!, accountNumber: e.target.value}}))} />
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="bank-ifsc">IFSC Code</Label>
+                          <Input id="bank-ifsc" value={editableCompanyInfo.bank?.ifscCode} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, bank: {...prev.bank!, ifscCode: e.target.value}}))} />
+                      </div>
+                  </div>
+                   <div className="space-y-2">
+                      <Label>Payment QR Code</Label>
+                      <div className="flex items-center gap-4">
+                          <Input type="file" ref={qrCodeInputRef} onChange={handleQrCodeChange} accept="image/*" className="hidden" />
+                          {editableCompanyInfo.bank?.qrCode ? (
+                              <Image src={editableCompanyInfo.bank.qrCode} alt="QR Code Preview" width={80} height={80} className="rounded-md border p-1" />
+                          ) : (
+                              <div className="w-20 h-20 bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs text-center">No Image</div>
+                          )}
+                          <Button variant="outline" onClick={() => qrCodeInputRef.current?.click()}>
+                              <Upload className="mr-2 h-4 w-4" />
+                              Upload QR
+                          </Button>
+                      </div>
+                  </div>
                 </div>
             </div>
             <DialogFooter>
                  <DialogClose asChild>
                     <Button variant="outline">Close</Button>
                 </DialogClose>
-                 <Button onClick={() => {
-                    toast({title: "Company Profile Updated", description: "Your company details have been saved."});
-                    setIsCompanyProfileOpen(false);
-                 }}>Save Changes</Button>
+                 <Button onClick={handleCompanyProfileSave}>Save Changes</Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>

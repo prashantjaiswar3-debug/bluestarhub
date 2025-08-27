@@ -175,4 +175,19 @@ export type Expense = {
   status: 'Pending' | 'Approved' | 'Rejected';
   receiptUrl?: string;
 };
+
+export type CompanyInfo = {
+    name: string;
+    logo: string;
+    email: string;
+    phone: string;
+    gstin: string;
+    bank?: {
+        accountHolder: string;
+        accountNumber: string;
+        bankName: string;
+        ifscCode: string;
+        qrCode?: string;
+    };
+};
     

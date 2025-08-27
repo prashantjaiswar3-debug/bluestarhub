@@ -50,7 +50,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Send, Eye, PlusCircle, Trash2, Download, Share2, DollarSign, QrCode, Zap, Edit } from "lucide-react";
-import type { Invoice, QuotationItem, Customer, Payment } from "@/lib/types";
+import type { Invoice, QuotationItem, Customer, Payment, CompanyInfo } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import type jsPDF from 'jspdf';
 import type html2canvas from 'html2canvas';
@@ -226,6 +226,8 @@ export default function InvoicesPage() {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [activeScannerState, setActiveScannerState] = React.useState<{itemId: string, serialIndex: number} | null>(null);
   const [hasCameraPermission, setHasCameraPermission] = React.useState<boolean | null>(null);
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
+
 
   useEffect(() => {
     const storedInvoicesStr = localStorage.getItem('invoices');
@@ -239,6 +241,12 @@ export default function InvoicesPage() {
             return uniqueInvoices;
         });
     }
+    
+    const storedCompanyInfoStr = localStorage.getItem('companyInfo');
+    if(storedCompanyInfoStr) {
+        setCompanyInfo(JSON.parse(storedCompanyInfoStr));
+    }
+
   }, []);
   
   const handleModifyInvoice = (invoiceId: string) => {
@@ -895,7 +903,7 @@ export default function InvoicesPage() {
             <ScrollArea className="flex-1">
                  <div className="px-6">
                     <div ref={invoiceRef} className="bg-white text-black p-8 font-sans w-[210mm]">
-                    {selectedInvoice && (() => {
+                    {selectedInvoice && companyInfo && (() => {
                         const { subTotal, discountAmount, gstAmount, grandTotal, amountPaid, amountDue } = calculateInvoiceTotals(selectedInvoice);
                         const invoiceDate = new Date(selectedInvoice.date);
                         const dueDate = new Date(invoiceDate);
@@ -907,15 +915,15 @@ export default function InvoicesPage() {
                             <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div style={{ width: '250px' }}>
-                                         <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/refs/heads/main/bluestarlogo1.png" alt="Bluestar Logo" width={200} height={80} style={{ width: '200px', height: 'auto' }} />
+                                         <Image src={companyInfo.logo} alt="Bluestar Logo" width={200} height={80} style={{ width: '200px', height: 'auto' }} />
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
                                         <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>INVOICE</h2>
                                         <p style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>{copyType}</p>
                                         <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
-                                            <p><strong>Email:</strong> bluestar.elec@gmail.com</p>
-                                            <p><strong>Contact:</strong> +91 9766661333</p>
-                                            <p><strong>GSTIN:</strong> 27AAPFU0939F1Z5</p>
+                                            <p><strong>Email:</strong> {companyInfo.email}</p>
+                                            <p><strong>Contact:</strong> {companyInfo.phone}</p>
+                                            <p><strong>GSTIN:</strong> {companyInfo.gstin}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -981,6 +989,21 @@ export default function InvoicesPage() {
                                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Amount Paid:</span><span>-{formatCurrency(amountPaid)}</span></div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px', backgroundColor: '#F1F5F9', borderRadius: '4px' }}><span>AMOUNT DUE:</span><span>{formatCurrency(amountDue)}</span></div>
                                     </div>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '30px' }}>
+                                    <div style={{ fontSize: '12px' }}>
+                                        <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Payment Details:</h3>
+                                        <p style={{ margin: 0 }}><strong>Account Holder:</strong> {companyInfo.bank?.accountHolder || 'N/A'}</p>
+                                        <p style={{ margin: 0 }}><strong>Bank Name:</strong> {companyInfo.bank?.bankName || 'N/A'}</p>
+                                        <p style={{ margin: 0 }}><strong>Account Number:</strong> {companyInfo.bank?.accountNumber || 'N/A'}</p>
+                                        <p style={{ margin: 0 }}><strong>IFSC Code:</strong> {companyInfo.bank?.ifscCode || 'N/A'}</p>
+                                    </div>
+                                    {companyInfo.bank?.qrCode && (
+                                    <div style={{ textAlign: 'center' }}>
+                                        <p style={{ fontSize: '12px', fontWeight: 'bold' }}>Scan QR Code to Pay</p>
+                                        <Image src={companyInfo.bank.qrCode} alt="Payment QR Code" width={100} height={100} style={{ marginTop: '8px' }} />
+                                    </div>
+                                    )}
                                 </div>
                             </div>
                             <footer style={{ marginTop: 'auto', paddingTop: '20px', fontSize: '12px', flexShrink: 0, borderTop: '1px solid #E2E8F0' }}>
@@ -1149,5 +1172,3 @@ export default function InvoicesPage() {
     </>
   );
 }
-
-    
