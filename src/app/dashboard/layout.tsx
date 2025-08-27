@@ -146,6 +146,7 @@ export default function DashboardLayout({
   
   const [editableCompanyInfo, setEditableCompanyInfo] = React.useState(companyInfo);
   const qrCodeInputRef = React.useRef<HTMLInputElement>(null);
+  const logoInputRef = React.useRef<HTMLInputElement>(null);
   
   React.useEffect(() => {
     const storedCompanyInfo = localStorage.getItem('companyInfo');
@@ -249,6 +250,16 @@ export default function DashboardLayout({
       const reader = new FileReader();
       reader.onload = (event) => {
         setNewAvatar(event.target?.result as string);
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
+   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setEditableCompanyInfo(prev => ({ ...prev, logo: event.target?.result as string }));
       };
       reader.readAsDataURL(e.target.files[0]);
     }
@@ -457,9 +468,20 @@ END:VCARD`;
                     <Label htmlFor="company-name-edit">Company Name</Label>
                     <Input id="company-name-edit" value={editableCompanyInfo.name} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, name: e.target.value}))} />
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="company-logo-edit">Logo URL</Label>
-                    <Input id="company-logo-edit" value={editableCompanyInfo.logo} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, logo: e.target.value}))} />
+                 <div className="space-y-2">
+                    <Label>Company Logo</Label>
+                    <div className="flex items-center gap-4">
+                        <Input type="file" ref={logoInputRef} onChange={handleLogoChange} accept="image/*" className="hidden" />
+                        {editableCompanyInfo.logo ? (
+                            <Image src={editableCompanyInfo.logo} alt="Company Logo Preview" width={120} height={60} className="rounded-md border p-1 bg-muted object-contain" />
+                        ) : (
+                            <div className="w-32 h-16 bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs text-center">No Logo</div>
+                        )}
+                        <Button variant="outline" onClick={() => logoInputRef.current?.click()}>
+                            <Upload className="mr-2 h-4 w-4" />
+                            Upload Logo
+                        </Button>
+                    </div>
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="company-email-edit">Email</Label>
@@ -826,3 +848,5 @@ END:VCARD`;
     </SidebarProvider>
   );
 }
+
+    
