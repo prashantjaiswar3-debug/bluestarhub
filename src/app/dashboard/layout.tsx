@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import Link from "next/link";
@@ -84,7 +83,7 @@ const allNavItems = [
 
 const initialCompanyInfo = {
     name: "Bluestar Electronics",
-    logo: "https://placehold.co/500x200.png",
+    logo: "https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/refs/heads/main/bluestarlogo1.png",
     email: "bluestar.elec@gmail.com",
     phone: "+91 9766661333",
 };
@@ -746,11 +745,3 @@ END:VCARD`;
     </SidebarProvider>
   );
 }
-
-    
-
-    
-
-    
-
-    
