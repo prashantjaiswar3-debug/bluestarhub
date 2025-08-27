@@ -268,6 +268,7 @@ export default function QuotationsPage() {
       discount: quote.discount,
       totalAmount: quote.totalAmount,
       status: "Pending",
+      isGst: true,
       date: new Date().toISOString().split('T')[0],
       quoteId: quote.quoteId,
       poNumber: quote.poNumber,
@@ -550,7 +551,7 @@ dueDate.setDate(quoteDate.getDate() + 15);
                                   <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
                                       <div style={{ width: '250px', fontSize: '12px' }}>
                                           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Sub Total:</span><span>{formatCurrency(subTotal)}</span></div>
-                                          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Discount ({selectedQuote.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>
+                                          {selectedQuote.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Discount ({selectedQuote.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>}
                                           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Total GST:</span><span>{formatCurrency(gstAmount)}</span></div>
                                           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px' }}><span>TOTAL:</span><span>{formatCurrency(grandTotal)}</span></div>
                                       </div>
@@ -612,7 +613,3 @@ dueDate.setDate(quoteDate.getDate() + 15);
     </div>
   );
 }
-
-    
-
-    

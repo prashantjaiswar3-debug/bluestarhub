@@ -1,5 +1,4 @@
 
-
 export type Complaint = {
   ticketId: string;
   customer?: {
@@ -70,6 +69,7 @@ export type Invoice = {
   quoteId?: string; // Optional link to a quotation
   poNumber?: string;
   payments?: Payment[];
+  isGst: boolean;
 };
 
 
@@ -190,4 +190,3 @@ export type CompanyInfo = {
         qrCode?: string;
     };
 };
-    

@@ -80,6 +80,7 @@ const initialInvoices: Invoice[] = [
         status: "Paid",
         date: "2023-10-22",
         quoteId: "QT-2023-050",
+        isGst: true,
         payments: [
             { id: "PAY-001", amount: 157528, date: "2023-10-22", method: "Online" }
         ]
@@ -94,6 +95,7 @@ const initialInvoices: Invoice[] = [
         status: "Partially Paid",
         date: "2023-10-25",
         quoteId: "QT-2023-051",
+        isGst: true,
         payments: [
             { id: "PAY-002", amount: 10000, date: "2023-10-26", method: "Cash" }
         ]
@@ -209,6 +211,7 @@ export default function InvoicesPage() {
     discount: number;
     quoteId: string;
     poNumber: string;
+    isGst: boolean;
   }>({
     customer: { name: "", email: "", address: "", gstin: "" },
     items: [{ id: `item-${Date.now()}`, description: "", quantity: 1, unit: "nos", price: '', gstRate: 18, serialNumbers: [] }],
@@ -216,6 +219,7 @@ export default function InvoicesPage() {
     discount: 0,
     quoteId: "",
     poNumber: "",
+    isGst: true,
   });
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [invoiceToCancel, setInvoiceToCancel] = useState<Invoice | null>(null);
@@ -265,6 +269,7 @@ export default function InvoicesPage() {
             discount: invoiceToEdit.discount,
             quoteId: invoiceToEdit.quoteId || "",
             poNumber: invoiceToEdit.poNumber || "",
+            isGst: invoiceToEdit.isGst,
         });
         setActiveTab("create");
     }
@@ -344,12 +349,13 @@ export default function InvoicesPage() {
   }, [subTotal, newInvoice.discount]);
 
   const gstAmount = useMemo(() => {
+    if (!newInvoice.isGst) return 0;
     return newInvoice.items.reduce((sum, item) => {
       const itemTotal = Number(item.quantity) * Number(item.price);
       const itemTotalAfterDiscount = itemTotal * (1 - (newInvoice.discount / 100));
       return sum + (itemTotalAfterDiscount * (Number(item.gstRate) / 100));
     }, 0);
-  }, [newInvoice.items, newInvoice.discount]);
+  }, [newInvoice.items, newInvoice.discount, newInvoice.isGst]);
 
   const totalAmount = useMemo(() => {
     return Math.round(totalAfterDiscount + gstAmount);
@@ -437,6 +443,7 @@ export default function InvoicesPage() {
         discount: 0,
         quoteId: "",
         poNumber: "",
+        isGst: true,
       });
       setEditingInvoiceId(null);
   }
@@ -468,6 +475,7 @@ export default function InvoicesPage() {
             totalAmount,
             quoteId: newInvoice.quoteId,
             poNumber: newInvoice.poNumber,
+            isGst: newInvoice.isGst,
         };
         const updatedInvoices = invoices.map(inv => inv.invoiceId === editingInvoiceId ? { ...inv, ...updatedInvoiceData } : inv);
         setInvoices(updatedInvoices);
@@ -490,6 +498,7 @@ export default function InvoicesPage() {
           date: new Date().toISOString().split('T')[0],
           quoteId: newInvoice.quoteId,
           poNumber: newInvoice.poNumber,
+          isGst: newInvoice.isGst,
           payments: [],
         };
         
@@ -532,6 +541,7 @@ export default function InvoicesPage() {
                 discount: quote.discount,
                 quoteId: quote.quoteId,
                 poNumber: quote.poNumber || "",
+                isGst: true,
             });
         }
     };
@@ -548,11 +558,11 @@ export default function InvoicesPage() {
     const subTotal = itemsTotal + invoice.laborCost;
     const discountAmount = subTotal * (invoice.discount / 100);
     const totalAfterDiscount = subTotal - discountAmount;
-    const gstAmount = invoice.items.reduce((sum, item) => {
+    const gstAmount = invoice.isGst ? invoice.items.reduce((sum, item) => {
       const itemTotal = item.quantity * item.price;
       const itemTotalAfterDiscount = itemTotal * (1 - (invoice.discount / 100));
       return sum + (itemTotalAfterDiscount * (item.gstRate / 100));
-    }, 0);
+    }, 0) : 0;
     const grandTotal = Math.round(totalAfterDiscount + gstAmount);
     const amountPaid = invoice.payments?.reduce((sum, p) => sum + p.amount, 0) || 0;
     const amountDue = grandTotal - amountPaid;
@@ -742,6 +752,19 @@ export default function InvoicesPage() {
                 </CardHeader>
                 <ScrollArea className="flex-1">
                     <CardContent className="grid gap-6">
+                        <div className="space-y-4 rounded-md border p-4">
+                            <h4 className="text-sm font-medium">Bill Type</h4>
+                            <RadioGroup value={newInvoice.isGst ? 'withGst' : 'withoutGst'} onValueChange={(value) => setNewInvoice(prev => ({...prev, isGst: value === 'withGst'}))}>
+                                <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="withGst" id="withGst" />
+                                <Label htmlFor="withGst">With GST (Tax Invoice)</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="withoutGst" id="withoutGst" />
+                                <Label htmlFor="withoutGst">Without GST (Bill of Supply)</Label>
+                                </div>
+                            </RadioGroup>
+                        </div>
                        <div className="space-y-4 rounded-md border p-4">
                          <h4 className="text-sm font-medium">Quotation Details</h4>
                          <div className="space-y-2">
@@ -809,7 +832,7 @@ export default function InvoicesPage() {
                               <Label htmlFor={`item-desc-${index}`}>Description</Label>
                               <Textarea id={`item-desc-${index}`} placeholder="e.g., 4x Dome Cameras, 1x 8-Channel DVR..." value={item.description} onChange={(e) => handleItemChange(item.id, 'description', e.target.value)} />
                             </div>
-                            <div className="grid grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                <div className="space-y-2">
                                   <Label htmlFor={`item-qty-${index}`}>Quantity</Label>
                                   <Input id={`item-qty-${index}`} type="text" placeholder="1" value={item.quantity} onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)} />
@@ -829,10 +852,12 @@ export default function InvoicesPage() {
                                   <Label htmlFor={`item-price-${index}`}>Price (₹)</Label>
                                   <Input id={`item-price-${index}`} type="text" placeholder="10000" value={item.price} onChange={(e) => handleItemChange(item.id, 'price', e.target.value)}/>
                                 </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor={`item-gst-${index}`}>GST (%)</Label>
-                                  <Input id={`item-gst-${index}`} type="number" placeholder="18" value={item.gstRate} onChange={(e) => handleItemChange(item.id, 'gstRate', e.target.value)}/>
-                                </div>
+                                {newInvoice.isGst && (
+                                    <div className="space-y-2">
+                                    <Label htmlFor={`item-gst-${index}`}>GST (%)</Label>
+                                    <Input id={`item-gst-${index}`} type="number" placeholder="18" value={item.gstRate} onChange={(e) => handleItemChange(item.id, 'gstRate', e.target.value)}/>
+                                    </div>
+                                )}
                             </div>
                              <div className="space-y-2">
                                 <Label>Serial Numbers</Label>
@@ -978,6 +1003,7 @@ export default function InvoicesPage() {
               const dueDate = new Date(invoiceDate);
               dueDate.setDate(invoiceDate.getDate() + 15);
               const formatDate = (date: Date | string) => new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+              const isGst = selectedInvoice.isGst;
 
               return (
                   <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '100%', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
@@ -987,12 +1013,12 @@ export default function InvoicesPage() {
                                <img src={companyInfo.logo} alt="Company Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
                           </div>
                           <div style={{ textAlign: 'right' }}>
-                              <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>INVOICE</h2>
+                              <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>{isGst ? 'TAX INVOICE' : 'BILL OF SUPPLY'}</h2>
                               <p style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>{copyType}</p>
                               <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
                                   <p><strong>Email:</strong> {companyInfo.email}</p>
                                   <p><strong>Contact:</strong> {companyInfo.phone}</p>
-                                  <p><strong>GSTIN:</strong> {companyInfo.gstin}</p>
+                                  {isGst && <p><strong>GSTIN:</strong> {companyInfo.gstin}</p>}
                               </div>
                           </div>
                       </div>
@@ -1006,7 +1032,7 @@ export default function InvoicesPage() {
                               {selectedInvoice.customer.contactPerson && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>Attn: {selectedInvoice.customer.contactPerson}</p>}
                               <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedInvoice.customer.address}</p>
                               <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>Email:</strong> {selectedInvoice.customer.email}</p>
-                              {selectedInvoice.customer.gstin && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>GSTIN:</strong> {selectedInvoice.customer.gstin}</p>}
+                              {isGst && selectedInvoice.customer.gstin && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>GSTIN:</strong> {selectedInvoice.customer.gstin}</p>}
                           </div>
                           <div style={{ width: '220px' }}>
                               <div style={{ fontSize: '12px', textAlign: 'right' }}>
@@ -1026,7 +1052,7 @@ export default function InvoicesPage() {
                                   <th style={{ padding: '10px', textAlign: 'left' }}>DESCRIPTION</th>
                                   <th style={{ padding: '10px', textAlign: 'right' }}>PRICE</th>
                                   <th style={{ padding: '10px', textAlign: 'right' }}>QTY</th>
-                                  <th style={{ padding: '10px', textAlign: 'right' }}>GST</th>
+                                  {isGst && <th style={{ padding: '10px', textAlign: 'right' }}>GST</th>}
                                   <th style={{ padding: '10px', textAlign: 'right' }}>TOTAL</th>
                               </tr>
                           </thead>
@@ -1037,13 +1063,13 @@ export default function InvoicesPage() {
                                       <td style={{ padding: '10px', maxWidth: '300px' }}>{item.description} {item.serialNumbers && item.serialNumbers.length > 0 && <span style={{color: '#64748B', fontSize: '10px', display: 'block'}}>S/N: {item.serialNumbers.join(', ')}</span>}</td>
                                       <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
                                       <td style={{ padding: '10px', textAlign: 'right' }}>{item.quantity} {item.unit}</td>
-                                      <td style={{ padding: '10px', textAlign: 'right' }}>{item.gstRate}%</td>
+                                      {isGst && <td style={{ padding: '10px', textAlign: 'right' }}>{item.gstRate}%</td>}
                                       <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.quantity * item.price)}</td>
                                   </tr>
                               ))}
                               {selectedInvoice.laborCost > 0 && (
                                   <tr style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: selectedInvoice.items.length % 2 === 0 ? '#F8FAFC' : 'white' }}>
-                                      <td colSpan={5} style={{ padding: '10px', textAlign: 'right', fontWeight: 'bold' }}>Labor Cost</td>
+                                      <td colSpan={isGst ? 5 : 4} style={{ padding: '10px', textAlign: 'right', fontWeight: 'bold' }}>Labor Cost</td>
                                       <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(selectedInvoice.laborCost)}</td>
                                   </tr>
                               )}
@@ -1052,10 +1078,10 @@ export default function InvoicesPage() {
                       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
                           <div style={{ width: '250px', fontSize: '12px' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Sub Total:</span><span>{formatCurrency(subTotal)}</span></div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Discount ({selectedInvoice.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Total GST:</span><span>{formatCurrency(gstAmount)}</span></div>
+                              {selectedInvoice.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Discount ({selectedInvoice.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>}
+                              {isGst && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Total GST:</span><span>{formatCurrency(gstAmount)}</span></div>}
                               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px' }}><span>TOTAL:</span><span>{formatCurrency(grandTotal)}</span></div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Amount Paid:</span><span>-{formatCurrency(amountPaid)}</span></div>
+                              {amountPaid > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Amount Paid:</span><span>-{formatCurrency(amountPaid)}</span></div>}
                               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px', backgroundColor: '#F1F5F9', borderRadius: '4px' }}><span>AMOUNT DUE:</span><span>{formatCurrency(amountDue)}</span></div>
                           </div>
                       </div>
@@ -1182,9 +1208,3 @@ export default function InvoicesPage() {
     </>
   );
 }
-
-    
-
-    
-
-    
