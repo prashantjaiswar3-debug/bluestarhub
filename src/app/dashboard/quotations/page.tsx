@@ -474,7 +474,7 @@ dueDate.setDate(quoteDate.getDate() + 15);
                                  <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                         <div style={{ width: '250px' }}>
-                                            <img src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/refs/heads/main/bluestarlogo1.png" alt="Bluestar Logo" style={{ width: '200px', height: 'auto' }} />
+                                            <Image unoptimized src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/refs/heads/main/bluestarlogo1.png" alt="Bluestar Logo" width={200} height={80} style={{ width: '200px', height: 'auto' }} />
                                         </div>
                                         <div style={{ textAlign: 'right' }}>
                                             <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>QUOTATION</h2>
@@ -605,5 +605,7 @@ dueDate.setDate(quoteDate.getDate() + 15);
     </div>
   );
 }
+
+    
 
     
