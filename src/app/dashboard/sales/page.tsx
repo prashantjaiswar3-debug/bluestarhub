@@ -229,15 +229,15 @@ export default function AdminDashboard() {
   });
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      <div className="lg:col-span-3 flex flex-col gap-6">
+    <div className="grid gap-6 lg:grid-cols-1">
+      <div className="lg:col-span-1 flex flex-col gap-6">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div>
                 <CardTitle>Job Enquiries for Freelancers</CardTitle>
                 <CardDescription>Create and manage job enquiries for daily-wage staff.</CardDescription>
             </div>
-            <Button onClick={() => setIsCreateEnquiryOpen(true)}>
+            <Button onClick={() => setIsCreateEnquiryOpen(true)} className="w-full sm:w-auto">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Create Enquiry
             </Button>
@@ -306,7 +306,7 @@ export default function AdminDashboard() {
                   <TableRow>
                     <TableHead>Ticket ID</TableHead>
                     <TableHead>Customer</TableHead>
-                    <TableHead>Issue</TableHead>
+                    <TableHead className="hidden md:table-cell">Issue</TableHead>
                     <TableHead>Priority</TableHead>
                     <TableHead className="text-right">Assign</TableHead>
                   </TableRow>
@@ -316,7 +316,7 @@ export default function AdminDashboard() {
                     <TableRow key={complaint.ticketId}>
                       <TableCell className="font-medium">{complaint.ticketId}</TableCell>
                       <TableCell>{complaint.customer?.name}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">{complaint.issue}</TableCell>
+                      <TableCell className="hidden md:table-cell max-w-[200px] truncate">{complaint.issue}</TableCell>
                       <TableCell>
                         <Badge variant={priorityVariant[complaint.priority]}>
                           {complaint.priority}
@@ -340,7 +340,7 @@ export default function AdminDashboard() {
                     </TableRow>
                   )) : (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center">No open complaints.</TableCell>
+                      <TableCell colSpan={5} className="text-center h-24">No open complaints.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
@@ -363,10 +363,9 @@ export default function AdminDashboard() {
                   <TableRow>
                     <TableHead>Ticket ID</TableHead>
                     <TableHead>Customer</TableHead>
-                    <TableHead>Issue</TableHead>
-                    <TableHead>Priority</TableHead>
+                    <TableHead className="hidden md:table-cell">Issue</TableHead>
                     <TableHead>Assigned To</TableHead>
-                    <TableHead className="text-right">Assign</TableHead>
+                    <TableHead className="text-right">Re-assign</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -374,12 +373,7 @@ export default function AdminDashboard() {
                     <TableRow key={complaint.ticketId}>
                       <TableCell className="font-medium">{complaint.ticketId}</TableCell>
                       <TableCell>{complaint.customer?.name}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">{complaint.issue}</TableCell>
-                      <TableCell>
-                        <Badge variant={priorityVariant[complaint.priority]}>
-                          {complaint.priority}
-                        </Badge>
-                      </TableCell>
+                      <TableCell className="hidden md:table-cell max-w-[200px] truncate">{complaint.issue}</TableCell>
                       <TableCell>{technicians.find(t => t.id === complaint.assignedTo)?.name}</TableCell>
                        <TableCell className="text-right">
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 justify-end">
@@ -399,7 +393,7 @@ export default function AdminDashboard() {
                     </TableRow>
                   )) : (
                      <TableRow>
-                      <TableCell colSpan={6} className="text-center">No complaints assigned yet.</TableCell>
+                      <TableCell colSpan={5} className="text-center h-24">No complaints assigned yet.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
@@ -421,10 +415,9 @@ export default function AdminDashboard() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Technician</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="hidden sm:table-cell">Date</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead className="hidden lg:table-cell">Description</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -432,10 +425,9 @@ export default function AdminDashboard() {
                   {pendingExpenses.length > 0 ? pendingExpenses.map((expense) => (
                     <TableRow key={expense.id}>
                       <TableCell className="font-medium">{expense.technicianName}</TableCell>
-                      <TableCell>{formatDate(expense.date)}</TableCell>
-                      <TableCell><Badge variant="outline">{expense.category}</Badge></TableCell>
-                      <TableCell className="max-w-xs truncate">{expense.description}</TableCell>
-                      <TableCell className="text-right font-medium">{formatCurrency(expense.amount)}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{formatDate(expense.date)}</TableCell>
+                      <TableCell className="font-medium">{formatCurrency(expense.amount)}</TableCell>
+                      <TableCell className="hidden lg:table-cell max-w-xs truncate">{expense.description}</TableCell>
                       <TableCell className="text-right">
                          <div className="flex gap-2 justify-end">
                             <Button size="icon" variant="outline" className="h-8 w-8 bg-green-100 text-green-700 hover:bg-green-200" onClick={() => handleExpenseAction(expense.id, 'approve')}>
@@ -449,7 +441,7 @@ export default function AdminDashboard() {
                     </TableRow>
                   )) : (
                      <TableRow>
-                      <TableCell colSpan={6} className="text-center">No pending expenses to review.</TableCell>
+                      <TableCell colSpan={5} className="text-center h-24">No pending expenses to review.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
@@ -467,11 +459,11 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col sm:flex-row gap-4 mb-4">
-              <div className="grid gap-2">
+              <div className="grid gap-2 flex-1">
                 <Label htmlFor="from-date">From</Label>
                 <Input id="from-date" type="date" value={expenseReport.from} onChange={(e) => setExpenseReport(prev => ({...prev, from: e.target.value}))}/>
               </div>
-              <div className="grid gap-2">
+              <div className="grid gap-2 flex-1">
                 <Label htmlFor="to-date">To</Label>
                 <Input id="to-date" type="date" value={expenseReport.to} onChange={(e) => setExpenseReport(prev => ({...prev, to: e.target.value}))}/>
               </div>
@@ -482,8 +474,7 @@ export default function AdminDashboard() {
                       <TableRow>
                           <TableHead>Technician</TableHead>
                           <TableHead>Date</TableHead>
-                          <TableHead>Category</TableHead>
-                          <TableHead>Description</TableHead>
+                          <TableHead className="hidden sm:table-cell">Category</TableHead>
                           <TableHead className="text-right">Amount</TableHead>
                           <TableHead className="text-right">Status</TableHead>
                       </TableRow>
@@ -493,8 +484,7 @@ export default function AdminDashboard() {
                           <TableRow key={expense.id}>
                               <TableCell>{expense.technicianName}</TableCell>
                               <TableCell>{formatDate(expense.date)}</TableCell>
-                              <TableCell><Badge variant="outline">{expense.category}</Badge></TableCell>
-                              <TableCell className="max-w-xs truncate">{expense.description}</TableCell>
+                              <TableCell className="hidden sm:table-cell"><Badge variant="outline">{expense.category}</Badge></TableCell>
                               <TableCell className="text-right font-medium">{formatCurrency(expense.amount)}</TableCell>
                               <TableCell className="text-right">
                                   <Badge variant={expenseStatusVariant[expense.status]}>{expense.status}</Badge>
@@ -502,7 +492,7 @@ export default function AdminDashboard() {
                           </TableRow>
                       )) : (
                           <TableRow>
-                              <TableCell colSpan={6} className="text-center h-24">
+                              <TableCell colSpan={5} className="text-center h-24">
                                   No expenses found for the selected period.
                               </TableCell>
                           </TableRow>
@@ -521,80 +511,84 @@ export default function AdminDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Rating</TableHead>
-                  <TableHead>Comment</TableHead>
-                  <TableHead>Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {reviews.length > 0 ? reviews.map((review) => (
-                  <TableRow key={review.id}>
-                    <TableCell className="font-medium">{review.customer.name}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        {[...Array(review.rating)].map((_, i) => (
-                          <Star key={i} className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                        ))}
-                        {[...Array(5 - review.rating)].map((_, i) => (
-                           <Star key={i} className="h-4 w-4 text-muted-foreground" />
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell className="max-w-xs truncate">{review.comment}</TableCell>
-                    <TableCell>{formatDate(review.date)}</TableCell>
+            <ScrollArea className="w-full">
+              <Table className="min-w-[600px] whitespace-nowrap">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Rating</TableHead>
+                    <TableHead className="hidden sm:table-cell">Comment</TableHead>
+                    <TableHead className="hidden md:table-cell">Date</TableHead>
                   </TableRow>
-                )) : (
-                   <TableRow>
-                    <TableCell colSpan={4} className="text-center">No reviews submitted yet.</TableCell>
+                </TableHeader>
+                <TableBody>
+                  {reviews.length > 0 ? reviews.map((review) => (
+                    <TableRow key={review.id}>
+                      <TableCell className="font-medium">{review.customer.name}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          {[...Array(review.rating)].map((_, i) => (
+                            <Star key={i} className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                          ))}
+                          {[...Array(5 - review.rating)].map((_, i) => (
+                            <Star key={i} className="h-4 w-4 text-muted-foreground" />
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell max-w-xs truncate">{review.comment}</TableCell>
+                      <TableCell className="hidden md:table-cell">{formatDate(review.date)}</TableCell>
+                    </TableRow>
+                  )) : (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center h-24">No reviews submitted yet.</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      
+        <Card>
+          <CardHeader>
+            <CardTitle>Available Technicians</CardTitle>
+            <CardDescription>
+              Overview of technician workload and status.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="w-full">
+              <Table className="min-w-[400px] whitespace-nowrap">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead className="text-right">Load</TableHead>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {technicians.map((tech) => (
+                    <TableRow key={tech.id}>
+                      <TableCell>
+                        <div className="font-medium">{tech.name}</div>
+                        <div className="text-sm text-muted-foreground hidden sm:block">{tech.skills.join(", ")}</div>
+                      </TableCell>
+                      <TableCell><Badge variant={tech.type === 'Fixed' ? 'default' : 'secondary'}>{tech.type}</Badge></TableCell>
+                      <TableCell>
+                        {tech.type === 'Fixed' ? (
+                            <Badge variant={tech.role === 'Supervisor' ? 'destructive' : 'outline'}>{tech.role}</Badge>
+                        ) : 'N/A'}
+                      </TableCell>
+                      <TableCell className="text-right">{tech.load}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </ScrollArea>
           </CardContent>
         </Card>
       </div>
-
-      <Card className="lg:col-span-3">
-        <CardHeader>
-          <CardTitle>Available Technicians</CardTitle>
-           <CardDescription>
-            Overview of technician workload and status.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Type</TableHead>
-                 <TableHead>Role</TableHead>
-                <TableHead className="text-right">Load</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {technicians.map((tech) => (
-                <TableRow key={tech.id}>
-                  <TableCell>
-                    <div className="font-medium">{tech.name}</div>
-                    <div className="text-sm text-muted-foreground">{tech.skills.join(", ")}</div>
-                  </TableCell>
-                  <TableCell><Badge variant={tech.type === 'Fixed' ? 'default' : 'secondary'}>{tech.type}</Badge></TableCell>
-                  <TableCell>
-                    {tech.type === 'Fixed' ? (
-                        <Badge variant={tech.role === 'Supervisor' ? 'destructive' : 'outline'}>{tech.role}</Badge>
-                    ) : 'N/A'}
-                   </TableCell>
-                  <TableCell className="text-right">{tech.load}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
        <Dialog open={isCreateEnquiryOpen} onOpenChange={setIsCreateEnquiryOpen}>
         <DialogContent>
           <DialogHeader>
@@ -612,7 +606,7 @@ export default function AdminDashboard() {
                 <Label htmlFor="enquiry-desc">Description</Label>
                 <Textarea id="enquiry-desc" value={newEnquiry.description} onChange={(e) => setNewEnquiry({...newEnquiry, description: e.target.value})} placeholder="e.g., Need an electrician for..." />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="enquiry-location">Location</Label>
                     <Input id="enquiry-location" value={newEnquiry.location} onChange={(e) => setNewEnquiry({...newEnquiry, location: e.target.value})} placeholder="e.g., North Zone" />
@@ -634,5 +628,7 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+    
 
     

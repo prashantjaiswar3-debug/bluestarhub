@@ -65,6 +65,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import QRCode from "react-qr-code";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CompanyInfo, Technician } from "@/lib/types";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 
 const allNavItems = [
@@ -317,7 +318,7 @@ END:VCARD`;
           <SidebarContent>
             <SidebarHeader>
               <div className="flex items-center justify-center p-2">
-                 <Image src={companyInfo.logo} alt="Bluestar Logo" width={200} height={80} className="w-48 h-auto" />
+                 <Image src={companyInfo.logo} alt="Bluestar Logo" width={200} height={80} className="w-48 h-auto" unoptimized/>
               </div>
             </SidebarHeader>
             <SidebarMenu>
@@ -463,77 +464,83 @@ END:VCARD`;
                     Update your company's details. These will be reflected across the app.
                 </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-4">
-                <div className="space-y-2">
-                    <Label htmlFor="company-name-edit">Company Name</Label>
-                    <Input id="company-name-edit" value={editableCompanyInfo.name} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, name: e.target.value}))} />
-                </div>
-                 <div className="space-y-2">
-                    <Label>Company Logo</Label>
-                    <div className="flex items-center gap-4">
-                        <Input type="file" ref={logoInputRef} onChange={handleLogoChange} accept="image/*" className="hidden" />
-                        {editableCompanyInfo.logo ? (
-                            <Image src={editableCompanyInfo.logo} alt="Company Logo Preview" width={120} height={60} className="rounded-md border p-1 bg-muted object-contain" />
-                        ) : (
-                            <div className="w-32 h-16 bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs text-center">No Logo</div>
-                        )}
-                        <Button variant="outline" onClick={() => logoInputRef.current?.click()}>
-                            <Upload className="mr-2 h-4 w-4" />
-                            Upload Logo
-                        </Button>
-                    </div>
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="company-email-edit">Email</Label>
-                    <Input id="company-email-edit" type="email" value={editableCompanyInfo.email} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, email: e.target.value}))} />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="company-phone-edit">Phone</Label>
-                    <Input id="company-phone-edit" value={editableCompanyInfo.phone} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, phone: e.target.value}))} />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="company-gstin-edit">GSTIN</Label>
-                    <Input id="company-gstin-edit" value={editableCompanyInfo.gstin} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, gstin: e.target.value}))} />
-                </div>
-
-                <div className="space-y-4 rounded-md border p-4">
-                  <h4 className="font-medium text-sm">Bank Details for Payments</h4>
+            <ScrollArea className="max-h-[70vh] p-1">
+              <div className="grid gap-6 py-4 pr-5">
                   <div className="space-y-2">
-                      <Label htmlFor="bank-account-holder">Account Holder Name</Label>
-                      <Input id="bank-account-holder" value={editableCompanyInfo.bank?.accountHolder} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, bank: {...prev.bank!, accountHolder: e.target.value}}))} />
+                      <Label htmlFor="company-name-edit">Company Name</Label>
+                      <Input id="company-name-edit" value={editableCompanyInfo.name} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, name: e.target.value}))} />
                   </div>
                   <div className="space-y-2">
-                      <Label htmlFor="bank-name">Bank Name</Label>
-                      <Input id="bank-name" value={editableCompanyInfo.bank?.bankName} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, bank: {...prev.bank!, bankName: e.target.value}}))} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                          <Label htmlFor="bank-account-number">Account Number</Label>
-                          <Input id="bank-account-number" value={editableCompanyInfo.bank?.accountNumber} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, bank: {...prev.bank!, accountNumber: e.target.value}}))} />
-                      </div>
-                      <div className="space-y-2">
-                          <Label htmlFor="bank-ifsc">IFSC Code</Label>
-                          <Input id="bank-ifsc" value={editableCompanyInfo.bank?.ifscCode} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, bank: {...prev.bank!, ifscCode: e.target.value}}))} />
-                      </div>
-                  </div>
-                   <div className="space-y-2">
-                      <Label>Payment QR Code</Label>
+                      <Label>Company Logo</Label>
                       <div className="flex items-center gap-4">
-                          <Input type="file" ref={qrCodeInputRef} onChange={handleQrCodeChange} accept="image/*" className="hidden" />
-                          {editableCompanyInfo.bank?.qrCode ? (
-                              <Image src={editableCompanyInfo.bank.qrCode} alt="QR Code Preview" width={80} height={80} className="rounded-md border p-1" />
-                          ) : (
-                              <div className="w-20 h-20 bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs text-center">No Image</div>
-                          )}
-                          <Button variant="outline" onClick={() => qrCodeInputRef.current?.click()}>
+                          <Input type="file" ref={logoInputRef} onChange={handleLogoChange} accept="image/*" className="hidden" />
+                          <div className="w-32 h-16 flex items-center justify-center rounded-md border bg-muted">
+                            {editableCompanyInfo.logo ? (
+                                <Image src={editableCompanyInfo.logo} alt="Company Logo Preview" width={120} height={60} className="object-contain h-full w-auto" unoptimized/>
+                            ) : (
+                                <div className="text-muted-foreground text-xs text-center">No Logo</div>
+                            )}
+                          </div>
+                          <Button variant="outline" onClick={() => logoInputRef.current?.click()}>
                               <Upload className="mr-2 h-4 w-4" />
-                              Upload QR
+                              Upload Logo
                           </Button>
                       </div>
                   </div>
-                </div>
-            </div>
-            <DialogFooter>
+                  <div className="space-y-2">
+                      <Label htmlFor="company-email-edit">Email</Label>
+                      <Input id="company-email-edit" type="email" value={editableCompanyInfo.email} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, email: e.target.value}))} />
+                  </div>
+                  <div className="space-y-2">
+                      <Label htmlFor="company-phone-edit">Phone</Label>
+                      <Input id="company-phone-edit" value={editableCompanyInfo.phone} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, phone: e.target.value}))} />
+                  </div>
+                  <div className="space-y-2">
+                      <Label htmlFor="company-gstin-edit">GSTIN</Label>
+                      <Input id="company-gstin-edit" value={editableCompanyInfo.gstin} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, gstin: e.target.value}))} />
+                  </div>
+
+                  <div className="space-y-4 rounded-md border p-4">
+                    <h4 className="font-medium text-sm">Bank Details for Payments</h4>
+                    <div className="space-y-2">
+                        <Label htmlFor="bank-account-holder">Account Holder Name</Label>
+                        <Input id="bank-account-holder" value={editableCompanyInfo.bank?.accountHolder || ''} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, bank: {...prev.bank!, accountHolder: e.target.value}}))} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="bank-name">Bank Name</Label>
+                        <Input id="bank-name" value={editableCompanyInfo.bank?.bankName || ''} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, bank: {...prev.bank!, bankName: e.target.value}}))} />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="bank-account-number">Account Number</Label>
+                            <Input id="bank-account-number" value={editableCompanyInfo.bank?.accountNumber || ''} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, bank: {...prev.bank!, accountNumber: e.target.value}}))} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="bank-ifsc">IFSC Code</Label>
+                            <Input id="bank-ifsc" value={editableCompanyInfo.bank?.ifscCode || ''} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, bank: {...prev.bank!, ifscCode: e.target.value}}))} />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Payment QR Code</Label>
+                        <div className="flex items-center gap-4">
+                            <Input type="file" ref={qrCodeInputRef} onChange={handleQrCodeChange} accept="image/*" className="hidden" />
+                            <div className="w-20 h-20 bg-muted rounded-md flex items-center justify-center border">
+                              {editableCompanyInfo.bank?.qrCode ? (
+                                  <Image src={editableCompanyInfo.bank.qrCode} alt="QR Code Preview" width={80} height={80} className="object-contain" unoptimized/>
+                              ) : (
+                                  <div className="text-muted-foreground text-xs text-center">No Image</div>
+                              )}
+                            </div>
+                            <Button variant="outline" onClick={() => qrCodeInputRef.current?.click()}>
+                                <Upload className="mr-2 h-4 w-4" />
+                                Upload QR
+                            </Button>
+                        </div>
+                    </div>
+                  </div>
+              </div>
+            </ScrollArea>
+            <DialogFooter className="pt-4">
                  <DialogClose asChild>
                     <Button variant="outline">Close</Button>
                 </DialogClose>
@@ -549,51 +556,53 @@ END:VCARD`;
               Add, edit, or remove promotional offers displayed to customers.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-6 py-4">
-             <Card>
-                <CardContent className="p-4 grid gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="offer-title">Offer Title</Label>
-                        <Input id="offer-title" placeholder="e.g., Upgrade Your Security" />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="offer-description">Offer Description</Label>
-                        <Textarea id="offer-description" placeholder="e.g., Get 20% off on all new smart camera installations." />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="offer-image">Image URL</Label>
-                        <Input id="offer-image" placeholder="https://placehold.co/600x400.png" />
-                    </div>
-                     <Button className="w-full">Add New Offer</Button>
-                </CardContent>
-             </Card>
-             <div>
-                <h3 className="text-lg font-medium mb-4">Current Offers</h3>
-                <div className="space-y-4">
-                    <div className="flex items-center gap-4 p-4 border rounded-lg">
-                        <Image src="https://placehold.co/600x400.png" alt="Offer 1" width={100} height={60} className="rounded-md" />
-                        <div className="flex-1">
-                            <p className="font-semibold">Upgrade Your Security</p>
-                            <p className="text-sm text-muted-foreground">Get 20% off on all new smart camera installations.</p>
-                        </div>
-                        <Button variant="ghost" size="icon">
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                    </div>
-                    <div className="flex items-center gap-4 p-4 border rounded-lg">
-                        <Image src="https://placehold.co/600x400.png" alt="Offer 2" width={100} height={60} className="rounded-md" />
-                        <div className="flex-1">
-                            <p className="font-semibold">Peace of Mind Plan</p>
-                            <p className="text-sm text-muted-foreground">Sign up for our Annual Maintenance Contract and get the first month free.</p>
-                        </div>
-                         <Button variant="ghost" size="icon">
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                    </div>
-                </div>
-             </div>
-          </div>
-          <DialogFooter>
+          <ScrollArea className="max-h-[70vh] p-1">
+            <div className="grid gap-6 py-4 pr-5">
+              <Card>
+                  <CardContent className="p-4 grid gap-4">
+                      <div className="space-y-2">
+                          <Label htmlFor="offer-title">Offer Title</Label>
+                          <Input id="offer-title" placeholder="e.g., Upgrade Your Security" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="offer-description">Offer Description</Label>
+                          <Textarea id="offer-description" placeholder="e.g., Get 20% off on all new smart camera installations." />
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="offer-image">Image URL</Label>
+                          <Input id="offer-image" placeholder="https://placehold.co/600x400.png" />
+                      </div>
+                      <Button className="w-full">Add New Offer</Button>
+                  </CardContent>
+              </Card>
+              <div>
+                  <h3 className="text-lg font-medium mb-4">Current Offers</h3>
+                  <div className="space-y-4">
+                      <div className="flex items-center gap-4 p-4 border rounded-lg">
+                          <Image src="https://placehold.co/600x400.png" alt="Offer 1" width={100} height={60} className="rounded-md" />
+                          <div className="flex-1">
+                              <p className="font-semibold">Upgrade Your Security</p>
+                              <p className="text-sm text-muted-foreground">Get 20% off on all new smart camera installations.</p>
+                          </div>
+                          <Button variant="ghost" size="icon">
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                      </div>
+                      <div className="flex items-center gap-4 p-4 border rounded-lg">
+                          <Image src="https://placehold.co/600x400.png" alt="Offer 2" width={100} height={60} className="rounded-md" />
+                          <div className="flex-1">
+                              <p className="font-semibold">Peace of Mind Plan</p>
+                              <p className="text-sm text-muted-foreground">Sign up for our Annual Maintenance Contract and get the first month free.</p>
+                          </div>
+                          <Button variant="ghost" size="icon">
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                      </div>
+                  </div>
+              </div>
+            </div>
+          </ScrollArea>
+          <DialogFooter className="pt-4">
             <DialogClose asChild>
                 <Button variant="outline">Close</Button>
             </DialogClose>
@@ -608,40 +617,42 @@ END:VCARD`;
               Enter the customer's details below to create a new account and generate login credentials.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-             <div className="flex items-center space-x-2">
-                <Checkbox id="is-company" checked={newCustomer.isCompany} onCheckedChange={(checked) => setNewCustomer({...newCustomer, isCompany: !!checked})} />
-                <Label htmlFor="is-company" className="cursor-pointer">Registering as a company?</Label>
-            </div>
+          <ScrollArea className="max-h-[70vh] p-1">
+            <div className="grid gap-4 py-4 pr-5">
+              <div className="flex items-center space-x-2">
+                  <Checkbox id="is-company" checked={newCustomer.isCompany} onCheckedChange={(checked) => setNewCustomer({...newCustomer, isCompany: !!checked})} />
+                  <Label htmlFor="is-company" className="cursor-pointer">Registering as a company?</Label>
+              </div>
 
-            {newCustomer.isCompany && (
-                <div className="space-y-2">
-                    <Label htmlFor="company-name">Company Name</Label>
-                    <Input id="company-name" value={newCustomer.companyName} onChange={(e) => setNewCustomer({...newCustomer, companyName: e.target.value})} placeholder="e.g., ABC Corporation" />
-                </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="name">{newCustomer.isCompany ? "Contact Person Name" : "Full Name"}</Label>
-              <Input id="name" value={newCustomer.name} onChange={(e) => setNewCustomer({...newCustomer, name: e.target.value})} placeholder={newCustomer.isCompany ? "e.g., John Doe" : "e.g., John Doe"} />
+              {newCustomer.isCompany && (
+                  <div className="space-y-2">
+                      <Label htmlFor="company-name">Company Name</Label>
+                      <Input id="company-name" value={newCustomer.companyName} onChange={(e) => setNewCustomer({...newCustomer, companyName: e.target.value})} placeholder="e.g., ABC Corporation" />
+                  </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="name">{newCustomer.isCompany ? "Contact Person Name" : "Full Name"}</Label>
+                <Input id="name" value={newCustomer.name} onChange={(e) => setNewCustomer({...newCustomer, name: e.target.value})} placeholder={newCustomer.isCompany ? "e.g., John Doe" : "e.g., John Doe"} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input id="email" type="email" value={newCustomer.email} onChange={(e) => setNewCustomer({...newCustomer, email: e.target.value})} placeholder="e.g., john.doe@example.com" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input id="phone" value={newCustomer.phone} onChange={(e) => setNewCustomer({...newCustomer, phone: e.target.value})} placeholder="e.g., 9876543210" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gstin">GSTIN (Optional)</Label>
+                <Input id="gstin" value={newCustomer.gstin} onChange={(e) => setNewCustomer({...newCustomer, gstin: e.target.value})} placeholder="e.g., 27AAPFU0939F1Z5" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Address</Label>
+                <Textarea id="address" value={newCustomer.address} onChange={(e) => setNewCustomer({...newCustomer, address: e.target.value})} placeholder="e.g., 123 Main St, Anytown" />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input id="email" type="email" value={newCustomer.email} onChange={(e) => setNewCustomer({...newCustomer, email: e.target.value})} placeholder="e.g., john.doe@example.com" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input id="phone" value={newCustomer.phone} onChange={(e) => setNewCustomer({...newCustomer, phone: e.target.value})} placeholder="e.g., 9876543210" />
-            </div>
-             <div className="space-y-2">
-              <Label htmlFor="gstin">GSTIN (Optional)</Label>
-              <Input id="gstin" value={newCustomer.gstin} onChange={(e) => setNewCustomer({...newCustomer, gstin: e.target.value})} placeholder="e.g., 27AAPFU0939F1Z5" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
-              <Textarea id="address" value={newCustomer.address} onChange={(e) => setNewCustomer({...newCustomer, address: e.target.value})} placeholder="e.g., 123 Main St, Anytown" />
-            </div>
-          </div>
-          <DialogFooter>
+          </ScrollArea>
+          <DialogFooter className="pt-4">
             <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
             </DialogClose>
@@ -787,7 +798,7 @@ END:VCARD`;
                     <div className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-sm mx-auto h-full flex flex-col">
                         <div className="p-6 flex flex-col items-center gap-4 bg-primary text-primary-foreground rounded-t-lg">
                            <div className="w-32 h-auto">
-                             <Image src={companyInfo.logo} alt="Company Logo" width={160} height={64} className="w-full h-auto" />
+                             <Image src={companyInfo.logo} alt="Company Logo" width={160} height={64} className="w-full h-auto" unoptimized/>
                            </div>
                            <Avatar className="h-24 w-24 border-4 border-background">
                                <AvatarImage src={currentUser.avatar} alt="@user" />
@@ -848,5 +859,7 @@ END:VCARD`;
     </SidebarProvider>
   );
 }
+
+    
 
     

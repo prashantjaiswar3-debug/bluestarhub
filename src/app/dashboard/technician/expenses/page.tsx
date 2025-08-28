@@ -41,6 +41,7 @@ import {
 import { PlusCircle, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Expense } from "@/lib/types";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const initialExpenses: Expense[] = [
     { id: 'EXP-001', technicianId: 'TECH-007', technicianName: 'Technician User', date: '2023-10-28', category: 'Travel', amount: 350, description: 'Travel to client site in South Zone', status: 'Pending' },
@@ -107,43 +108,45 @@ export default function ExpensesPage() {
   return (
     <div className="flex flex-col gap-6">
       <Card>
-        <CardHeader className="flex-row items-center justify-between">
+        <CardHeader className="flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div>
             <CardTitle>My Expenses</CardTitle>
             <CardDescription>
               Track your expense claims and their approval status.
             </CardDescription>
           </div>
-          <Button onClick={() => setIsAddExpenseOpen(true)}>
+          <Button onClick={() => setIsAddExpenseOpen(true)} className="w-full sm:w-auto">
             <PlusCircle className="mr-2 h-4 w-4" />
             Add New Expense
           </Button>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="text-right">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {expenses.map((expense) => (
-                <TableRow key={expense.id}>
-                  <TableCell>{formatDate(expense.date)}</TableCell>
-                  <TableCell><Badge variant="outline">{expense.category}</Badge></TableCell>
-                  <TableCell className="max-w-xs truncate">{expense.description}</TableCell>
-                  <TableCell className="text-right font-medium">{formatCurrency(expense.amount)}</TableCell>
-                  <TableCell className="text-right">
-                    <Badge variant={expenseStatusVariant[expense.status]}>{expense.status}</Badge>
-                  </TableCell>
+          <ScrollArea className="w-full">
+            <Table className="min-w-[600px]">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead className="hidden sm:table-cell">Description</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead className="text-right">Status</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {expenses.map((expense) => (
+                  <TableRow key={expense.id}>
+                    <TableCell>{formatDate(expense.date)}</TableCell>
+                    <TableCell><Badge variant="outline">{expense.category}</Badge></TableCell>
+                    <TableCell className="hidden sm:table-cell max-w-xs truncate">{expense.description}</TableCell>
+                    <TableCell className="text-right font-medium">{formatCurrency(expense.amount)}</TableCell>
+                    <TableCell className="text-right">
+                      <Badge variant={expenseStatusVariant[expense.status]}>{expense.status}</Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
         </CardContent>
       </Card>
 
@@ -156,7 +159,7 @@ export default function ExpensesPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="expense-date">Date</Label>
                     <Input id="expense-date" type="date" value={newExpense.date} onChange={e => setNewExpense(prev => ({...prev, date: e.target.value}))} />
@@ -197,3 +200,5 @@ export default function ExpensesPage() {
     </div>
   );
 }
+
+    

@@ -127,8 +127,8 @@ export default function UserManagementPage() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="All" onValueChange={handleFilter}>
-            <TabsList className="grid w-full grid-cols-3 h-auto sm:w-auto sm:inline-flex">
-              <TabsTrigger value="All">All Users</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 h-auto sm:w-auto sm:inline-flex md:grid-cols-3 lg:grid-cols-6">
+              <TabsTrigger value="All">All</TabsTrigger>
               <TabsTrigger value="Admin">Admins</TabsTrigger>
               <TabsTrigger value="Sales">Sales</TabsTrigger>
               <TabsTrigger value="Technician">Technicians</TabsTrigger>
@@ -158,7 +158,7 @@ export default function UserManagementPage() {
       </Card>
 
       <Dialog open={isEditUserOpen} onOpenChange={setIsEditUserOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Edit User: {selectedUser?.name}</DialogTitle>
             <DialogDescription>
@@ -205,7 +205,7 @@ export default function UserManagementPage() {
                     }
                 />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="edit-role">Role</Label>
                      <Select value={selectedUser?.role} onValueChange={(value: User["role"]) => setSelectedUser(prev => prev && {...prev, role: value})}>
@@ -254,8 +254,8 @@ function UserTable({ users, onEdit, onDelete }: { users: User[], onEdit: (user: 
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Password</TableHead>
+            <TableHead className="hidden md:table-cell">Email</TableHead>
+            <TableHead className="hidden lg:table-cell">Password</TableHead>
             <TableHead>Role</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -265,8 +265,8 @@ function UserTable({ users, onEdit, onDelete }: { users: User[], onEdit: (user: 
           {users.map((user) => (
             <TableRow key={user.id}>
               <TableCell className="font-medium">{user.name}</TableCell>
-              <TableCell>{user.email}</TableCell>
-              <TableCell>
+              <TableCell className="hidden md:table-cell">{user.email}</TableCell>
+              <TableCell className="hidden lg:table-cell">
                   <Badge variant="outline">{user.password}</Badge>
               </TableCell>
               <TableCell>
@@ -292,3 +292,5 @@ function UserTable({ users, onEdit, onDelete }: { users: User[], onEdit: (user: 
     </ScrollArea>
   );
 }
+
+    

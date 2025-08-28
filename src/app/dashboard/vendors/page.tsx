@@ -86,14 +86,14 @@ export default function VendorManagementPage() {
   return (
     <div className="flex flex-col gap-6">
       <Card>
-        <CardHeader className="flex-row items-center justify-between">
+        <CardHeader className="flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div>
             <CardTitle>Vendor Management</CardTitle>
             <CardDescription>
               Manage your suppliers and vendors in one place.
             </CardDescription>
           </div>
-          <Button onClick={openDialogForNew}>
+          <Button onClick={openDialogForNew} className="w-full sm:w-auto">
             <PlusCircle className="mr-2 h-4 w-4" />
             Add New Vendor
           </Button>
@@ -115,8 +115,8 @@ export default function VendorManagementPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Vendor Name</TableHead>
-                  <TableHead>Contact Person</TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead className="hidden sm:table-cell">Contact</TableHead>
+                  <TableHead className="hidden md:table-cell">Email</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -126,8 +126,8 @@ export default function VendorManagementPage() {
                 {filteredVendors.map((vendor) => (
                   <TableRow key={vendor.id}>
                     <TableCell className="font-medium">{vendor.name}</TableCell>
-                    <TableCell>{vendor.contactPerson}</TableCell>
-                    <TableCell>{vendor.email}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{vendor.contactPerson}</TableCell>
+                    <TableCell className="hidden md:table-cell">{vendor.email}</TableCell>
                     <TableCell><Badge variant="secondary">{vendor.category}</Badge></TableCell>
                     <TableCell>
                       <Badge variant={vendor.status === "Active" ? "secondary" : "destructive"}>
@@ -233,7 +233,7 @@ function VendorDialog({ isOpen, setIsOpen, vendor, setVendors }: { isOpen: boole
                         <Label htmlFor="contactPerson">Contact Person</Label>
                         <Input id="contactPerson" value={formData.contactPerson} onChange={handleChange} placeholder="e.g., Mr. Anil Sharma" />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
                             <Input id="email" type="email" value={formData.email} onChange={handleChange} placeholder="e.g., contact@securetech.com" />
@@ -247,7 +247,7 @@ function VendorDialog({ isOpen, setIsOpen, vendor, setVendors }: { isOpen: boole
                         <Label htmlFor="address">Address</Label>
                         <Textarea id="address" value={formData.address} onChange={handleChange} placeholder="e.g., 123 Commerce House, Mumbai" />
                     </div>
-                     <div className="grid grid-cols-2 gap-4">
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="category">Category</Label>
                             <Select value={formData.category} onValueChange={(value: Vendor['category']) => handleSelectChange('category', value)}>
@@ -284,3 +284,4 @@ function VendorDialog({ isOpen, setIsOpen, vendor, setVendors }: { isOpen: boole
     );
 }
 
+    
