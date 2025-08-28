@@ -226,28 +226,22 @@ export default function QuotationsPage() {
     return { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal };
   }
 
-  const triggerPdfDownload = async () => {
+  const handleDownloadPdf = async (quote: Quotation) => {
+    setSelectedQuote(quote);
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     const quoteContent = quoteRef.current;
-    if (!quoteContent) {
-        toast({ variant: "destructive", title: "PDF Generation Error", description: "Could not find the quote content to print." });
-        return;
-    }
-    
-    try {
+    if (quoteContent) {
+      try {
         const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-            import('jspdf'),
-            import('html2canvas'),
+          import('jspdf'),
+          import('html2canvas'),
         ]);
 
         const canvas = await html2canvas(quoteContent, {
-            scale: 2,
-            useCORS: true,
-            onclone: (document) => {
-                const logo = document.getElementById('pdf-logo');
-                if (logo) {
-                    logo.style.display = 'block'; 
-                }
-            }
+          scale: 2,
+          useCORS: true,
         });
 
         const imgData = canvas.toDataURL('image/png');
@@ -256,51 +250,24 @@ export default function QuotationsPage() {
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save(`quotation-${selectedQuote?.quoteId}.pdf`);
+        pdf.save(`quotation-${quote.quoteId}.pdf`);
 
         toast({
-            title: "Download Started",
-            description: `Your quotation ${selectedQuote?.quoteId} is downloading.`,
+          title: "Download Started",
+          description: `Your quotation ${quote.quoteId} is downloading.`,
         });
-    } catch (error) {
+      } catch (error) {
         console.error("Error generating PDF:", error);
         toast({
-            variant: "destructive",
-            title: "Download Failed",
-            description: "There was an error generating the PDF.",
+          variant: "destructive",
+          title: "Download Failed",
+          description: "There was an error generating the PDF.",
         });
-    } finally {
+      } finally {
         setSelectedQuote(null);
-    }
-  }
-
-  const handleDownloadPdf = () => {
-    if (selectedQuote) {
-        setSelectedQuote(selectedQuote);
+      }
     }
   };
-
-  useEffect(() => {
-    if (selectedQuote) {
-        const quoteContent = quoteRef.current;
-        if (quoteContent) {
-            const logo = quoteContent.querySelector('#pdf-logo') as HTMLImageElement;
-            if (logo) {
-                if (logo.complete) {
-                    triggerPdfDownload();
-                } else {
-                    logo.onload = triggerPdfDownload;
-                    logo.onerror = () => {
-                        toast({ variant: "destructive", title: "PDF Generation Error", description: "Could not load the logo image." });
-                        setSelectedQuote(null);
-                    }
-                }
-            } else {
-                 triggerPdfDownload();
-            }
-        }
-    }
-  }, [selectedQuote]);
 
   const handleGenerateInvoice = (quote: Quotation) => {
     const newInvoice: Invoice = {
@@ -485,7 +452,7 @@ export default function QuotationsPage() {
                                     Generate Invoice
                                 </Button>
                             )}
-                            <Button variant="ghost" size="icon" onClick={() => setSelectedQuote(quote)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleDownloadPdf(quote)}>
                                 <Eye className="h-4 w-4" />
                                 <span className="sr-only">View</span>
                             </Button>
@@ -511,134 +478,134 @@ export default function QuotationsPage() {
                 </DialogHeader>
             </div>
             <ScrollArea className="flex-1">
-                <div className="px-6" >
-                    <div ref={quoteRef} className="bg-white text-black p-8 font-sans w-[210mm]">
-                    {selectedQuote && companyInfo && (() => {
-                        const { subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
-                        const quoteDate = new Date(selectedQuote.date);
-                        const dueDate = new Date(quoteDate);
-                        dueDate.setDate(quoteDate.getDate() + 15);
-                        const formatDate = (date: Date) => date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+                <div className="px-6 pb-6" >
+                    <div ref={quoteRef}>
+                      {selectedQuote && companyInfo && (() => {
+                          const { subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
+                          const quoteDate = new Date(selectedQuote.date);
+                          const dueDate = new Date(quoteDate);
+                          dueDate.setDate(quoteDate.getDate() + 15);
+                          const formatDate = (date: Date) => date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
 
-                        return (
-                            <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '100%', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
-                                 <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                        <div style={{ width: '250px' }}>
-                                            <img id="pdf-logo" src={companyInfo.logo} alt="Company Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} onLoad={triggerPdfDownload} />
+                          return (
+                              <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '210mm', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
+                                  <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                          <div style={{ width: '250px' }}>
+                                               <img src={companyInfo.logo} alt="Company Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain' }}/>
+                                          </div>
+                                          <div style={{ textAlign: 'right' }}>
+                                              <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>QUOTATION</h2>
+                                              <p style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>{copyType}</p>
+                                              <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
+                                                  <p><strong>Email:</strong> {companyInfo.email}</p>
+                                                  <p><strong>Contact:</strong> {companyInfo.phone}</p>
+                                                  <p><strong>GSTIN:</strong> {companyInfo.gstin}</p>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </header>
+                                  
+                                  <div style={{ flexGrow: 1}}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', paddingBottom: '20px' }}>
+                                        <div>
+                                            <h2 style={{ fontSize: '14px', fontWeight: 'bold', color: '#30475E', marginBottom: '8px' }}>Billed To:</h2>
+                                            <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold' }}>{selectedQuote.customer.name}</p>
+                                            {selectedQuote.customer.contactPerson && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>Attn: {selectedQuote.customer.contactPerson}</p>}
+                                            <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.address}</p>
+                                            <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>Email:</strong> {selectedQuote.customer.email}</p>
+                                            {selectedQuote.customer.phone && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>Contact:</strong> {selectedQuote.customer.phone}</p>}
+                                            {selectedQuote.customer.gstin && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>GSTIN:</strong> {selectedQuote.customer.gstin}</p>}
                                         </div>
-                                        <div style={{ textAlign: 'right' }}>
-                                            <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>QUOTATION</h2>
-                                            <p style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>{copyType}</p>
-                                            <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
-                                                <p><strong>Email:</strong> {companyInfo.email}</p>
-                                                <p><strong>Contact:</strong> {companyInfo.phone}</p>
-                                                <p><strong>GSTIN:</strong> {companyInfo.gstin}</p>
+                                        <div style={{ width: '220px' }}>
+                                            <div style={{ fontSize: '12px', textAlign: 'right' }}>
+                                                <div style={{ marginBottom: '5px' }}><strong>Quote ID:</strong><span>{selectedQuote.quoteId}</span></div>
+                                                <div style={{ marginBottom: '5px' }}><strong>Quote Date:</strong><span>{formatDate(quoteDate)}</span></div>
+                                                <div style={{ marginBottom: '5px' }}><strong>Due Date:</strong><span>{formatDate(dueDate)}</span></div>
+                                                {selectedQuote.poNumber && <div style={{ marginBottom: '5px' }}><strong>PO Number:</strong><span>{selectedQuote.poNumber}</span></div>}
                                             </div>
                                         </div>
                                     </div>
-                                </header>
-                                
-                                <div style={{ flexGrow: 1}}>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', paddingBottom: '20px' }}>
-                                      <div>
-                                          <h2 style={{ fontSize: '14px', fontWeight: 'bold', color: '#30475E', marginBottom: '8px' }}>Billed To:</h2>
-                                          <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold' }}>{selectedQuote.customer.name}</p>
-                                          {selectedQuote.customer.contactPerson && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>Attn: {selectedQuote.customer.contactPerson}</p>}
-                                          <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>{selectedQuote.customer.address}</p>
-                                          <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>Email:</strong> {selectedQuote.customer.email}</p>
-                                          {selectedQuote.customer.phone && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>Contact:</strong> {selectedQuote.customer.phone}</p>}
-                                          {selectedQuote.customer.gstin && <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}><strong>GSTIN:</strong> {selectedQuote.customer.gstin}</p>}
-                                      </div>
-                                      <div style={{ width: '220px' }}>
-                                          <div style={{ fontSize: '12px', textAlign: 'right' }}>
-                                              <div style={{ marginBottom: '5px' }}><strong>Quote ID:</strong><span>{selectedQuote.quoteId}</span></div>
-                                              <div style={{ marginBottom: '5px' }}><strong>Quote Date:</strong><span>{formatDate(quoteDate)}</span></div>
-                                              <div style={{ marginBottom: '5px' }}><strong>Due Date:</strong><span>{formatDate(dueDate)}</span></div>
-                                              {selectedQuote.poNumber && <div style={{ marginBottom: '5px' }}><strong>PO Number:</strong><span>{selectedQuote.poNumber}</span></div>}
-                                          </div>
-                                      </div>
+                                    
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px', fontSize: '12px' }}>
+                                        <thead>
+                                            <tr style={{ backgroundColor: '#30475E', color: 'white' }}>
+                                                <th style={{ padding: '10px', textAlign: 'left' }}>S.No.</th>
+                                                <th style={{ padding: '10px', textAlign: 'left' }}>DESCRIPTION</th>
+                                                <th style={{ padding: '10px', textAlign: 'right' }}>PRICE</th>
+                                                <th style={{ padding: '10px', textAlign: 'right' }}>QTY</th>
+                                                <th style={{ padding: '10px', textAlign: 'right' }}>GST</th>
+                                                <th style={{ padding: '10px', textAlign: 'right' }}>TOTAL</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {selectedQuote.items.map((item, index) => (
+                                                <tr key={item.id} style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: index % 2 === 0 ? '#F8FAFC' : 'white' }}>
+                                                    <td style={{ padding: '10px' }}>{index + 1}</td>
+                                                    <td style={{ padding: '10px', maxWidth: '300px' }}>{item.description}</td>
+                                                    <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
+                                                    <td style={{ padding: '10px', textAlign: 'right' }}>{item.quantity} {item.unit}</td>
+                                                     <td style={{ padding: '10px', textAlign: 'right' }}>{item.gstRate}%</td>
+                                                    <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.quantity * item.price)}</td>
+                                                </tr>
+                                            ))}
+                                            {selectedQuote.laborCost > 0 && (
+                                                <tr style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: selectedQuote.items.length % 2 === 0 ? '#F8FAFC' : 'white' }}>
+                                                    <td colSpan={5} style={{ padding: '10px', textAlign: 'right', fontWeight: 'bold' }}>Labor Cost</td>
+                                                    <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(selectedQuote.laborCost)}</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                                        <div style={{ width: '250px', fontSize: '12px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Sub Total:</span><span>{formatCurrency(subTotal)}</span></div>
+                                            {selectedQuote.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Discount ({selectedQuote.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>}
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Total GST:</span><span>{formatCurrency(gstAmount)}</span></div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px' }}><span>TOTAL:</span><span>{formatCurrency(grandTotal)}</span></div>
+                                        </div>
+                                    </div>
                                   </div>
                                   
-                                  <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px', fontSize: '12px' }}>
-                                      <thead>
-                                          <tr style={{ backgroundColor: '#30475E', color: 'white' }}>
-                                              <th style={{ padding: '10px', textAlign: 'left' }}>S.No.</th>
-                                              <th style={{ padding: '10px', textAlign: 'left' }}>DESCRIPTION</th>
-                                              <th style={{ padding: '10px', textAlign: 'right' }}>PRICE</th>
-                                              <th style={{ padding: '10px', textAlign: 'right' }}>QTY</th>
-                                              <th style={{ padding: '10px', textAlign: 'right' }}>GST</th>
-                                              <th style={{ padding: '10px', textAlign: 'right' }}>TOTAL</th>
-                                          </tr>
-                                      </thead>
-                                      <tbody>
-                                          {selectedQuote.items.map((item, index) => (
-                                              <tr key={item.id} style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: index % 2 === 0 ? '#F8FAFC' : 'white' }}>
-                                                  <td style={{ padding: '10px' }}>{index + 1}</td>
-                                                  <td style={{ padding: '10px', maxWidth: '300px' }}>{item.description}</td>
-                                                  <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
-                                                  <td style={{ padding: '10px', textAlign: 'right' }}>{item.quantity} {item.unit}</td>
-                                                   <td style={{ padding: '10px', textAlign: 'right' }}>{item.gstRate}%</td>
-                                                  <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(item.quantity * item.price)}</td>
-                                              </tr>
-                                          ))}
-                                          {selectedQuote.laborCost > 0 && (
-                                              <tr style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: selectedQuote.items.length % 2 === 0 ? '#F8FAFC' : 'white' }}>
-                                                  <td colSpan={5} style={{ padding: '10px', textAlign: 'right', fontWeight: 'bold' }}>Labor Cost</td>
-                                                  <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(selectedQuote.laborCost)}</td>
-                                              </tr>
-                                          )}
-                                      </tbody>
-                                  </table>
-
-                                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-                                      <div style={{ width: '250px', fontSize: '12px' }}>
-                                          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Sub Total:</span><span>{formatCurrency(subTotal)}</span></div>
-                                          {selectedQuote.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', color: 'green' }}><span>Discount ({selectedQuote.discount}%):</span><span>-{formatCurrency(discountAmount)}</span></div>}
-                                          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}><span>Total GST:</span><span>{formatCurrency(gstAmount)}</span></div>
-                                          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px' }}><span>TOTAL:</span><span>{formatCurrency(grandTotal)}</span></div>
+                                  <footer style={{ marginTop: 'auto', paddingTop: '20px', fontSize: '12px', flexShrink: 0, borderTop: '1px solid #E2E8F0' }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                          <div>
+                                              <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Terms and Conditions:</h3>
+                                              <p style={{ color: '#64748B', maxWidth: '300px', fontSize: '10px' }}>Payment is due within 15 days. All products are subject to standard warranty. Thank you for your business!</p>
+                                          </div>
+                                          <div style={{ textAlign: 'center' }}>
+                                              <p style={{ borderTop: '1px solid #64748B', paddingTop: '5px', marginTop: '40px' }}>Authorized Signature</p>
+                                              <p style={{ fontWeight: 'bold', marginTop: '5px' }}>Bluestar Electronics</p>
+                                          </div>
                                       </div>
-                                  </div>
-                                </div>
-                                
-                                <footer style={{ marginTop: 'auto', paddingTop: '20px', fontSize: '12px', flexShrink: 0, borderTop: '1px solid #E2E8F0' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <div>
-                                            <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Terms and Conditions:</h3>
-                                            <p style={{ color: '#64748B', maxWidth: '300px', fontSize: '10px' }}>Payment is due within 15 days. All products are subject to standard warranty. Thank you for your business!</p>
-                                        </div>
-                                        <div style={{ textAlign: 'center' }}>
-                                            <p style={{ borderTop: '1px solid #64748B', paddingTop: '5px', marginTop: '40px' }}>Authorized Signature</p>
-                                            <p style={{ fontWeight: 'bold', marginTop: '5px' }}>Bluestar Electronics</p>
-                                        </div>
-                                    </div>
-                                    <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '10px', color: '#888' }}>
-                                        <p>Thank you for your business!</p>
-                                        <p style={{marginTop: '5px', fontWeight: 'bold'}}>Created on Bluestar Hub</p>
-                                    </div>
-                               </footer>
-                            </div>
-                        );
-                    })()}
+                                      <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '10px', color: '#888' }}>
+                                          <p>Thank you for your business!</p>
+                                          <p style={{marginTop: '5px', fontWeight: 'bold'}}>Created on Bluestar Hub</p>
+                                      </div>
+                                 </footer>
+                              </div>
+                          );
+                      })()}
                     </div>
-                </div>
-                 <div className="p-4 border rounded-md mx-6">
-                    <RadioGroup defaultValue="Original Copy" className="flex items-center gap-4" onValueChange={(value: 'Original Copy' | "Customer's Copy") => setCopyType(value)}>
-                        <h4 className="text-sm font-medium">Select Copy Type:</h4>
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Original Copy" id="q-original" />
-                            <Label htmlFor="q-original">Original Copy</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Customer's Copy" id="q-customer" />
-                            <Label htmlFor="q-customer">Customer's Copy</Label>
-                        </div>
-                    </RadioGroup>
+                    <div className="p-4 border rounded-md mt-4">
+                        <RadioGroup defaultValue="Original Copy" className="flex items-center gap-4" onValueChange={(value: 'Original Copy' | "Customer's Copy") => setCopyType(value)}>
+                            <h4 className="text-sm font-medium">Select Copy Type:</h4>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="Original Copy" id="q-original" />
+                                <Label htmlFor="q-original">Original Copy</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="Customer's Copy" id="q-customer" />
+                                <Label htmlFor="q-customer">Customer's Copy</Label>
+                            </div>
+                        </RadioGroup>
+                    </div>
                 </div>
             </ScrollArea>
           <DialogFooter className="px-6 py-4 flex-row justify-between w-full border-t">
             <div className="flex gap-2">
-                <Button variant="secondary" onClick={handleDownloadPdf}>
+                <Button variant="secondary" onClick={() => selectedQuote && handleDownloadPdf(selectedQuote)}>
                     <Download className="mr-2 h-4 w-4" />
                     Download PDF
                 </Button>

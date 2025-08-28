@@ -569,57 +569,40 @@ export default function InvoicesPage() {
     return { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal, amountPaid, amountDue };
   }
 
-  const triggerPdfDownload = async () => {
-    const invoiceContent = invoiceRef.current;
-    if (!invoiceContent) {
-        toast({ variant: "destructive", title: "PDF Generation Error", description: "Could not find the invoice content to print." });
-        return;
-    }
-    
-    try {
-        const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-            import('jspdf'),
-            import('html2canvas'),
-        ]);
-
-        const canvas = await html2canvas(invoiceContent, {
-            scale: 2,
-            useCORS: true, 
-            onclone: (document) => {
-                const logo = document.getElementById('pdf-logo');
-                if (logo) {
-                    logo.style.display = 'block'; 
-                }
-            }
-        });
-
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save(`invoice-${selectedInvoice?.invoiceId}.pdf`);
-
-        toast({
-            title: "Download Started",
-            description: `Your invoice ${selectedInvoice?.invoiceId} is downloading.`,
-        });
-    } catch (error) {
-        console.error("Error generating PDF:", error);
-        toast({
-            variant: "destructive",
-            title: "Download Failed",
-            description: "There was an error generating the PDF for your invoice.",
-        });
-    } finally {
-        setSelectedInvoice(null);
-    }
-  }
-
-
-  const handleDownloadInvoice = (invoice: Invoice) => {
+ const handleDownloadInvoice = async (invoice: Invoice) => {
     setSelectedInvoice(invoice);
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    const invoiceContent = invoiceRef.current;
+    if (invoiceContent) {
+        try {
+            const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+              import('jspdf'),
+              import('html2canvas'),
+            ]);
+            const canvas = await html2canvas(invoiceContent, { scale: 2, useCORS: true });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`invoice-${invoice.invoiceId}.pdf`);
+            toast({
+                title: "Download Started",
+                description: `Your invoice ${invoice.invoiceId} is downloading.`,
+            });
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+            toast({
+                variant: "destructive",
+                title: "Download Failed",
+                description: "There was an error generating the PDF for your invoice.",
+            });
+        } finally {
+             setSelectedInvoice(null);
+        }
+    }
   }
 
 
@@ -1027,7 +1010,7 @@ export default function InvoicesPage() {
                   <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div style={{ width: '250px' }}>
-                               <img id="pdf-logo" src={companyInfo.logo} alt="Company Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} onLoad={triggerPdfDownload} />
+                               <img src={companyInfo.logo} alt="Company Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
                           </div>
                           <div style={{ textAlign: 'right' }}>
                               <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>{isGst ? 'TAX INVOICE' : 'BILL OF SUPPLY'}</h2>
@@ -1225,4 +1208,3 @@ export default function InvoicesPage() {
     </>
   );
 }
-
