@@ -226,38 +226,81 @@ export default function QuotationsPage() {
     return { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal };
   }
 
-  const handleDownloadPdf = async () => {
+  const triggerPdfDownload = async () => {
     const quoteContent = quoteRef.current;
-    if (quoteContent) {
-        try {
-            const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-              import('jspdf'),
-              import('html2canvas'),
-            ]);
-            
-            const canvas = await html2canvas(quoteContent, { scale: 2 });
-            const imgData = canvas.toDataURL('image/png');
-            
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    if (!quoteContent) {
+        toast({ variant: "destructive", title: "PDF Generation Error", description: "Could not find the quote content to print." });
+        return;
+    }
+    
+    try {
+        const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+            import('jspdf'),
+            import('html2canvas'),
+        ]);
 
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save(`quotation-${selectedQuote?.quoteId}.pdf`);
-            toast({
-                title: "Download Started",
-                description: `Your quotation ${selectedQuote?.quoteId} is downloading.`,
-            });
-        } catch (error) {
-            console.error("Error generating PDF:", error);
-            toast({
-                variant: "destructive",
-                title: "Download Failed",
-                description: "There was an error generating the PDF.",
-            });
-        }
+        const canvas = await html2canvas(quoteContent, {
+            scale: 2,
+            useCORS: true,
+            onclone: (document) => {
+                const logo = document.getElementById('pdf-logo');
+                if (logo) {
+                    logo.style.display = 'block'; 
+                }
+            }
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`quotation-${selectedQuote?.quoteId}.pdf`);
+
+        toast({
+            title: "Download Started",
+            description: `Your quotation ${selectedQuote?.quoteId} is downloading.`,
+        });
+    } catch (error) {
+        console.error("Error generating PDF:", error);
+        toast({
+            variant: "destructive",
+            title: "Download Failed",
+            description: "There was an error generating the PDF.",
+        });
+    } finally {
+        setSelectedQuote(null);
+    }
+  }
+
+  const handleDownloadPdf = () => {
+    if (selectedQuote) {
+        setSelectedQuote(selectedQuote);
     }
   };
+
+  useEffect(() => {
+    if (selectedQuote) {
+        const quoteContent = quoteRef.current;
+        if (quoteContent) {
+            const logo = quoteContent.querySelector('#pdf-logo') as HTMLImageElement;
+            if (logo) {
+                if (logo.complete) {
+                    triggerPdfDownload();
+                } else {
+                    logo.onload = triggerPdfDownload;
+                    logo.onerror = () => {
+                        toast({ variant: "destructive", title: "PDF Generation Error", description: "Could not load the logo image." });
+                        setSelectedQuote(null);
+                    }
+                }
+            } else {
+                 triggerPdfDownload();
+            }
+        }
+    }
+  }, [selectedQuote]);
 
   const handleGenerateInvoice = (quote: Quotation) => {
     const newInvoice: Invoice = {
@@ -468,13 +511,13 @@ export default function QuotationsPage() {
                 </DialogHeader>
             </div>
             <ScrollArea className="flex-1">
-                <div className="px-6">
-                    <div ref={quoteRef} className="bg-white text-black font-sans w-[210mm]">
+                <div className="px-6" >
+                    <div ref={quoteRef} className="bg-white text-black p-8 font-sans w-[210mm]">
                     {selectedQuote && companyInfo && (() => {
                         const { subTotal, discountAmount, gstAmount, grandTotal } = calculateQuoteTotals(selectedQuote);
                         const quoteDate = new Date(selectedQuote.date);
                         const dueDate = new Date(quoteDate);
-dueDate.setDate(quoteDate.getDate() + 15);
+                        dueDate.setDate(quoteDate.getDate() + 15);
                         const formatDate = (date: Date) => date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
 
                         return (
@@ -482,7 +525,7 @@ dueDate.setDate(quoteDate.getDate() + 15);
                                  <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                         <div style={{ width: '250px' }}>
-                                            <img src={companyInfo.logo} alt="Company Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
+                                            <img id="pdf-logo" src={companyInfo.logo} alt="Company Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} onLoad={triggerPdfDownload} />
                                         </div>
                                         <div style={{ textAlign: 'right' }}>
                                             <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>QUOTATION</h2>
