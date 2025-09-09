@@ -10,17 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
-
-const demoUsers = [
-  { role: "Admin", href: "/dashboard/admin", description: "Full access to all dashboards." },
-  { role: "Technician", href: "/dashboard/technician", description: "View and manage assigned jobs." },
-  { role: "Freelancer", href: "/dashboard/technician/freelance", description: "View job enquiries." },
-  { role: "Customer", href: "/dashboard/customer", description: "Track complaints and pay invoices." },
-  { role: "Sales", href: "/dashboard/sales", description: "Create and manage sales quotations." },
-];
 
 export default function LoginPage() {
   return (
@@ -31,8 +21,9 @@ export default function LoginPage() {
             <div className="mx-auto flex items-center justify-center">
               <Image src="https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/refs/heads/main/bluestarlogo1.png" alt="Bluestar Logo" width={200} height={80} />
             </div>
+            <CardTitle className="text-2xl">Bluestar Hub</CardTitle>
             <CardDescription>
-              Sign in to Bluestar Hub
+              Sign in to manage your operations
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -42,8 +33,9 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="name@company.com"
+                  placeholder="admin@bluestar.com"
                   required
+                  defaultValue="admin@bluestar.com"
                 />
               </div>
               <div className="space-y-2">
@@ -56,39 +48,12 @@ export default function LoginPage() {
                     Forgot your password?
                   </Link>
                 </div>
-                <Input id="password" type="password" required />
+                <Input id="password" type="password" required defaultValue="password" />
               </div>
               <Button type="submit" className="w-full" asChild>
                 <Link href="/dashboard/admin">Sign In</Link>
               </Button>
             </div>
-            
-            <Separator className="my-6" />
-
-            <div className="space-y-4">
-                <p className="text-center text-sm text-muted-foreground">
-                    Or use a demo account to explore:
-                </p>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {demoUsers.map((user) => (
-                        <Button key={user.role} variant="outline" asChild>
-                            <Link href={user.href}>
-                                {user.role}
-                                <ArrowRight className="ml-auto h-4 w-4" />
-                            </Link>
-                        </Button>
-                    ))}
-                </div>
-                 <Card className="mt-4 bg-muted/50 border-dashed">
-                    <CardContent className="p-4 text-xs text-muted-foreground space-y-2">
-                        <p><strong>Admin (Vaibhav Rodge):</strong> Email: `vaibhav.rodge@bluestar.com`, Pass: `admin123`</p>
-                        <p><strong>Technician (Default):</strong> Email: `tech@bluestar.com`, Pass: `tech123`</p>
-                        <p><strong>Customer (Default):</strong> Email: `customer@bluestar.com`, Pass: `customer123`</p>
-                        <p><strong>Sales (Vaibhav Rodge):</strong> Email: `vaibhav.rodge@bluestar.com`, Pass: `sales123`</p>
-                    </CardContent>
-                </Card>
-            </div>
-
           </CardContent>
         </Card>
       </div>
