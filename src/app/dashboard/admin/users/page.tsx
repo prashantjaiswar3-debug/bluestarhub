@@ -57,7 +57,7 @@ type User = {
 };
 
 const initialUsers: User[] = [
-  { id: "ADM-001", name: "Vaibhav Rodge", email: "vaibhav.rodge@bluestar.com", role: "Admin", status: "Active", password: "adminpassword" },
+  { id: "ADM-001", name: "Vaibhav Rodge", email: "admin@bluestarhub.com", role: "Admin", status: "Active", password: "admin123" },
   { id: "SALES-001", name: "Priya Sharma", email: "priya.sharma@bluestar.com", role: "Sales", status: "Active", password: "salespassword" },
   { id: "TECH-007", name: "Raj Patel", email: "raj.patel@bluestar.com", role: "Supervisor", status: "Active", password: "techpassword" },
   { id: "TECH-004", name: "Prashant Jaiswar", email: "prashant.jaiswar@bluestar.com", role: "Technician", status: "Active", password: "techpassword4" },
