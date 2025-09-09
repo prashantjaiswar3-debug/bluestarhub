@@ -97,7 +97,19 @@ const initialCompanyInfo: CompanyInfo = {
     }
 };
 
-const initialRoleInfo = {
+type UserRole = 'admin' | 'technician' | 'freelance' | 'customer' | 'sales' | 'supervisor' | 'default';
+
+type UserInfo = {
+    name: string;
+    email: string;
+    fallback: string;
+    id: string;
+    avatar: string;
+    phone: string;
+    type?: string;
+};
+
+const initialRoleInfo: Record<UserRole, UserInfo> = {
     admin: { name: "Vaibhav Rodge", email: "vaibhav.rodge@bluestar.com", fallback: "VR", id: "ADM-001", avatar: "https://placehold.co/100x100.png", phone: "9876543210" },
     technician: { name: "Technician User", email: "tech@bluestar.com", fallback: "TU", id: "TECH-007", avatar: "https://placehold.co/100x100.png", phone: "9876543211", type: "Fixed" },
     freelance: { name: "Freelancer User", email: "freelance@bluestar.com", fallback: "FU", id: "TECH-F01", avatar: "https://placehold.co/100x100.png", phone: "9876543215", type: "Freelance" },
@@ -133,12 +145,12 @@ export default function DashboardLayout({
   
   const [isRegisterSalesOpen, setIsRegisterSalesOpen] = React.useState(false);
   const [newSales, setNewSales] = React.useState({ name: "", email: "", phone: "" });
-
-  const [isChangePasswordOpen, setIsChangePasswordOpen] = React.useState(false);
-  const [passwordFields, setPasswordFields] = React.useState({ current: "", new: "", confirm: "" });
-
+  
   const [isProfileOpen, setIsProfileOpen] = React.useState(false);
   const [isEditingProfile, setIsEditingProfile] = React.useState(false);
+  
+  const [passwordFields, setPasswordFields] = React.useState({ current: "", new: "", confirm: "" });
+  const [editableProfile, setEditableProfile] = React.useState<UserInfo | null>(null);
   const [newAvatar, setNewAvatar] = React.useState<string | null>(null);
   const avatarInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -149,18 +161,7 @@ export default function DashboardLayout({
   const qrCodeInputRef = React.useRef<HTMLInputElement>(null);
   const logoInputRef = React.useRef<HTMLInputElement>(null);
   
-  React.useEffect(() => {
-    const storedCompanyInfo = localStorage.getItem('companyInfo');
-    if (storedCompanyInfo) {
-      setCompanyInfo(JSON.parse(storedCompanyInfo));
-    }
-  }, []);
-
-  React.useEffect(() => {
-    setEditableCompanyInfo(companyInfo);
-  }, [companyInfo, isCompanyProfileOpen]);
-
-  const getRole = () => {
+  const getRole = (): UserRole => {
     if (pathname.startsWith('/dashboard/admin')) return 'admin';
     if (pathname.startsWith('/dashboard/technician/freelance')) return 'freelance';
     if (pathname.startsWith('/dashboard/technician')) return 'technician';
@@ -173,6 +174,29 @@ export default function DashboardLayout({
     if (pathname === '/dashboard') return 'admin';
     return 'admin';
   }
+  
+  const currentRole = getRole();
+  const currentUser = roleInfo[currentRole] || roleInfo.default;
+
+  React.useEffect(() => {
+    const storedCompanyInfo = localStorage.getItem('companyInfo');
+    if (storedCompanyInfo) {
+      setCompanyInfo(JSON.parse(storedCompanyInfo));
+    }
+  }, []);
+
+  React.useEffect(() => {
+    setEditableCompanyInfo(companyInfo);
+  }, [companyInfo, isCompanyProfileOpen]);
+  
+  React.useEffect(() => {
+    if (isEditingProfile) {
+        setEditableProfile(currentUser);
+    } else {
+        setEditableProfile(null);
+    }
+  }, [isEditingProfile, currentUser]);
+
   
   const handleRegisterCustomer = () => {
     if(!newCustomer.name || !newCustomer.email || !newCustomer.phone || !newCustomer.address || (newCustomer.isCompany && !newCustomer.companyName)) {
@@ -232,25 +256,14 @@ export default function DashboardLayout({
     setNewSales({ name: "", email: "", phone: "" });
   }
 
-  const handleChangePassword = () => {
-    if (!passwordFields.current || !passwordFields.new || !passwordFields.confirm) {
-      toast({ variant: "destructive", title: "Missing fields", description: "Please fill all password fields." });
-      return;
-    }
-    if (passwordFields.new !== passwordFields.confirm) {
-      toast({ variant: "destructive", title: "Passwords do not match", description: "The new password and confirmation do not match." });
-      return;
-    }
-    toast({ title: "Password Updated", description: "Your password has been changed successfully." });
-    setIsChangePasswordOpen(false);
-    setPasswordFields({ current: "", new: "", confirm: "" });
-  };
-
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const reader = new FileReader();
       reader.onload = (event) => {
         setNewAvatar(event.target?.result as string);
+        if (editableProfile) {
+            setEditableProfile({...editableProfile, avatar: event.target?.result as string});
+        }
       };
       reader.readAsDataURL(e.target.files[0]);
     }
@@ -275,17 +288,45 @@ export default function DashboardLayout({
       reader.readAsDataURL(e.target.files[0]);
     }
   };
+  
+  const handleProfileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    if (editableProfile) {
+        setEditableProfile({...editableProfile, [id]: value});
+    }
+  };
 
   const handleProfileSave = () => {
-    if (newAvatar) {
+    let changesMade = false;
+    if (passwordFields.current || passwordFields.new || passwordFields.confirm) {
+        if (!passwordFields.current || !passwordFields.new || !passwordFields.confirm) {
+          toast({ variant: "destructive", title: "Missing fields", description: "Please fill all password fields to update." });
+          return;
+        }
+        if (passwordFields.new !== passwordFields.confirm) {
+          toast({ variant: "destructive", title: "Passwords do not match", description: "The new password and confirmation do not match." });
+          return;
+        }
+        // In a real app, you'd verify the current password here.
+        setPasswordFields({ current: "", new: "", confirm: "" });
+        changesMade = true;
+    }
+    
+    if (editableProfile) {
         setRoleInfo(prev => ({
             ...prev,
-            [currentRole]: { ...prev[currentRole as keyof typeof prev], avatar: newAvatar }
+            [currentRole]: editableProfile
         }));
+        changesMade = true;
     }
-    toast({ title: "Profile Updated", description: "Your profile has been successfully updated." });
+    
+    if (changesMade) {
+        toast({ title: "Profile Updated", description: "Your profile has been successfully updated." });
+    }
+
     setIsEditingProfile(false);
     setNewAvatar(null);
+    setEditableProfile(null);
   }
   
   const handleCompanyProfileSave = () => {
@@ -295,15 +336,13 @@ export default function DashboardLayout({
     setIsCompanyProfileOpen(false);
   }
 
-  const currentRole = getRole();
   const navItems = allNavItems.filter(item => {
     if (item.href === '/dashboard/technician' && currentRole === 'freelance') return false;
     return item.roles.includes(currentRole)
   });
 
   const dashboardLabel = navItems.find(item => pathname.startsWith(item.href) && item.href !== '/dashboard')?.label || 'Dashboard';
-  const currentUser = roleInfo[currentRole as keyof typeof roleInfo] || roleInfo.default;
-
+  
   const vCard = `BEGIN:VCARD
 VERSION:3.0
 FN:${currentUser.name}
@@ -390,7 +429,7 @@ END:VCARD`;
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setIsRegisterTechnicianOpen(true)} tooltip={{ children: "Register Technician" }}>
+                    <SidebarMenuButton onClick={() => setIsRegisterTechnician(true)} tooltip={{ children: "Register Technician" }}>
                       <UserPlus className="shrink-0" />
                       <span>Register Technician</span>
                     </SidebarMenuButton>
@@ -442,10 +481,6 @@ END:VCARD`;
               <Button variant="ghost" size="icon" className="rounded-full hover:bg-sidebar-accent">
                 <Bell className="h-5 w-5" />
                 <span className="sr-only">Notifications</span>
-              </Button>
-              <Button variant="ghost" size="icon" className="rounded-full hover:bg-sidebar-accent" onClick={() => setIsChangePasswordOpen(true)}>
-                <Settings className="h-5 w-5" />
-                <span className="sr-only">Settings</span>
               </Button>
               <Button variant="ghost" size="icon" className="rounded-full hover:bg-sidebar-accent" onClick={() => setIsProfileOpen(true)}>
                 <UserCircle className="h-5 w-5" />
@@ -736,42 +771,13 @@ END:VCARD`;
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Dialog open={isChangePasswordOpen} onOpenChange={setIsChangePasswordOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Change Password</DialogTitle>
-            <DialogDescription>
-              Update your password here. After saving, you will be logged out and need to sign in again.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="current-password">Current Password</Label>
-              <Input id="current-password" type="password" value={passwordFields.current} onChange={(e) => setPasswordFields({...passwordFields, current: e.target.value})} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>              <Input id="new-password" type="password" value={passwordFields.new} onChange={(e) => setPasswordFields({...passwordFields, new: e.target.value})} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm New Password</Label>
-              <Input id="confirm-password" type="password" value={passwordFields.confirm} onChange={(e) => setPasswordFields({...passwordFields, confirm: e.target.value})} />
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button onClick={handleChangePassword}>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       <Dialog open={isProfileOpen} onOpenChange={(open) => { setIsProfileOpen(open); if (!open) { setIsEditingProfile(false); setNewAvatar(null); } }}>
         <DialogContent className="sm:max-w-md w-full h-full sm:h-auto p-0 flex flex-col">
             <DialogHeader className="p-6 pb-0 sm:pb-6 flex-row items-center justify-between">
                 <div>
-                    <DialogTitle>My Profile</DialogTitle>
+                    <DialogTitle>{isEditingProfile ? "Edit Profile" : "My Profile"}</DialogTitle>
                     <DialogDescription>
-                        {isEditingProfile ? "Update your profile picture." : "Review your account details below."}
+                        {isEditingProfile ? "Update your profile details and password." : "Review your account details below."}
                     </DialogDescription>
                 </div>
                  {!isEditingProfile && (
@@ -781,72 +787,107 @@ END:VCARD`;
                     </Button>
                 )}
             </DialogHeader>
-            <div className="py-4 px-6 flex-1 overflow-y-auto">
-                {isEditingProfile ? (
-                    <div className="flex flex-col items-center gap-4">
-                         <input type="file" ref={avatarInputRef} onChange={handleAvatarChange} accept="image/*" className="hidden" />
-                         <Avatar className="h-32 w-32 cursor-pointer" onClick={() => avatarInputRef.current?.click()}>
-                            <AvatarImage src={newAvatar || currentUser.avatar} alt="@user" />
-                            <AvatarFallback>{currentUser.fallback}</AvatarFallback>
-                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity">
-                                <Upload className="h-8 w-8"/>
-                            </div>
-                        </Avatar>
-                        <p className="text-sm text-muted-foreground">Click the image to upload a new one.</p>
-                    </div>
-                ) : ['technician', 'sales', 'admin', 'supervisor', 'freelance'].includes(currentRole) ? (
-                    <div className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-sm mx-auto h-full flex flex-col">
-                        <div className="p-6 flex flex-col items-center gap-4 bg-primary text-primary-foreground rounded-t-lg">
-                           <div className="w-32 h-auto">
-                             <Image src={companyInfo.logo} alt="Company Logo" width={160} height={64} className="w-full h-auto" unoptimized/>
+            <ScrollArea className="flex-1 px-1">
+              <div className="py-4 px-6">
+                  {isEditingProfile && editableProfile ? (
+                      <div className="space-y-6">
+                           <div className="flex flex-col items-center gap-4">
+                               <input type="file" ref={avatarInputRef} onChange={handleAvatarChange} accept="image/*" className="hidden" />
+                               <Avatar className="h-32 w-32 cursor-pointer" onClick={() => avatarInputRef.current?.click()}>
+                                  <AvatarImage src={newAvatar || editableProfile.avatar} alt="@user" />
+                                  <AvatarFallback>{editableProfile.fallback}</AvatarFallback>
+                                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity">
+                                      <Upload className="h-8 w-8"/>
+                                  </div>
+                              </Avatar>
                            </div>
-                           <Avatar className="h-24 w-24 border-4 border-background">
-                               <AvatarImage src={currentUser.avatar} alt="@user" />
-                               <AvatarFallback>{currentUser.fallback}</AvatarFallback>
-                           </Avatar>
-                        </div>
-                        <div className="p-6 space-y-4 text-center flex-1 flex flex-col justify-between">
-                            <div>
-                               <h2 className="text-2xl font-bold">{currentUser.name}</h2>
-                               <p className="text-sm text-muted-foreground uppercase font-semibold">{currentRole}</p>
-                            </div>
-                            <div className="flex justify-between items-center text-sm bg-muted p-2 rounded-md">
-                                <span className="text-muted-foreground">Employee ID</span>
-                                <span className="font-mono font-semibold">{currentUser.id}</span>
-                            </div>
-                            <div className="flex justify-center pt-2 bg-white p-2 rounded-md">
-                                <QRCode
-                                  value={vCard}
-                                  size={80}
-                                  className="h-20 w-20"
-                                  viewBox={`0 0 80 80`}
-                                />
-                            </div>
-                            <p className="text-xs text-muted-foreground">This card is the property of {companyInfo.name}. If found, please return to the nearest office.</p>
-                        </div>
-                         <div className="px-6 py-4 border-t flex items-center justify-center gap-2 text-primary">
-                            <ShieldCheck className="h-5 w-5"/>
-                            <span className="font-semibold text-sm">Verified Employee</span>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="flex flex-col items-center gap-4 p-6">
-                        <Avatar className="h-24 w-24">
-                            <AvatarImage src={currentUser.avatar} alt="@user" />
-                            <AvatarFallback>{currentUser.fallback}</AvatarFallback>
-                        </Avatar>
-                        <div className="text-center">
-                            <h2 className="text-xl font-bold">{currentUser.name}</h2>
-                            <p className="text-muted-foreground">{currentUser.email}</p>
-                        </div>
-                    </div>
-                )}
-            </div>
+                           <div className="space-y-4">
+                               <div className="space-y-2">
+                                  <Label htmlFor="name">Full Name</Label>
+                                  <Input id="name" value={editableProfile.name} onChange={handleProfileInputChange} />
+                               </div>
+                               <div className="space-y-2">
+                                  <Label htmlFor="email">Email</Label>
+                                  <Input id="email" type="email" value={editableProfile.email} onChange={handleProfileInputChange} />
+                               </div>
+                               <div className="space-y-2">
+                                  <Label htmlFor="phone">Phone</Label>
+                                  <Input id="phone" type="tel" value={editableProfile.phone} onChange={handleProfileInputChange} />
+                               </div>
+                           </div>
+                           <Separator />
+                           <div>
+                               <h3 className="text-lg font-medium">Change Password</h3>
+                               <div className="space-y-4 mt-4">
+                                   <div className="space-y-2">
+                                      <Label htmlFor="current-password">Current Password</Label>
+                                      <Input id="current-password" type="password" value={passwordFields.current} onChange={(e) => setPasswordFields({...passwordFields, current: e.target.value})} />
+                                   </div>
+                                   <div className="space-y-2">
+                                      <Label htmlFor="new-password">New Password</Label>
+                                      <Input id="new-password" type="password" value={passwordFields.new} onChange={(e) => setPasswordFields({...passwordFields, new: e.target.value})} />
+                                   </div>
+                                   <div className="space-y-2">
+                                      <Label htmlFor="confirm-password">Confirm New Password</Label>
+                                      <Input id="confirm-password" type="password" value={passwordFields.confirm} onChange={(e) => setPasswordFields({...passwordFields, confirm: e.target.value})} />
+                                   </div>
+                               </div>
+                           </div>
+                      </div>
+                  ) : ['technician', 'sales', 'admin', 'supervisor', 'freelance'].includes(currentRole) ? (
+                      <div className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-sm mx-auto h-full flex flex-col">
+                          <div className="p-6 flex flex-col items-center gap-4 bg-primary text-primary-foreground rounded-t-lg">
+                             <div className="w-32 h-auto">
+                               <Image src={companyInfo.logo} alt="Company Logo" width={160} height={64} className="w-full h-auto" unoptimized/>
+                             </div>
+                             <Avatar className="h-24 w-24 border-4 border-background">
+                                 <AvatarImage src={currentUser.avatar} alt="@user" />
+                                 <AvatarFallback>{currentUser.fallback}</AvatarFallback>
+                             </Avatar>
+                          </div>
+                          <div className="p-6 space-y-4 text-center flex-1 flex flex-col justify-between">
+                              <div>
+                                 <h2 className="text-2xl font-bold">{currentUser.name}</h2>
+                                 <p className="text-sm text-muted-foreground uppercase font-semibold">{currentRole}</p>
+                              </div>
+                              <div className="flex justify-between items-center text-sm bg-muted p-2 rounded-md">
+                                  <span className="text-muted-foreground">Employee ID</span>
+                                  <span className="font-mono font-semibold">{currentUser.id}</span>
+                              </div>
+                              <div className="flex justify-center pt-2 bg-white p-2 rounded-md">
+                                  <QRCode
+                                    value={vCard}
+                                    size={80}
+                                    className="h-20 w-20"
+                                    viewBox={`0 0 80 80`}
+                                  />
+                              </div>
+                              <p className="text-xs text-muted-foreground">This card is the property of {companyInfo.name}. If found, please return to the nearest office.</p>
+                          </div>
+                           <div className="px-6 py-4 border-t flex items-center justify-center gap-2 text-primary">
+                              <ShieldCheck className="h-5 w-5"/>
+                              <span className="font-semibold text-sm">Verified Employee</span>
+                          </div>
+                      </div>
+                  ) : (
+                      <div className="flex flex-col items-center gap-4 p-6">
+                          <Avatar className="h-24 w-24">
+                              <AvatarImage src={currentUser.avatar} alt="@user" />
+                              <AvatarFallback>{currentUser.fallback}</AvatarFallback>
+                          </Avatar>
+                          <div className="text-center">
+                              <h2 className="text-xl font-bold">{currentUser.name}</h2>
+                              <p className="text-muted-foreground">{currentUser.email}</p>
+                          </div>
+                      </div>
+                  )}
+              </div>
+            </ScrollArea>
              <DialogFooter className="p-6 pt-0">
                 {isEditingProfile ? (
                      <div className="flex justify-end gap-2 w-full">
                         <Button variant="outline" onClick={() => { setIsEditingProfile(false); setNewAvatar(null); }}>Cancel</Button>
-                        <Button onClick={handleProfileSave}>Save</Button>
+                        <Button onClick={handleProfileSave}>Save Changes</Button>
                     </div>
                 ) : (
                     <DialogClose asChild>
@@ -863,3 +904,4 @@ END:VCARD`;
     
 
     
+
