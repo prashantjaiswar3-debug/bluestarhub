@@ -234,23 +234,26 @@ export default function InvoicesPage() {
 
 
   useEffect(() => {
-    const storedInvoicesStr = localStorage.getItem('invoices');
-    if (storedInvoicesStr) {
-        const storedInvoices: Invoice[] = JSON.parse(storedInvoicesStr);
-        setInvoices(prevInvoices => {
-            const allInvoices = [...storedInvoices, ...prevInvoices];
-            const uniqueInvoices = allInvoices.filter(
-                (invoice, index, self) => index === self.findIndex(t => t.invoiceId === invoice.invoiceId)
-            );
-            return uniqueInvoices;
-        });
+    try {
+        const storedInvoicesStr = localStorage.getItem('invoices');
+        if (storedInvoicesStr) {
+            const storedInvoices: Invoice[] = JSON.parse(storedInvoicesStr);
+            setInvoices(prevInvoices => {
+                const allInvoices = [...storedInvoices, ...prevInvoices];
+                const uniqueInvoices = allInvoices.filter(
+                    (invoice, index, self) => index === self.findIndex(t => t.invoiceId === invoice.invoiceId)
+                );
+                return uniqueInvoices;
+            });
+        }
+        
+        const storedCompanyInfoStr = localStorage.getItem('companyInfo');
+        if(storedCompanyInfoStr) {
+            setCompanyInfo(JSON.parse(storedCompanyInfoStr));
+        }
+    } catch (error) {
+        console.error("Failed to parse data from localStorage", error);
     }
-    
-    const storedCompanyInfoStr = localStorage.getItem('companyInfo');
-    if(storedCompanyInfoStr) {
-        setCompanyInfo(JSON.parse(storedCompanyInfoStr));
-    }
-
   }, []);
   
   const handleModifyInvoice = (invoiceId: string) => {
@@ -1091,7 +1094,7 @@ export default function InvoicesPage() {
                               <p style={{ margin: 0 }}><strong>Account Holder:</strong> {companyInfo.bank?.accountHolder || 'N/A'}</p>
                               <p style={{ margin: 0 }}><strong>Bank Name:</strong> {companyInfo.bank?.bankName || 'N/A'}</p>
                               <p style={{ margin: 0 }}><strong>Account Number:</strong> {companyInfo.bank?.accountNumber || 'N/A'}</p>
-                              <p style={{ margin: 0 }}><strong>IFSC Code:</strong> {companyInfo.bank?.ifscCode || 'N/A'}</p>
+                              <p style={{ margin: 0 }}><strong>IFSC Code:</strong> {companyInfo.bank?.ifscCode || 'N_A'}</p>
                           </div>
                           {companyInfo.bank?.qrCode && (
                           <div style={{ textAlign: 'center' }}>
@@ -1208,3 +1211,5 @@ export default function InvoicesPage() {
     </>
   );
 }
+
+    
