@@ -66,6 +66,7 @@ import QRCode from "react-qr-code";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CompanyInfo, Technician } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 
 const allNavItems = [
@@ -904,4 +905,5 @@ END:VCARD`;
     
 
     
+
 
