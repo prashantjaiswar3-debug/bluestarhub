@@ -313,7 +313,7 @@ END:VCARD`;
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen">
+      <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">
         <Sidebar>
           <SidebarContent>
             <SidebarHeader>
@@ -430,7 +430,7 @@ END:VCARD`;
             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
-        <SidebarInset>
+        <div className="flex flex-1 flex-col overflow-y-auto">
           <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-sidebar-border bg-sidebar px-4 text-sidebar-foreground sm:px-6">
             <div className="flex items-center gap-2">
                 <SidebarTrigger className="md:hidden" />
@@ -453,8 +453,8 @@ END:VCARD`;
               </Button>
             </div>
           </header>
-          <main className="flex-1 overflow-y-auto p-2 sm:p-4 md:p-6">{children}</main>
-        </SidebarInset>
+          <main className="flex-1 p-2 sm:p-4 md:p-6">{children}</main>
+        </div>
       </div>
        <Dialog open={isCompanyProfileOpen} onOpenChange={setIsCompanyProfileOpen}>
         <DialogContent className="sm:max-w-2xl">
@@ -497,7 +497,7 @@ END:VCARD`;
                   </div>
                   <div className="space-y-2">
                       <Label htmlFor="company-gstin-edit">GSTIN</Label>
-                      <Input id="company-gstin-edit" value={editableCompanyInfo.gstin} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, gstin: e.target.value}))} />
+                      <Input id="company-gstin-edit" value={editableCompanyInfo.gstin || ''} onChange={(e) => setEditableCompanyInfo(prev => ({...prev, gstin: e.target.value}))} />
                   </div>
 
                   <div className="space-y-4 rounded-md border p-4">

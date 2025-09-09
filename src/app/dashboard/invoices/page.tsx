@@ -815,7 +815,7 @@ export default function InvoicesPage() {
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="customer-gstin">Customer GSTIN (Optional)</Label>
-                            <Input id="customer-gstin" placeholder="e.g., 27AAAAA0000A1Z5" value={newInvoice.customer.gstin} onChange={(e) => setNewInvoice(prev => ({...prev, customer: {...prev.customer, gstin: e.target.value}}))}/>
+                            <Input id="customer-gstin" placeholder="e.g., 27AAAAA0000A1Z5" value={newInvoice.customer.gstin || ''} onChange={(e) => setNewInvoice(prev => ({...prev, customer: {...prev.customer, gstin: e.target.value}}))}/>
                           </div>
                       </div>
 
@@ -855,7 +855,7 @@ export default function InvoicesPage() {
                                 {newInvoice.isGst && (
                                     <div className="space-y-2">
                                     <Label htmlFor={`item-gst-${index}`}>GST (%)</Label>
-                                    <Input id={`item-gst-${index}`} type="number" placeholder="18" value={item.gstRate} onChange={(e) => handleItemChange(item.id, 'gstRate', e.target.value)}/>
+                                    <Input id={`item-gst-${index}`} type="text" placeholder="18" value={item.gstRate} onChange={(e) => handleItemChange(item.id, 'gstRate', e.target.value)}/>
                                     </div>
                                 )}
                             </div>
@@ -896,12 +896,12 @@ export default function InvoicesPage() {
                         <h4 className="text-sm font-medium">Costs & Total</h4>
                          <div className="space-y-2">
                             <Label htmlFor="labor-cost">Labor Cost (₹)</Label>
-                            <Input id="labor-cost" type="number" placeholder="5000" value={newInvoice.laborCost} onChange={(e) => setNewInvoice(prev => ({...prev, laborCost: parseFloat(e.target.value) || 0}))}/>
+                            <Input id="labor-cost" type="number" placeholder="5000" value={newInvoice.laborCost || ''} onChange={(e) => setNewInvoice(prev => ({...prev, laborCost: parseFloat(e.target.value) || 0}))}/>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="discount">Discount (%)</Label>
-                                <Input id="discount" type="number" placeholder="10" value={newInvoice.discount} onChange={(e) => setNewInvoice(prev => ({...prev, discount: parseFloat(e.target.value) || 0}))} />
+                                <Input id="discount" type="number" placeholder="10" value={newInvoice.discount || ''} onChange={(e) => setNewInvoice(prev => ({...prev, discount: parseFloat(e.target.value) || 0}))} />
                             </div>
                             <div className="space-y-2">
                                 <Label>Grand Total</Label>
@@ -1135,7 +1135,7 @@ export default function InvoicesPage() {
             <div className="grid gap-4 py-4">
                 <div className="space-y-2">
                     <Label htmlFor="payment-amount">Amount (₹)</Label>
-                    <Input id="payment-amount" type="number" value={newPayment.amount} onChange={e => setNewPayment(p => ({...p, amount: parseFloat(e.target.value) || 0}))} />
+                    <Input id="payment-amount" type="number" value={newPayment.amount || ''} onChange={e => setNewPayment(p => ({...p, amount: parseFloat(e.target.value) || 0}))} />
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="payment-method">Payment Method</Label>
