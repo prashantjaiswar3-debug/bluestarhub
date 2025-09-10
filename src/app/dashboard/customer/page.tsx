@@ -31,13 +31,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, Download, CreditCard, Gift, Star, MessageSquare } from "lucide-react";
+import { PlusCircle, CreditCard, Gift, Star, MessageSquare } from "lucide-react";
 import type { Complaint, Invoice, Review, CompanyInfo } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Image from "next/image";
-import type jsPDF from 'jspdf';
-import type html2canvas from 'html2canvas';
 
 const initialComplaints: Omit<Complaint, 'customer' | 'assignedTo'>[] = [
     { ticketId: "BLU-7238", issue: "CCTV Camera not recording", priority: "High", status: "Assigned", date: "2023-10-26T10:30:00Z" },
@@ -81,33 +79,6 @@ export default function CustomerDashboard() {
   const [newComplaint, setNewComplaint] = useState("");
   const [isLeaveReviewOpen, setIsLeaveReviewOpen] = useState(false);
   const [newReview, setNewReview] = useState({ rating: 0, comment: "" });
-  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
-  const invoiceRef = useRef<HTMLDivElement>(null);
-  const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
-  const [logoBase64, setLogoBase64] = useState<string | null>(null);
-
-  useEffect(() => {
-    const storedCompanyInfoStr = localStorage.getItem('companyInfo');
-    if(storedCompanyInfoStr) {
-        const info = JSON.parse(storedCompanyInfoStr);
-        setCompanyInfo(info);
-        if (info.logo) {
-            fetch(info.logo)
-                .then(response => response.blob())
-                .then(blob => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        setLogoBase64(reader.result as string);
-                    };
-                    reader.readAsDataURL(blob);
-                })
-                .catch(error => {
-                    console.error("Error fetching or converting logo:", error);
-                    setLogoBase64(null); // Fallback or error handling
-                });
-        }
-    }
-  }, []);
 
   const handleLodgeComplaint = () => {
     if (!newComplaint) {
@@ -159,42 +130,6 @@ export default function CustomerDashboard() {
       description: "Thank you for your valuable feedback!",
     });
   };
-  
-  const handleDownloadInvoice = async (invoice: Invoice) => {
-    setSelectedInvoice(invoice);
-
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    const invoiceContent = invoiceRef.current;
-    if (invoiceContent) {
-        try {
-            const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-              import('jspdf'),
-              import('html2canvas'),
-            ]);
-            const canvas = await html2canvas(invoiceContent, { scale: 2, useCORS: true, allowTaint: true });
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save(`invoice-${invoice.invoiceId}.pdf`);
-            toast({
-                title: "Download Started",
-                description: `Your invoice ${invoice.invoiceId} is downloading.`,
-            });
-        } catch (error) {
-            console.error("Error generating PDF:", error);
-            toast({
-                variant: "destructive",
-                title: "Download Failed",
-                description: "There was an error generating the PDF for your invoice.",
-            });
-        } finally {
-             setSelectedInvoice(null);
-        }
-    }
-  }
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -395,10 +330,6 @@ export default function CustomerDashboard() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleDownloadInvoice(invoice)}>
-                            <Download className="mr-2 h-3 w-3" />
-                            Download PDF
-                        </Button>
                         {invoice.status !== "Paid" && (
                             <Button size="sm">
                                 <CreditCard className="mr-2 h-3 w-3" />
@@ -413,105 +344,6 @@ export default function CustomerDashboard() {
           </Table>
         </CardContent>
       </Card>
-
-      {/* Hidden Invoice for PDF Generation */}
-      {selectedInvoice && (
-        <div style={{ position: 'absolute', left: '-9999px', top: '0px', width: '210mm' }}>
-          <div ref={invoiceRef}>
-          {companyInfo && logoBase64 && (() => {
-              const invoiceDate = new Date(selectedInvoice.date);
-              const dueDate = new Date(invoiceDate);
-              dueDate.setDate(invoiceDate.getDate() + 15);
-              const formatDate = (date: Date | string) => new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
-              
-              return (
-                  <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', width: '100%', minHeight: '297mm', padding: '40px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', backgroundColor: 'white' }}>
-                  <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                           <div style={{ width: '250px' }}>
-                               <img src={logoBase64} alt="Company Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
-                          </div>
-                          <div style={{ textAlign: 'right' }}>
-                              <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>INVOICE</h2>
-                              <div style={{marginTop: '10px', fontSize: '12px', color: '#64748B'}}>
-                                  <p><strong>Email:</strong> {companyInfo.email}</p>
-                                  <p><strong>Contact:</strong> {companyInfo.phone}</p>
-                                  <p><strong>GSTIN:</strong> {companyInfo.gstin}</p>
-                              </div>
-                          </div>
-                      </div>
-                  </header>
-                  <div style={{ marginTop: '30px', flexGrow: 1 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', paddingBottom: '20px' }}>
-                          <div>
-                              <h2 style={{ fontSize: '14px', fontWeight: 'bold', color: '#30475E', marginBottom: '8px' }}>Bill To:</h2>
-                              <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold' }}>Customer User</p>
-                          </div>
-                          <div style={{ width: '220px' }}>
-                              <div style={{ fontSize: '12px', textAlign: 'right' }}>
-                                  <div style={{ marginBottom: '5px' }}><strong>Invoice ID:</strong><span>{selectedInvoice.invoiceId}</span></div>
-                                  <div style={{ marginBottom: '5px' }}><strong>Invoice Date:</strong><span>{formatDate(invoiceDate)}</span></div>
-                              </div>
-                          </div>
-                      </div>
-                       <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px', fontSize: '12px' }}>
-                          <thead>
-                              <tr style={{ backgroundColor: '#30475E', color: 'white' }}>
-                                  <th style={{ padding: '10px', textAlign: 'left' }}>DESCRIPTION</th>
-                                  <th style={{ padding: '10px', textAlign: 'right' }}>AMOUNT</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                              <tr style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: '#F8FAFC' }}>
-                                <td style={{ padding: '10px', maxWidth: '300px' }}>Service charges for Invoice {selectedInvoice.invoiceId}</td>
-                                <td style={{ padding: '10px', textAlign: 'right' }}>{formatCurrency(selectedInvoice.totalAmount)}</td>
-                              </tr>
-                          </tbody>
-                      </table>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-                          <div style={{ width: '250px', fontSize: '12px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', marginTop: '5px', borderTop: '2px solid #30475E', fontWeight: 'bold', fontSize: '16px' }}><span>AMOUNT DUE:</span><span>{formatCurrency(selectedInvoice.totalAmount)}</span></div>
-                          </div>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '30px' }}>
-                          <div style={{ fontSize: '12px' }}>
-                              <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Payment Details:</h3>
-                              <p style={{ margin: 0 }}><strong>Account Holder:</strong> {companyInfo.bank?.accountHolder || 'N/A'}</p>
-                              <p style={{ margin: 0 }}><strong>Bank Name:</strong> {companyInfo.bank?.bankName || 'N/A'}</p>
-                              <p style={{ margin: 0 }}><strong>Account Number:</strong> {companyInfo.bank?.accountNumber || 'N/A'}</p>
-                              <p style={{ margin: 0 }}><strong>IFSC Code:</strong> {companyInfo.bank?.ifscCode || 'N/A'}</p>
-                          </div>
-                          {companyInfo.bank?.qrCode && (
-                          <div style={{ textAlign: 'center' }}>
-                              <p style={{ fontSize: '12px', fontWeight: 'bold' }}>Scan QR Code to Pay</p>
-                              <img src={companyInfo.bank.qrCode} alt="Payment QR Code" style={{ marginTop: '8px', width: '100px', height: '100px' }} />
-                          </div>
-                          )}
-                      </div>
-                  </div>
-                   <footer style={{ marginTop: 'auto', paddingTop: '20px', fontSize: '12px', flexShrink: 0, borderTop: '1px solid #E2E8F0' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <div>
-                                  <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Terms and Conditions:</h3>
-                                  <p style={{ color: '#64748B', maxWidth: '300px', fontSize: '10px' }}>Payment is due within 15 days of the invoice date. Please make checks payable to {companyInfo.name}.</p>
-                              </div>
-                              <div style={{ textAlign: 'center' }}>
-                                  <p style={{ borderTop: '1px solid #64748B', paddingTop: '5px', marginTop: '40px' }}>Authorized Signature</p>
-                                  <p style={{ fontWeight: 'bold', marginTop: '5px' }}>{companyInfo.name}</p>
-                              </div>
-                          </div>
-                          <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '10px', color: '#888' }}>
-                              <p>Thank you for your business!</p>
-                              <p style={{marginTop: '5px', fontWeight: 'bold'}}>Created on Bluestar Hub</p>
-                          </div>
-                  </footer>
-                  </div>
-              );
-          })()}
-          </div>
-        </div>
-      )}
-
 
       <Dialog open={isLodgeComplaintOpen} onOpenChange={setIsLodgeComplaintOpen}>
         <DialogContent>
@@ -599,5 +431,6 @@ export default function CustomerDashboard() {
     </div>
   );
 }
+    
 
     
