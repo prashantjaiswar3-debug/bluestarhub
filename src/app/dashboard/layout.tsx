@@ -31,6 +31,7 @@ import {
   Boxes,
   Building,
   Receipt,
+  DatabaseZap,
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -80,7 +81,8 @@ const allNavItems = [
   { href: "/dashboard/purchases", icon: ShoppingCart, label: "Purchases", roles: ['admin', 'sales', 'supervisor'] },
   { href: "/dashboard/inventory", icon: Boxes, label: "Inventory", roles: ['admin', 'sales', 'supervisor'] },
   { href: "/dashboard/vendors", icon: Building, label: "Vendors", roles: ['admin', 'sales', 'supervisor'] },
-  { href: "/dashboard/admin/users", icon: UserCog, label: "User Management", roles: ['admin'] },
+  { href: "/dashboard/users", icon: UserCog, label: "User Management", roles: ['admin'] },
+  { href: "/dashboard/data", icon: DatabaseZap, label: "Data Management", roles: ['admin'] },
 ];
 
 const initialCompanyInfo: CompanyInfo = {
@@ -180,9 +182,13 @@ export default function DashboardLayout({
   const currentUser = roleInfo[currentRole] || roleInfo.default;
 
   React.useEffect(() => {
-    const storedCompanyInfo = localStorage.getItem('companyInfo');
-    if (storedCompanyInfo) {
-      setCompanyInfo(JSON.parse(storedCompanyInfo));
+    try {
+        const storedCompanyInfo = localStorage.getItem('companyInfo');
+        if (storedCompanyInfo) {
+          setCompanyInfo(JSON.parse(storedCompanyInfo));
+        }
+    } catch (error) {
+        console.error("Failed to parse company info from localStorage", error);
     }
   }, []);
 

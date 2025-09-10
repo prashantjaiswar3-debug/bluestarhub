@@ -57,7 +57,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { BrowserBarcodeReader, NotFoundException, IScannerControls } from '@zxing/library';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -252,9 +251,6 @@ export default function InvoicesPage() {
         if (storedCompanyInfoStr) {
             const info = JSON.parse(storedCompanyInfoStr);
             setCompanyInfo(info);
-        } else {
-             // Handle case where company info might not be set
-            console.warn("Company info not found in localStorage.");
         }
     } catch (error) {
         console.error("Failed to parse data from localStorage", error);
@@ -388,13 +384,6 @@ export default function InvoicesPage() {
           title: title,
           description: description,
       });
-  }
-
-
-  const handleOpenChange = (isOpen: boolean) => {
-    if (!isOpen) {
-      setSelectedInvoice(null);
-    }
   }
 
   const subTotal = useMemo(() => {
@@ -1052,13 +1041,6 @@ export default function InvoicesPage() {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-        {isGeneratingPdf && selectedInvoice && companyInfo && (
-            <div className="fixed -left-[9999px] top-0 opacity-0" aria-hidden>
-                <div id={`pdf-invoice-${selectedInvoice.invoiceId}`} className="bg-white">
-                    <InvoicePDF invoice={selectedInvoice} companyInfo={companyInfo} />
-                </div>
-            </div>
-        )}
     </>
   );
 }

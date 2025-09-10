@@ -11,27 +11,45 @@ interface InvoicePDFProps {
 }
 
 async function toBase64(url: string): Promise<string> {
-    const response = await fetch(url, { cache: 'no-store' });
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
+    try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    } catch (error) {
+        console.error("Error converting to Base64:", error);
+        return "";
+    }
 }
 
 export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, companyInfo }) => {
     const [logoBase64, setLogoBase64] = useState<string | null>(null);
     const [qrBase64, setQrBase64] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (companyInfo.logo) {
-            toBase64(companyInfo.logo).then(setLogoBase64).catch(console.error);
-        }
-        if (companyInfo.bank?.qrCode) {
-            toBase64(companyInfo.bank.qrCode).then(setQrBase64).catch(console.error);
-        }
+        const processImages = async () => {
+            setIsLoading(true);
+            try {
+                if (companyInfo.logo) {
+                    const logo = await toBase64(companyInfo.logo);
+                    setLogoBase64(logo);
+                }
+                if (companyInfo.bank?.qrCode) {
+                    const qr = await toBase64(companyInfo.bank.qrCode);
+                    setQrBase64(qr);
+                }
+            } catch (error) {
+                console.error("Failed to process images for PDF", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        processImages();
     }, [companyInfo]);
 
     const calculateTotals = (inv: Invoice) => {
@@ -46,7 +64,6 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, companyInfo }) 
             return sum + (itemTotalAfterDiscount * (item.gstRate / 100));
         }, 0) : 0;
         
-        // Assuming labor is a service with its own GST rate, for simplicity let's assume 18% if GST is enabled
         const gstOnLabor = inv.isGst ? inv.laborCost * (1 - (inv.discount / 100)) * 0.18 : 0;
         
         const totalGst = gstOnItems + gstOnLabor;
@@ -92,12 +109,16 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, companyInfo }) 
 
         return result.replace(/\s+/g, ' ').trim().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     };
+    
+    if (isLoading) {
+        return <div className="w-[210mm] h-[297mm] bg-white flex items-center justify-center"><p>Loading PDF preview...</p></div>;
+    }
 
     return (
-        <div className="w-[210mm] h-[297mm] bg-white text-gray-800 p-8 font-sans text-sm flex flex-col">
+        <div className="w-[210mm] h-auto bg-white text-gray-800 p-8 font-sans text-sm flex flex-col min-h-[297mm]">
             <header className="flex justify-between items-start pb-4 border-b-2 border-gray-800">
                 <div className="w-2/3">
-                    {logoBase64 && <Image src={logoBase64} alt="Company Logo" width={180} height={70} className="mb-4" />}
+                    {logoBase64 && <Image src={logoBase64} alt="Company Logo" width={180} height={70} className="mb-4" unoptimized />}
                     <h1 className="text-2xl font-bold uppercase">{companyInfo.name}</h1>
                     <p>{companyInfo.email} | {companyInfo.phone}</p>
                     {companyInfo.gstin && <p className="font-bold">GSTIN: {companyInfo.gstin}</p>}
@@ -156,7 +177,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, companyInfo }) 
                 </table>
             </section>
 
-            <section className="mt-6 flex justify-between">
+            <section className="mt-6 flex justify-between items-start">
                 <div className="w-1/2 pt-4">
                     <p className="font-bold">Amount in Words:</p>
                     <p className="capitalize">{numberToWords(grandTotal)} Only</p>
@@ -211,7 +232,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, companyInfo }) 
                     {qrBase64 && (
                          <div className="w-1/3 text-right">
                              <p className="font-bold mb-1">Scan to Pay</p>
-                             <Image src={qrBase64} alt="Payment QR Code" width={80} height={80} />
+                             <Image src={qrBase64} alt="Payment QR Code" width={80} height={80} unoptimized/>
                          </div>
                     )}
                 </div>

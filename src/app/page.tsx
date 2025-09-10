@@ -51,7 +51,7 @@ export default function LoginPage() {
                 <Input id="password" type="password" required defaultValue="password" />
               </div>
               <Button type="submit" className="w-full" asChild>
-                <Link href="/dashboard/admin">Sign In</Link>
+                <Link href="/dashboard">Sign In</Link>
               </Button>
             </div>
           </CardContent>

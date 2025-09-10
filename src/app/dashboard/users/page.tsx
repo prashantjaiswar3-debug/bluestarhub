@@ -77,27 +77,25 @@ const roleVariant: { [key in User["role"]]: "default" | "secondary" | "outline" 
 export default function UserManagementPage() {
   const { toast } = useToast();
   const [users, setUsers] = React.useState<User[]>(initialUsers);
-  const [filteredUsers, setFilteredUsers] = React.useState<User[]>(initialUsers);
+  const [activeTab, setActiveTab] = React.useState("All");
   const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
   const [isEditUserOpen, setIsEditUserOpen] = React.useState(false);
 
-  const handleFilter = (role: string) => {
-    if (role === "All") {
-      setFilteredUsers(users);
-    } else {
-      setFilteredUsers(users.filter((user) => user.role === role));
+  const filteredUsers = React.useMemo(() => {
+    if (activeTab === "All") {
+      return users;
     }
-  };
+    return users.filter((user) => user.role === activeTab);
+  }, [users, activeTab]);
 
   const handleEditClick = (user: User) => {
-    setSelectedUser(user);
+    setSelectedUser({ ...user });
     setIsEditUserOpen(true);
   };
   
   const handleSaveChanges = () => {
     if (!selectedUser) return;
     setUsers(users.map(u => u.id === selectedUser.id ? selectedUser : u));
-    setFilteredUsers(prev => prev.map(u => u.id === selectedUser.id ? selectedUser : u));
     setIsEditUserOpen(false);
     setSelectedUser(null);
     toast({
@@ -108,7 +106,6 @@ export default function UserManagementPage() {
   
   const handleDeleteUser = (userId: string) => {
      setUsers(users.filter(u => u.id !== userId));
-     setFilteredUsers(prev => prev.filter(u => u.id !== userId));
      toast({
         variant: "destructive",
         title: "User Deleted",
@@ -126,7 +123,7 @@ export default function UserManagementPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="All" onValueChange={handleFilter}>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2 h-auto sm:w-auto sm:inline-flex md:grid-cols-3 lg:grid-cols-6">
               <TabsTrigger value="All">All</TabsTrigger>
               <TabsTrigger value="Admin">Admins</TabsTrigger>
@@ -135,24 +132,9 @@ export default function UserManagementPage() {
               <TabsTrigger value="Supervisor">Supervisors</TabsTrigger>
               <TabsTrigger value="Customer">Customers</TabsTrigger>
             </TabsList>
-            <TabsContent value="All">
-              <UserTable users={filteredUsers} onEdit={handleEditClick} onDelete={handleDeleteUser} />
-            </TabsContent>
-            <TabsContent value="Admin">
-              <UserTable users={filteredUsers} onEdit={handleEditClick} onDelete={handleDeleteUser} />
-            </TabsContent>
-            <TabsContent value="Sales">
-              <UserTable users={filteredUsers} onEdit={handleEditClick} onDelete={handleDeleteUser} />
-            </TabsContent>
-            <TabsContent value="Technician">
-              <UserTable users={filteredUsers} onEdit={handleEditClick} onDelete={handleDeleteUser} />
-            </TabsContent>
-            <TabsContent value="Supervisor">
-              <UserTable users={filteredUsers} onEdit={handleEditClick} onDelete={handleDeleteUser} />
-            </TabsContent>
-            <TabsContent value="Customer">
-              <UserTable users={filteredUsers} onEdit={handleEditClick} onDelete={handleDeleteUser} />
-            </TabsContent>
+             <div className="mt-4">
+                <UserTable users={filteredUsers} onEdit={handleEditClick} onDelete={handleDeleteUser} />
+            </div>
           </Tabs>
         </CardContent>
       </Card>
@@ -165,76 +147,78 @@ export default function UserManagementPage() {
               Modify user details and roles below.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">Full Name</Label>
-              <Input
-                id="edit-name"
-                value={selectedUser?.name || ""}
-                onChange={(e) =>
-                  setSelectedUser(
-                    (prev) => prev && { ...prev, name: e.target.value }
-                  )
-                }
-              />
-            </div>
-             <div className="space-y-2">
-              <Label htmlFor="edit-email">Email Address</Label>
-              <Input
-                id="edit-email"
-                type="email"
-                value={selectedUser?.email || ""}
-                 onChange={(e) =>
-                  setSelectedUser(
-                    (prev) => prev && { ...prev, email: e.target.value }
-                  )
-                }
-              />
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="edit-password">Password</Label>
+          {selectedUser && (
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Full Name</Label>
                 <Input
-                    id="edit-password"
-                    type="text"
-                    value={selectedUser?.password || ""}
-                    placeholder="Enter new password"
-                    onChange={(e) =>
+                  id="edit-name"
+                  value={selectedUser.name}
+                  onChange={(e) =>
                     setSelectedUser(
-                        (prev) => prev && { ...prev, password: e.target.value }
+                      (prev) => prev && { ...prev, name: e.target.value }
                     )
-                    }
+                  }
                 />
+              </div>
+               <div className="space-y-2">
+                <Label htmlFor="edit-email">Email Address</Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  value={selectedUser.email}
+                   onChange={(e) =>
+                    setSelectedUser(
+                      (prev) => prev && { ...prev, email: e.target.value }
+                    )
+                  }
+                />
+              </div>
+               <div className="space-y-2">
+                  <Label htmlFor="edit-password">Password</Label>
+                  <Input
+                      id="edit-password"
+                      type="text"
+                      value={selectedUser.password || ""}
+                      placeholder="Enter new password"
+                      onChange={(e) =>
+                      setSelectedUser(
+                          (prev) => prev && { ...prev, password: e.target.value }
+                      )
+                      }
+                  />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                      <Label htmlFor="edit-role">Role</Label>
+                       <Select value={selectedUser.role} onValueChange={(value: User["role"]) => setSelectedUser(prev => prev && {...prev, role: value})}>
+                          <SelectTrigger id="edit-role">
+                              <SelectValue placeholder="Select role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                              <SelectItem value="Admin">Admin</SelectItem>
+                              <SelectItem value="Sales">Sales</SelectItem>
+                              <SelectItem value="Technician">Technician</SelectItem>
+                              <SelectItem value="Supervisor">Supervisor</SelectItem>
+                              <SelectItem value="Customer">Customer</SelectItem>
+                          </SelectContent>
+                      </Select>
+                  </div>
+                  <div className="space-y-2">
+                      <Label htmlFor="edit-status">Status</Label>
+                       <Select value={selectedUser.status} onValueChange={(value: User["status"]) => setSelectedUser(prev => prev && {...prev, status: value})}>
+                          <SelectTrigger id="edit-status">
+                              <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                              <SelectItem value="Active">Active</SelectItem>
+                              <SelectItem value="Inactive">Inactive</SelectItem>
+                          </SelectContent>
+                      </Select>
+                  </div>
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="edit-role">Role</Label>
-                     <Select value={selectedUser?.role} onValueChange={(value: User["role"]) => setSelectedUser(prev => prev && {...prev, role: value})}>
-                        <SelectTrigger id="edit-role">
-                            <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Admin">Admin</SelectItem>
-                            <SelectItem value="Sales">Sales</SelectItem>
-                            <SelectItem value="Technician">Technician</SelectItem>
-                            <SelectItem value="Supervisor">Supervisor</SelectItem>
-                            <SelectItem value="Customer">Customer</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="edit-status">Status</Label>
-                     <Select value={selectedUser?.status} onValueChange={(value: User["status"]) => setSelectedUser(prev => prev && {...prev, status: value})}>
-                        <SelectTrigger id="edit-status">
-                            <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Active">Active</SelectItem>
-                            <SelectItem value="Inactive">Inactive</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
-          </div>
+          )}
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
@@ -292,5 +276,3 @@ function UserTable({ users, onEdit, onDelete }: { users: User[], onEdit: (user: 
     </ScrollArea>
   );
 }
-
-    

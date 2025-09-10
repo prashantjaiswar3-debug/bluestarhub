@@ -39,12 +39,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Send, Eye, PlusCircle, Trash2, Share2, FileText } from "lucide-react";
-import type { Quotation, QuotationItem, Customer, Invoice, CompanyInfo } from "@/lib/types";
+import { Send, Eye, PlusCircle, Trash2, FileText } from "lucide-react";
+import type { Quotation, QuotationItem, Customer, Invoice } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { initialQuotations } from "@/lib/data";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import Image from "next/image";
 
 const registeredCustomers: Customer[] = [
     { id: "CUST-001", name: "Green Valley Apartments", contactPerson: "Mr. Sharma", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City", gstin: "27AAAAA0000A1Z5" },
@@ -230,14 +229,23 @@ export default function QuotationsPage() {
       payments: [],
     };
     
-    const existingInvoicesStr = localStorage.getItem('invoices');
-    const existingInvoices: Invoice[] = existingInvoicesStr ? JSON.parse(existingInvoicesStr) : [];
-    localStorage.setItem('invoices', JSON.stringify([newInvoice, ...existingInvoices]));
+    try {
+        const existingInvoicesStr = localStorage.getItem('invoices');
+        const existingInvoices: Invoice[] = existingInvoicesStr ? JSON.parse(existingInvoicesStr) : [];
+        localStorage.setItem('invoices', JSON.stringify([newInvoice, ...existingInvoices]));
 
-    toast({
-        title: "Invoice Generated",
-        description: `Invoice for quote ${quote.quoteId} has been created and can be viewed on the Invoices page.`,
-    });
+        toast({
+            title: "Invoice Generated",
+            description: `Invoice for quote ${quote.quoteId} has been created and can be viewed on the Invoices page.`,
+        });
+    } catch (error) {
+        console.error("Failed to access localStorage:", error);
+        toast({
+            variant: "destructive",
+            title: "Could not save invoice",
+            description: "There was an issue with your browser's storage.",
+        });
+    }
   }
 
   return (
@@ -337,12 +345,12 @@ export default function QuotationsPage() {
                     <h4 className="text-sm font-medium">Costs & Total</h4>
                      <div className="space-y-2">
                         <Label htmlFor="labor-cost">Labor Cost (₹)</Label>
-                        <Input id="labor-cost" type="number" placeholder="5000" value={newQuote.laborCost} onChange={(e) => setNewQuote(prev => ({...prev, laborCost: parseFloat(e.target.value) || 0}))}/>
+                        <Input id="labor-cost" type="number" placeholder="5000" value={newQuote.laborCost || ''} onChange={(e) => setNewQuote(prev => ({...prev, laborCost: parseFloat(e.target.value) || 0}))}/>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="discount">Discount (%)</Label>
-                            <Input id="discount" type="number" placeholder="10" value={newQuote.discount} onChange={(e) => setNewQuote(prev => ({...prev, discount: parseFloat(e.target.value) || 0}))} />
+                            <Input id="discount" type="number" placeholder="10" value={newQuote.discount || ''} onChange={(e) => setNewQuote(prev => ({...prev, discount: parseFloat(e.target.value) || 0}))} />
                         </div>
                         <div className="space-y-2">
                             <Label>Grand Total</Label>
@@ -476,12 +484,6 @@ export default function QuotationsPage() {
                 </div>
             </ScrollArea>
           <DialogFooter className="pt-4 flex-row justify-between w-full">
-            <div className="flex gap-2">
-                 <Button variant="outline">
-                    <Share2 className="mr-2 h-4 w-4" />
-                    Send Quote
-                </Button>
-            </div>
             <DialogClose asChild>
                 <Button variant="outline">Close</Button>
             </DialogClose>
