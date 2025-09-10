@@ -39,6 +39,7 @@ import Image from "next/image";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { InvoicePDF } from "@/components/pdf/invoice-pdf";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const initialComplaints: Omit<Complaint, 'customer' | 'assignedTo'>[] = [
     { ticketId: "BLU-7238", issue: "CCTV Camera not recording", priority: "High", status: "Assigned", date: "2023-10-26T10:30:00Z" },
@@ -528,11 +529,11 @@ export default function CustomerDashboard() {
               This is a preview of the invoice. Click "Open PDF" to generate and view the final document.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex-1 overflow-auto border rounded-md">
+          <ScrollArea className="flex-1 border rounded-md">
             <div ref={pdfPreviewRef} className="bg-white">
               {invoiceToView && companyInfo && <InvoicePDF invoice={invoiceToView} companyInfo={companyInfo} />}
             </div>
-          </div>
+          </ScrollArea>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsPdfPreviewOpen(false)}>
               Close

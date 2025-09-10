@@ -954,11 +954,11 @@ export default function InvoicesPage() {
               This is a preview of the invoice. Click "Open PDF" to generate and view the final document.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex-1 overflow-auto border rounded-md">
+          <ScrollArea className="flex-1 border rounded-md">
             <div ref={pdfPreviewRef} className="bg-white">
               {selectedInvoice && companyInfo && <InvoicePDF invoice={selectedInvoice} companyInfo={companyInfo} />}
             </div>
-          </div>
+          </ScrollArea>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsPdfPreviewOpen(false)}>
               Close
