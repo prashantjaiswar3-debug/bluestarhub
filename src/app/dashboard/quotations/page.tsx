@@ -413,7 +413,7 @@ export default function QuotationsPage() {
       </div>
 
       <Dialog open={!!selectedQuote} onOpenChange={(isOpen) => !isOpen && setSelectedQuote(null)}>
-        <DialogContent className="sm:max-w-xl h-[90vh] flex flex-col">
+        <DialogContent className="sm:max-w-xl max-h-[80vh] flex flex-col">
             <DialogHeader>
                 <DialogTitle>Quotation Details</DialogTitle>
                 <DialogDescription>
