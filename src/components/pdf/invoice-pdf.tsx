@@ -11,7 +11,7 @@ interface InvoicePDFProps {
 }
 
 async function toBase64(url: string): Promise<string> {
-    const response = await fetch(url);
+    const response = await fetch(url, { cache: 'no-store' });
     const blob = await response.blob();
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -94,7 +94,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, companyInfo }) 
     };
 
     return (
-        <div className="w-[210mm] h-[297mm] bg-white text-gray-800 p-8 font-sans text-sm">
+        <div className="w-[210mm] h-[297mm] bg-white text-gray-800 p-8 font-sans text-sm flex flex-col">
             <header className="flex justify-between items-start pb-4 border-b-2 border-gray-800">
                 <div className="w-2/3">
                     {logoBase64 && <Image src={logoBase64} alt="Company Logo" width={180} height={70} className="mb-4" />}
@@ -119,7 +119,7 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, companyInfo }) 
                 </div>
             </section>
 
-            <section className="mt-8">
+            <section className="mt-8 flex-grow">
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-gray-800 text-white">
@@ -156,8 +156,8 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, companyInfo }) 
                 </table>
             </section>
 
-            <section className="flex justify-between mt-6">
-                <div className="w-1/2">
+            <section className="mt-6 flex justify-between">
+                <div className="w-1/2 pt-4">
                     <p className="font-bold">Amount in Words:</p>
                     <p className="capitalize">{numberToWords(grandTotal)} Only</p>
                 </div>
@@ -197,8 +197,8 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice, companyInfo }) 
                 </div>
             </section>
 
-            <footer className="absolute bottom-8 left-8 right-8 text-xs">
-                <div className="flex justify-between items-end">
+            <footer className="text-xs mt-auto pt-4">
+                <div className="flex justify-between items-end border-t pt-4">
                     {companyInfo.bank && (
                         <div className="w-2/3">
                             <h4 className="font-bold uppercase mb-2">Payment Details:</h4>
