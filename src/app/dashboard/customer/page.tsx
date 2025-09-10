@@ -31,11 +31,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, CreditCard, Gift, Star, MessageSquare } from "lucide-react";
+import { PlusCircle, CreditCard, Gift, Star, MessageSquare, Eye } from "lucide-react";
 import type { Complaint, Invoice, Review, CompanyInfo } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Image from "next/image";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { InvoicePDF } from "@/components/pdf/invoice-pdf";
 
 const initialComplaints: Omit<Complaint, 'customer' | 'assignedTo'>[] = [
     { ticketId: "BLU-7238", issue: "CCTV Camera not recording", priority: "High", status: "Assigned", date: "2023-10-26T10:30:00Z" },
@@ -79,6 +82,83 @@ export default function CustomerDashboard() {
   const [newComplaint, setNewComplaint] = useState("");
   const [isLeaveReviewOpen, setIsLeaveReviewOpen] = useState(false);
   const [newReview, setNewReview] = useState({ rating: 0, comment: "" });
+  const [invoiceToView, setInvoiceToView] = useState<Invoice | null>(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
+
+  useEffect(() => {
+    try {
+        const storedCompanyInfo = localStorage.getItem('companyInfo');
+        if (storedCompanyInfo) {
+            setCompanyInfo(JSON.parse(storedCompanyInfo));
+        }
+    } catch (error) {
+        console.error("Failed to load company info from localStorage", error);
+    }
+  }, []);
+
+  const handleViewInvoice = async (invoice: Invoice) => {
+    if (!companyInfo) {
+        toast({
+            variant: "destructive",
+            title: "Company Info Missing",
+            description: "Cannot generate PDF without company information.",
+        });
+        return;
+    }
+    setInvoiceToView(invoice);
+    setIsGeneratingPdf(true);
+    
+    toast({
+        title: "Generating PDF",
+        description: "Please wait while your invoice is being created...",
+    });
+
+    setTimeout(async () => {
+        try {
+            const invoiceElement = document.getElementById(`pdf-invoice-${invoice.invoiceId}`);
+            if (!invoiceElement) {
+                throw new Error("PDF template element not found.");
+            }
+
+            const canvas = await html2canvas(invoiceElement, {
+                scale: 2,
+                useCORS: true,
+                onclone: (document) => {
+                    // This is a workaround to make sure tailwind styles are applied
+                    const body = document.body;
+                    body.setAttribute('class', '');
+                }
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            
+            const pdfBlob = pdf.output('blob');
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            window.open(pdfUrl, '_blank');
+            
+            toast({
+                title: "PDF Ready",
+                description: "Your invoice has been opened in a new tab.",
+            });
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+            toast({
+                variant: "destructive",
+                title: "Generation Failed",
+                description: "Could not generate the invoice PDF. Please try again.",
+            });
+        } finally {
+            setIsGeneratingPdf(false);
+            setInvoiceToView(null);
+        }
+    }, 1000);
+  };
+
 
   const handleLodgeComplaint = () => {
     if (!newComplaint) {
@@ -330,6 +410,15 @@ export default function CustomerDashboard() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewInvoice(invoice)}
+                          disabled={isGeneratingPdf && invoiceToView?.invoiceId === invoice.invoiceId}
+                        >
+                            <Eye className="mr-2 h-3 w-3" />
+                            {isGeneratingPdf && invoiceToView?.invoiceId === invoice.invoiceId ? 'Generating...' : 'View Invoice'}
+                        </Button>
                         {invoice.status !== "Paid" && (
                             <Button size="sm">
                                 <CreditCard className="mr-2 h-3 w-3" />
@@ -428,9 +517,13 @@ export default function CustomerDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {isGeneratingPdf && invoiceToView && companyInfo && (
+        <div className="fixed -left-[9999px] top-0 opacity-0" aria-hidden>
+            <div id={`pdf-invoice-${invoiceToView.invoiceId}`} className="bg-white">
+                <InvoicePDF invoice={invoiceToView} companyInfo={companyInfo} />
+            </div>
+        </div>
+      )}
     </div>
   );
 }
-    
-
-    

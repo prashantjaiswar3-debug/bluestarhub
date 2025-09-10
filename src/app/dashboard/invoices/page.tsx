@@ -49,7 +49,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Send, Eye, PlusCircle, Trash2, Share2, DollarSign, QrCode, Zap, Edit } from "lucide-react";
+import { Send, Eye, PlusCircle, Trash2, Share2, DollarSign, QrCode, Zap, Edit, FileText } from "lucide-react";
 import type { Invoice, QuotationItem, Customer, Payment, CompanyInfo } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { initialQuotations } from "@/lib/data";
@@ -59,6 +59,9 @@ import { BrowserBarcodeReader, NotFoundException, IScannerControls } from '@zxin
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { InvoicePDF } from "@/components/pdf/invoice-pdf";
 
 
 const registeredCustomers: Customer[] = [
@@ -227,6 +230,7 @@ export default function InvoicesPage() {
   const [activeScannerState, setActiveScannerState] = useState<{itemId: string, serialIndex: number} | null>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   useEffect(() => {
     try {
@@ -246,11 +250,74 @@ export default function InvoicesPage() {
         if (storedCompanyInfoStr) {
             const info = JSON.parse(storedCompanyInfoStr);
             setCompanyInfo(info);
+        } else {
+             // Handle case where company info might not be set
+            console.warn("Company info not found in localStorage.");
         }
     } catch (error) {
         console.error("Failed to parse data from localStorage", error);
     }
   }, []);
+
+  const handleViewInvoicePdf = async () => {
+    if (!selectedInvoice || !companyInfo) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'No invoice selected or company info is missing.',
+      });
+      return;
+    }
+    setIsGeneratingPdf(true);
+    toast({
+      title: 'Generating PDF',
+      description: 'Please wait while your invoice is being created...',
+    });
+
+    // We need to use a timeout to ensure the hidden component renders before we try to capture it.
+    setTimeout(async () => {
+      try {
+        const invoiceElement = document.getElementById(`pdf-invoice-${selectedInvoice.invoiceId}`);
+        if (!invoiceElement) {
+          throw new Error('PDF template element not found.');
+        }
+
+        const canvas = await html2canvas(invoiceElement, {
+            scale: 2,
+            useCORS: true,
+            onclone: (document) => {
+                // This is a workaround to make sure tailwind styles are applied
+                const body = document.body;
+                body.setAttribute('class', '');
+            }
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        
+        const pdfBlob = pdf.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        window.open(pdfUrl, '_blank');
+        
+        toast({
+          title: 'PDF Ready',
+          description: 'Your invoice has been opened in a new tab.',
+        });
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        toast({
+          variant: 'destructive',
+          title: 'PDF Generation Failed',
+          description: 'An error occurred while creating the PDF. Please try again.',
+        });
+      } finally {
+        setIsGeneratingPdf(false);
+      }
+    }, 1000); // 1-second delay
+  };
   
   const handleModifyInvoice = (invoiceId: string) => {
     const invoiceToEdit = invoices.find(inv => inv.invoiceId === invoiceId);
@@ -924,6 +991,14 @@ export default function InvoicesPage() {
                     <Share2 className="mr-2 h-4 w-4" />
                     Send Invoice
                 </Button>
+                 <Button
+                    variant="outline"
+                    onClick={handleViewInvoicePdf}
+                    disabled={isGeneratingPdf}
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    {isGeneratingPdf ? 'Generating...' : 'View PDF'}
+                </Button>
                 {selectedInvoice?.status !== "Paid" && (
                     <Button onClick={() => setIsAddPaymentOpen(true)}>
                         <DollarSign className="mr-2 h-4 w-4" />
@@ -1019,8 +1094,13 @@ export default function InvoicesPage() {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+        {isGeneratingPdf && selectedInvoice && companyInfo && (
+            <div className="fixed -left-[9999px] top-0 opacity-0" aria-hidden>
+                <div id={`pdf-invoice-${selectedInvoice.invoiceId}`} className="bg-white">
+                    <InvoicePDF invoice={selectedInvoice} companyInfo={companyInfo} />
+                </div>
+            </div>
+        )}
     </>
   );
 }
-
-    

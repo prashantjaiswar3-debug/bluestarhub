@@ -61,6 +61,20 @@ const quotationStatusVariant: { [key in Quotation["status"]]: "default" | "secon
 
 const units = ["nos", "meters", "pcs", "pack", "box"];
 
+const calculateQuoteTotals = (quote: Quotation) => {
+    const itemsTotal = quote.items.reduce((sum, item) => sum + item.quantity * item.price, 0);
+    const subTotal = itemsTotal + quote.laborCost;
+    const discountAmount = subTotal * (quote.discount / 100);
+    const totalAfterDiscount = subTotal - discountAmount;
+     const gstAmount = quote.items.reduce((sum, item) => {
+        const itemTotal = item.quantity * item.price;
+        const itemTotalAfterDiscount = itemTotal * (1 - (quote.discount / 100));
+        return sum + (itemTotalAfterDiscount * (item.gstRate / 100));
+    }, 0);
+    const grandTotal = Math.round(totalAfterDiscount + gstAmount);
+    return { itemsTotal, subTotal, discountAmount, gstAmount, grandTotal };
+}
+
 export default function QuotationsPage() {
   const { toast } = useToast();
   const [quotations, setQuotations] = useState<Quotation[]>(initialQuotations);
@@ -477,5 +491,3 @@ export default function QuotationsPage() {
     </div>
   );
 }
-
-    
