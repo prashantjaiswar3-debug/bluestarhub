@@ -413,14 +413,14 @@ export default function QuotationsPage() {
       </div>
 
       <Dialog open={!!selectedQuote} onOpenChange={(isOpen) => !isOpen && setSelectedQuote(null)}>
-        <DialogContent className="sm:max-w-xl">
+        <DialogContent className="sm:max-w-xl h-[90vh] flex flex-col">
             <DialogHeader>
                 <DialogTitle>Quotation Details</DialogTitle>
                 <DialogDescription>
                 Details for quote <span className="font-semibold">{selectedQuote?.quoteId}</span> for {selectedQuote?.customer.name}.
                 </DialogDescription>
             </DialogHeader>
-            <ScrollArea className="max-h-[60vh]">
+            <ScrollArea className="flex-1 p-1 pr-3">
                 <div className="p-1">
                     {selectedQuote && (
                         <div className="space-y-4">
