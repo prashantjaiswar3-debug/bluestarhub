@@ -223,6 +223,7 @@ export default function InvoicesPage() {
     isGst: true,
   });
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [isPdfPreviewOpen, setIsPdfPreviewOpen] = useState<boolean>(false);
   const [invoiceToCancel, setInvoiceToCancel] = useState<Invoice | null>(null);
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState<boolean>(false);
   const [newPayment, setNewPayment] = useState({ amount: 0, method: "Online" as Payment["method"]});
@@ -231,6 +232,7 @@ export default function InvoicesPage() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const pdfPreviewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -259,12 +261,17 @@ export default function InvoicesPage() {
     }
   }, []);
 
-  const handleViewInvoicePdf = async () => {
-    if (!selectedInvoice || !companyInfo) {
+  const handleOpenPdfPreview = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setIsPdfPreviewOpen(true);
+  };
+
+  const handleGeneratePdf = async () => {
+    if (!selectedInvoice || !companyInfo || !pdfPreviewRef.current) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'No invoice selected or company info is missing.',
+        description: 'Cannot generate PDF. Required data is missing.',
       });
       return;
     }
@@ -274,49 +281,38 @@ export default function InvoicesPage() {
       description: 'Please wait while your invoice is being created...',
     });
 
-    // We need to use a timeout to ensure the hidden component renders before we try to capture it.
-    setTimeout(async () => {
-      try {
-        const invoiceElement = document.getElementById(`pdf-invoice-${selectedInvoice.invoiceId}`);
-        if (!invoiceElement) {
-          throw new Error('PDF template element not found.');
-        }
+    try {
+      const canvas = await html2canvas(pdfPreviewRef.current, {
+        scale: 2,
+        useCORS: true,
+      });
 
-        const canvas = await html2canvas(invoiceElement, {
-            scale: 2,
-            useCORS: true,
-            onclone: (document) => {
-                // This is a workaround to make sure tailwind styles are applied
-                const body = document.body;
-                body.setAttribute('class', '');
-            }
-        });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        
-        const pdfBlob = pdf.output('blob');
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-        window.open(pdfUrl, '_blank');
-        
-        toast({
-          title: 'PDF Ready',
-          description: 'Your invoice has been opened in a new tab.',
-        });
-      } catch (error) {
-        console.error('Error generating PDF:', error);
-        toast({
-          variant: 'destructive',
-          title: 'PDF Generation Failed',
-          description: 'An error occurred while creating the PDF. Please try again.',
-        });
-      } finally {
-        setIsGeneratingPdf(false);
-      }
-    }, 1000); // 1-second delay
+      const pdfBlob = pdf.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      window.open(pdfUrl, '_blank');
+
+      toast({
+        title: 'PDF Ready',
+        description: 'Your invoice has been opened in a new tab.',
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        variant: 'destructive',
+        title: 'PDF Generation Failed',
+        description: 'An error occurred while creating the PDF. Please try again.',
+      });
+    } finally {
+      setIsGeneratingPdf(false);
+      setIsPdfPreviewOpen(false);
+      setSelectedInvoice(null);
+    }
   };
   
   const handleModifyInvoice = (invoiceId: string) => {
@@ -753,7 +749,7 @@ export default function InvoicesPage() {
                                       Modify
                                   </Button>
                               )}
-                              <Button variant="ghost" size="icon" onClick={() => setSelectedInvoice(invoice)}>
+                              <Button variant="ghost" size="icon" onClick={() => handleOpenPdfPreview(invoice)}>
                                   <Eye className="h-4 w-4" />
                                   <span className="sr-only">View</span>
                               </Button>
@@ -949,66 +945,28 @@ export default function InvoicesPage() {
             </Card>
         </TabsContent>
     </Tabs>
-      
-      <Dialog open={!!selectedInvoice} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-4xl p-0 flex flex-col" data-slot="header-plain">
-            <div className="p-6">
-                <DialogHeader>
-                    <DialogTitle>Invoice Details</DialogTitle>
-                    <DialogDescription>
-                    A detailed view of invoice <span className="font-semibold">{selectedInvoice?.invoiceId}</span> for {selectedInvoice?.customer.name}.
-                    </DialogDescription>
-                </DialogHeader>
+
+      <Dialog open={isPdfPreviewOpen} onOpenChange={setIsPdfPreviewOpen}>
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Invoice Preview</DialogTitle>
+            <DialogDescription>
+              This is a preview of the invoice. Click "Open PDF" to generate and view the final document.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto border rounded-md">
+            <div ref={pdfPreviewRef} className="bg-white">
+              {selectedInvoice && companyInfo && <InvoicePDF invoice={selectedInvoice} companyInfo={companyInfo} />}
             </div>
-            <ScrollArea className="flex-1">
-                 {selectedInvoice?.payments && selectedInvoice.payments.length > 0 && (
-                    <div className="p-4 border rounded-md mx-6 my-4">
-                        <h4 className="font-semibold mb-2">Payment History</h4>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Amount</TableHead>
-                                    <TableHead>Method</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {selectedInvoice.payments.map(p => (
-                                    <TableRow key={p.id}>
-                                        <TableCell>{new Date(p.date).toLocaleDateString('en-IN')}</TableCell>
-                                        <TableCell>{formatCurrency(p.amount)}</TableCell>
-                                        <TableCell><Badge variant="secondary">{p.method}</Badge></TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                )}
-            </ScrollArea>
-          <DialogFooter className="px-6 py-4 flex-row justify-between w-full border-t">
-            <div className="flex gap-2">
-                 <Button variant="outline">
-                    <Share2 className="mr-2 h-4 w-4" />
-                    Send Invoice
-                </Button>
-                 <Button
-                    variant="outline"
-                    onClick={handleViewInvoicePdf}
-                    disabled={isGeneratingPdf}
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    {isGeneratingPdf ? 'Generating...' : 'View PDF'}
-                </Button>
-                {selectedInvoice?.status !== "Paid" && (
-                    <Button onClick={() => setIsAddPaymentOpen(true)}>
-                        <DollarSign className="mr-2 h-4 w-4" />
-                        Add Payment
-                    </Button>
-                )}
-            </div>
-            <DialogClose asChild>
-                <Button variant="outline">Close</Button>
-            </DialogClose>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsPdfPreviewOpen(false)}>
+              Close
+            </Button>
+            <Button onClick={handleGeneratePdf} disabled={isGeneratingPdf}>
+              <FileText className="mr-2 h-4 w-4" />
+              {isGeneratingPdf ? 'Generating...' : 'Open PDF'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1104,3 +1062,5 @@ export default function InvoicesPage() {
     </>
   );
 }
+
+    

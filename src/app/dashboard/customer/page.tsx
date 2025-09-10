@@ -31,7 +31,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, CreditCard, Gift, Star, MessageSquare, Eye } from "lucide-react";
+import { PlusCircle, CreditCard, Gift, Star, MessageSquare, Eye, FileText } from "lucide-react";
 import type { Complaint, Invoice, Review, CompanyInfo } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -84,7 +84,9 @@ export default function CustomerDashboard() {
   const [newReview, setNewReview] = useState({ rating: 0, comment: "" });
   const [invoiceToView, setInvoiceToView] = useState<Invoice | null>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isPdfPreviewOpen, setIsPdfPreviewOpen] = useState<boolean>(false);
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
+  const pdfPreviewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -97,66 +99,66 @@ export default function CustomerDashboard() {
     }
   }, []);
 
-  const handleViewInvoice = async (invoice: Invoice) => {
+  const handleOpenPdfPreview = (invoice: Invoice) => {
     if (!companyInfo) {
-        toast({
-            variant: "destructive",
-            title: "Company Info Missing",
-            description: "Cannot generate PDF without company information.",
-        });
-        return;
+      toast({
+        variant: "destructive",
+        title: "Company Info Missing",
+        description: "Cannot generate invoice without company information.",
+      });
+      return;
     }
     setInvoiceToView(invoice);
+    setIsPdfPreviewOpen(true);
+  };
+  
+  const handleGeneratePdf = async () => {
+    if (!invoiceToView || !companyInfo || !pdfPreviewRef.current) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Cannot generate PDF. Required data is missing.',
+      });
+      return;
+    }
     setIsGeneratingPdf(true);
-    
     toast({
-        title: "Generating PDF",
-        description: "Please wait while your invoice is being created...",
+      title: 'Generating PDF',
+      description: 'Please wait while your invoice is being created...',
     });
 
-    setTimeout(async () => {
-        try {
-            const invoiceElement = document.getElementById(`pdf-invoice-${invoice.invoiceId}`);
-            if (!invoiceElement) {
-                throw new Error("PDF template element not found.");
-            }
+    try {
+      const canvas = await html2canvas(pdfPreviewRef.current, {
+        scale: 2,
+        useCORS: true,
+      });
 
-            const canvas = await html2canvas(invoiceElement, {
-                scale: 2,
-                useCORS: true,
-                onclone: (document) => {
-                    // This is a workaround to make sure tailwind styles are applied
-                    const body = document.body;
-                    body.setAttribute('class', '');
-                }
-            });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-            
-            const pdfBlob = pdf.output('blob');
-            const pdfUrl = URL.createObjectURL(pdfBlob);
-            window.open(pdfUrl, '_blank');
-            
-            toast({
-                title: "PDF Ready",
-                description: "Your invoice has been opened in a new tab.",
-            });
-        } catch (error) {
-            console.error("Error generating PDF:", error);
-            toast({
-                variant: "destructive",
-                title: "Generation Failed",
-                description: "Could not generate the invoice PDF. Please try again.",
-            });
-        } finally {
-            setIsGeneratingPdf(false);
-            setInvoiceToView(null);
-        }
-    }, 1000);
+      const pdfBlob = pdf.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      window.open(pdfUrl, '_blank');
+
+      toast({
+        title: 'PDF Ready',
+        description: 'Your invoice has been opened in a new tab.',
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        variant: 'destructive',
+        title: 'PDF Generation Failed',
+        description: 'An error occurred while creating the PDF. Please try again.',
+      });
+    } finally {
+      setIsGeneratingPdf(false);
+      setIsPdfPreviewOpen(false);
+      setInvoiceToView(null);
+    }
   };
 
 
@@ -413,11 +415,11 @@ export default function CustomerDashboard() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleViewInvoice(invoice)}
+                          onClick={() => handleOpenPdfPreview(invoice)}
                           disabled={isGeneratingPdf && invoiceToView?.invoiceId === invoice.invoiceId}
                         >
                             <Eye className="mr-2 h-3 w-3" />
-                            {isGeneratingPdf && invoiceToView?.invoiceId === invoice.invoiceId ? 'Generating...' : 'View Invoice'}
+                            View Invoice
                         </Button>
                         {invoice.status !== "Paid" && (
                             <Button size="sm">
@@ -517,13 +519,33 @@ export default function CustomerDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      {isGeneratingPdf && invoiceToView && companyInfo && (
-        <div className="fixed -left-[9999px] top-0 opacity-0" aria-hidden>
-            <div id={`pdf-invoice-${invoiceToView.invoiceId}`} className="bg-white">
-                <InvoicePDF invoice={invoiceToView} companyInfo={companyInfo} />
+      
+      <Dialog open={isPdfPreviewOpen} onOpenChange={setIsPdfPreviewOpen}>
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Invoice Preview</DialogTitle>
+            <DialogDescription>
+              This is a preview of the invoice. Click "Open PDF" to generate and view the final document.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto border rounded-md">
+            <div ref={pdfPreviewRef} className="bg-white">
+              {invoiceToView && companyInfo && <InvoicePDF invoice={invoiceToView} companyInfo={companyInfo} />}
             </div>
-        </div>
-      )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsPdfPreviewOpen(false)}>
+              Close
+            </Button>
+            <Button onClick={handleGeneratePdf} disabled={isGeneratingPdf}>
+              <FileText className="mr-2 h-4 w-4" />
+              {isGeneratingPdf ? 'Generating...' : 'Open PDF'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
+    
