@@ -84,11 +84,28 @@ export default function CustomerDashboard() {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const invoiceRef = useRef<HTMLDivElement>(null);
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
+  const [logoBase64, setLogoBase64] = useState<string | null>(null);
 
   useEffect(() => {
     const storedCompanyInfoStr = localStorage.getItem('companyInfo');
     if(storedCompanyInfoStr) {
-        setCompanyInfo(JSON.parse(storedCompanyInfoStr));
+        const info = JSON.parse(storedCompanyInfoStr);
+        setCompanyInfo(info);
+        if (info.logo) {
+            fetch(info.logo)
+                .then(response => response.blob())
+                .then(blob => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        setLogoBase64(reader.result as string);
+                    };
+                    reader.readAsDataURL(blob);
+                })
+                .catch(error => {
+                    console.error("Error fetching or converting logo:", error);
+                    setLogoBase64(null); // Fallback or error handling
+                });
+        }
     }
   }, []);
 
@@ -155,7 +172,7 @@ export default function CustomerDashboard() {
               import('jspdf'),
               import('html2canvas'),
             ]);
-            const canvas = await html2canvas(invoiceContent, { scale: 2, useCORS: true });
+            const canvas = await html2canvas(invoiceContent, { scale: 2, useCORS: true, allowTaint: true });
             const imgData = canvas.toDataURL('image/png');
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -401,7 +418,7 @@ export default function CustomerDashboard() {
       {selectedInvoice && (
         <div style={{ position: 'absolute', left: '-9999px', top: '0px', width: '210mm' }}>
           <div ref={invoiceRef}>
-          {companyInfo && (() => {
+          {companyInfo && logoBase64 && (() => {
               const invoiceDate = new Date(selectedInvoice.date);
               const dueDate = new Date(invoiceDate);
               dueDate.setDate(invoiceDate.getDate() + 15);
@@ -412,7 +429,7 @@ export default function CustomerDashboard() {
                   <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                            <div style={{ width: '250px' }}>
-                               <img src={companyInfo.logo} alt="Company Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
+                               <img src={logoBase64} alt="Company Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
                           </div>
                           <div style={{ textAlign: 'right' }}>
                               <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>INVOICE</h2>
@@ -582,3 +599,5 @@ export default function CustomerDashboard() {
     </div>
   );
 }
+
+    

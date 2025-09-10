@@ -231,7 +231,7 @@ export default function InvoicesPage() {
   const [activeScannerState, setActiveScannerState] = useState<{itemId: string, serialIndex: number} | null>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
-
+  const [logoBase64, setLogoBase64] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -248,8 +248,24 @@ export default function InvoicesPage() {
         }
         
         const storedCompanyInfoStr = localStorage.getItem('companyInfo');
-        if(storedCompanyInfoStr) {
-            setCompanyInfo(JSON.parse(storedCompanyInfoStr));
+        if (storedCompanyInfoStr) {
+            const info = JSON.parse(storedCompanyInfoStr);
+            setCompanyInfo(info);
+            if (info.logo) {
+                fetch(info.logo)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            setLogoBase64(reader.result as string);
+                        };
+                        reader.readAsDataURL(blob);
+                    })
+                    .catch(error => {
+                        console.error("Error fetching or converting logo:", error);
+                        setLogoBase64(null); // Fallback or error handling
+                    });
+            }
         }
     } catch (error) {
         console.error("Failed to parse data from localStorage", error);
@@ -584,7 +600,7 @@ export default function InvoicesPage() {
               import('jspdf'),
               import('html2canvas'),
             ]);
-            const canvas = await html2canvas(invoiceContent, { scale: 2, useCORS: true });
+            const canvas = await html2canvas(invoiceContent, { scale: 2, useCORS: true, allowTaint: true });
             const imgData = canvas.toDataURL('image/png');
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -1000,7 +1016,7 @@ export default function InvoicesPage() {
       {selectedInvoice && (
         <div style={{ position: 'absolute', left: '-9999px', top: '0px', width: '210mm' }}>
           <div ref={invoiceRef}>
-          {companyInfo && (() => {
+          {companyInfo && logoBase64 && (() => {
               const { subTotal, discountAmount, gstAmount, grandTotal, amountPaid, amountDue } = calculateInvoiceTotals(selectedInvoice);
               const invoiceDate = new Date(selectedInvoice.date);
               const dueDate = new Date(invoiceDate);
@@ -1013,7 +1029,7 @@ export default function InvoicesPage() {
                   <header style={{paddingBottom: '20px', borderBottom: '2px solid #E2E8F0'}}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div style={{ width: '250px' }}>
-                               <img src={companyInfo.logo} alt="Company Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
+                               <img src={logoBase64} alt="Company Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
                           </div>
                           <div style={{ textAlign: 'right' }}>
                               <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#30475E' }}>{isGst ? 'TAX INVOICE' : 'BILL OF SUPPLY'}</h2>
