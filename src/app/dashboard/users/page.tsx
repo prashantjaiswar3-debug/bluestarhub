@@ -34,8 +34,16 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     Select,
     SelectContent,
@@ -43,9 +51,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, UserPlus, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import type { Technician } from "@/lib/types";
 
 type User = {
   id: string;
@@ -53,6 +62,12 @@ type User = {
   email: string;
   role: "Admin" | "Sales" | "Technician" | "Customer" | "Supervisor";
   status: "Active" | "Inactive";
+  password?: string;
+};
+
+type GeneratedCredentials = {
+  username: string;
+  name: string;
   password?: string;
 };
 
@@ -80,6 +95,27 @@ export default function UserManagementPage() {
   const [activeTab, setActiveTab] = React.useState("All");
   const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
   const [isEditUserOpen, setIsEditUserOpen] = React.useState(false);
+
+  const [isRegisterCustomerOpen, setIsRegisterCustomerOpen] = React.useState(false);
+  const [newCustomer, setNewCustomer] = React.useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    isCompany: false,
+    companyName: "",
+    gstin: "",
+  });
+
+  const [isRegisterTechnicianOpen, setIsRegisterTechnicianOpen] = React.useState(false);
+  const [newTechnician, setNewTechnician] = React.useState({ name: "", email: "", phone: "", skills: "", type: "Fixed" as Technician['type'] });
+  
+  const [isRegisterSalesOpen, setIsRegisterSalesOpen] = React.useState(false);
+  const [newSales, setNewSales] = React.useState({ name: "", email: "", phone: "" });
+
+  const [isCredentialsDialogOpen, setIsCredentialsDialogOpen] = React.useState(false);
+  const [generatedCredentials, setGeneratedCredentials] = React.useState<GeneratedCredentials | null>(null);
+
 
   const filteredUsers = React.useMemo(() => {
     if (activeTab === "All") {
@@ -113,14 +149,106 @@ export default function UserManagementPage() {
     });
   }
 
+  const handleRegisterCustomer = () => {
+    if(!newCustomer.name || !newCustomer.email || !newCustomer.phone || !newCustomer.address || (newCustomer.isCompany && !newCustomer.companyName)) {
+         toast({
+            variant: "destructive",
+            title: "Missing Information",
+            description: "Please fill out all required fields to register a new customer.",
+        });
+        return;
+    }
+    const generatedPassword = Math.random().toString(36).slice(-8);
+    const customerName = newCustomer.isCompany ? newCustomer.companyName : newCustomer.name;
+    
+    setGeneratedCredentials({
+      name: customerName,
+      username: newCustomer.email,
+      password: generatedPassword,
+    });
+    setIsCredentialsDialogOpen(true);
+
+    setIsRegisterCustomerOpen(false);
+    setNewCustomer({ name: "", email: "", phone: "", address: "", isCompany: false, companyName: "", gstin: "" });
+  }
+
+  const handleRegisterTechnician = () => {
+    if(!newTechnician.name || !newTechnician.email || !newTechnician.phone || !newTechnician.skills) {
+         toast({
+            variant: "destructive",
+            title: "Missing Information",
+            description: "Please fill out all fields to register a new technician.",
+        });
+        return;
+    }
+    const generatedPassword = Math.random().toString(36).slice(-8);
+
+    setGeneratedCredentials({
+      name: newTechnician.name,
+      username: newTechnician.email,
+      password: generatedPassword,
+    });
+    setIsCredentialsDialogOpen(true);
+    
+    setIsRegisterTechnicianOpen(false);
+    setNewTechnician({ name: "", email: "", phone: "", skills: "", type: "Fixed" });
+  }
+
+  const handleRegisterSales = () => {
+    if(!newSales.name || !newSales.email || !newSales.phone) {
+         toast({
+            variant: "destructive",
+            title: "Missing Information",
+            description: "Please fill out all fields to register a new sales user.",
+        });
+        return;
+    }
+    const generatedPassword = Math.random().toString(36).slice(-8);
+    
+    setGeneratedCredentials({
+      name: newSales.name,
+      username: newSales.email,
+      password: generatedPassword,
+    });
+    setIsCredentialsDialogOpen(true);
+
+    setIsRegisterSalesOpen(false);
+    setNewSales({ name: "", email: "", phone: "" });
+  }
+
+  const handleCopyCredentials = () => {
+    if (!generatedCredentials) return;
+    const textToCopy = `Username: ${generatedCredentials.username}\nPassword: ${generatedCredentials.password}`;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        toast({ title: "Copied to Clipboard", description: "Credentials copied successfully." });
+    }).catch(err => {
+        toast({ variant: "destructive", title: "Copy Failed", description: "Could not copy credentials." });
+    });
+  };
+
   return (
-    <div className="flex flex-col gap-6">
+    <>
       <Card>
-        <CardHeader>
-          <CardTitle>User Management</CardTitle>
-          <CardDescription>
-            View, manage, and edit user accounts across the platform.
-          </CardDescription>
+        <CardHeader className="flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div>
+            <CardTitle>User Management</CardTitle>
+            <CardDescription>
+              View, manage, and register user accounts across the platform.
+            </CardDescription>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Register New User
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setIsRegisterCustomerOpen(true)}>Register Customer</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsRegisterTechnicianOpen(true)}>Register Technician</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsRegisterSalesOpen(true)}>Register Sales User</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -227,7 +355,164 @@ export default function UserManagementPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      
+      <Dialog open={isRegisterCustomerOpen} onOpenChange={setIsRegisterCustomerOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Register New Customer</DialogTitle>
+            <DialogDescription>
+              Enter the customer's details below to create a new account and generate login credentials.
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[70vh] p-1">
+            <div className="grid gap-4 py-4 pr-5">
+              <div className="flex items-center space-x-2">
+                  <Checkbox id="is-company" checked={newCustomer.isCompany} onCheckedChange={(checked) => setNewCustomer({...newCustomer, isCompany: !!checked})} />
+                  <Label htmlFor="is-company" className="cursor-pointer">Registering as a company?</Label>
+              </div>
+
+              {newCustomer.isCompany && (
+                  <div className="space-y-2">
+                      <Label htmlFor="company-name">Company Name</Label>
+                      <Input id="company-name" value={newCustomer.companyName} onChange={(e) => setNewCustomer({...newCustomer, companyName: e.target.value})} placeholder="e.g., ABC Corporation" />
+                  </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="name">{newCustomer.isCompany ? "Contact Person Name" : "Full Name"}</Label>
+                <Input id="name" value={newCustomer.name} onChange={(e) => setNewCustomer({...newCustomer, name: e.target.value})} placeholder={newCustomer.isCompany ? "e.g., John Doe" : "e.g., John Doe"} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input id="email" type="email" value={newCustomer.email} onChange={(e) => setNewCustomer({...newCustomer, email: e.target.value})} placeholder="e.g., john.doe@example.com" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input id="phone" value={newCustomer.phone} onChange={(e) => setNewCustomer({...newCustomer, phone: e.target.value})} placeholder="e.g., 9876543210" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gstin">GSTIN (Optional)</Label>
+                <Input id="gstin" value={newCustomer.gstin} onChange={(e) => setNewCustomer({...newCustomer, gstin: e.target.value})} placeholder="e.g., 27AAPFU0939F1Z5" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Address</Label>
+                <Textarea id="address" value={newCustomer.address} onChange={(e) => setNewCustomer({...newCustomer, address: e.target.value})} placeholder="e.g., 123 Main St, Anytown" />
+              </div>
+            </div>
+          </ScrollArea>
+          <DialogFooter className="pt-4">
+            <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button onClick={handleRegisterCustomer} className="whitespace-normal">Register & Generate Credentials</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isRegisterTechnicianOpen} onOpenChange={setIsRegisterTechnicianOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Register New Technician</DialogTitle>
+            <DialogDescription>
+              Enter the technician's details below to create a new account.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="tech-name">Full Name</Label>
+              <Input id="tech-name" value={newTechnician.name} onChange={(e) => setNewTechnician({...newTechnician, name: e.target.value})} placeholder="e.g., Raj Patel" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tech-email">Email Address</Label>
+              <Input id="tech-email" type="email" value={newTechnician.email} onChange={(e) => setNewTechnician({...newTechnician, email: e.target.value})} placeholder="e.g., raj.patel@bluestar.com" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tech-phone">Phone Number</Label>
+              <Input id="tech-phone" value={newTechnician.phone} onChange={(e) => setNewTechnician({...newTechnician, phone: e.target.value})} placeholder="e.g., 9876543210" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tech-skills">Skills</Label>
+              <Input id="tech-skills" value={newTechnician.skills} onChange={(e) => setNewTechnician({...newTechnician, skills: e.target.value})} placeholder="e.g., Installation, Repair" />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="tech-type">Technician Type</Label>
+                <Select value={newTechnician.type} onValueChange={(value: Technician['type']) => setNewTechnician(prev => ({...prev, type: value}))}>
+                    <SelectTrigger id="tech-type">
+                        <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="Fixed">Fixed</SelectItem>
+                        <SelectItem value="Freelance">Freelance</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button onClick={handleRegisterTechnician}>Register Technician</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+       <Dialog open={isRegisterSalesOpen} onOpenChange={setIsRegisterSalesOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Register New Sales User</DialogTitle>
+            <DialogDescription>
+              Enter the sales user's details below to create a new account.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="sales-name">Full Name</Label>
+              <Input id="sales-name" value={newSales.name} onChange={(e) => setNewSales({...newSales, name: e.target.value})} placeholder="e.g., Priya Sharma" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sales-email">Email Address</Label>
+              <Input id="sales-email" type="email" value={newSales.email} onChange={(e) => setNewSales({...newSales, email: e.target.value})} placeholder="e.g., priya.sharma@bluestar.com" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sales-phone">Phone Number</Label>
+              <Input id="sales-phone" value={newSales.phone} onChange={(e) => setNewSales({...newSales, phone: e.target.value})} placeholder="e.g., 9876543210" />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button onClick={handleRegisterSales}>Register Sales User</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isCredentialsDialogOpen} onOpenChange={setIsCredentialsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>User Credentials Generated</DialogTitle>
+            <DialogDescription>
+              The account for <span className="font-semibold">{generatedCredentials?.name}</span> has been created. Please share these credentials securely.
+            </DialogDescription>
+          </DialogHeader>
+          {generatedCredentials && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="generated-username">Username / Email</Label>
+                <Input id="generated-username" readOnly value={generatedCredentials.username} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="generated-password">Password</Label>
+                <Input id="generated-password" readOnly value={generatedCredentials.password} />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="secondary" onClick={handleCopyCredentials}>
+              <Copy className="mr-2 h-4 w-4" />
+              Copy Credentials
+            </Button>
+            <Button onClick={() => setIsCredentialsDialogOpen(false)}>Done</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -276,3 +561,5 @@ function UserTable({ users, onEdit, onDelete }: { users: User[], onEdit: (user: 
     </ScrollArea>
   );
 }
+
+    
