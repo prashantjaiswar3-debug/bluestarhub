@@ -6,25 +6,14 @@ import { usePathname } from "next/navigation";
 import * as React from "react";
 import Image from "next/image";
 import {
-  Gem,
   LayoutGrid,
-  Users,
   Wrench,
+  Users,
   FileText,
   UserCircle,
   LogOut,
-  Settings,
   Bell,
-  UserPlus,
-  ShieldCheck,
-  ScanLine,
   Gift,
-  Phone,
-  Mail,
-  FilePlus2,
-  Trash2,
-  Edit,
-  Upload,
   Home,
   UserCog,
   ShoppingCart,
@@ -32,7 +21,7 @@ import {
   Building,
   Receipt,
   DatabaseZap,
-  Copy,
+  FilePlus2,
   ChevronDown,
   Briefcase,
 } from "lucide-react";
@@ -46,8 +35,6 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarTrigger,
-  SidebarInset,
-  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import {
   Collapsible,
@@ -69,14 +56,11 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent } from "@/components/ui/card";
-import QRCode from "react-qr-code";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CompanyInfo, Technician } from "@/lib/types";
+import { CompanyInfo } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-
+import { Upload, Edit } from "lucide-react";
+import QRCode from "react-qr-code";
 
 const allNavItems = [
   { href: "/dashboard", icon: Home, label: "Dashboard", roles: ['admin', 'sales', 'technician', 'customer', 'supervisor', 'freelance'] },
@@ -98,8 +82,8 @@ const operationsNavItems = [
 
 const initialCompanyInfo: CompanyInfo = {
     name: "Bluestar Electronics",
-    logo: "https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/refs/heads/main/bluestarlogo1.png",
-    email: "bluestar.elec@gmail.com",
+    logo: "https://raw.githubusercontent.com/prashantjaiswar3-debug/Bluestar/main/bluestarlogo1.png",
+    email: "contact@bluestarelectronics.com",
     phone: "+91 9766661333",
     gstin: "27AAPFU0939F1Z5",
     bank: {
@@ -124,13 +108,13 @@ type UserInfo = {
 };
 
 const initialRoleInfo: Record<UserRole, UserInfo> = {
-    admin: { name: "Vaibhav Rodge", email: "vaibhav.rodge@bluestar.com", fallback: "VR", id: "ADM-001", avatar: "https://placehold.co/100x100.png", phone: "9876543210" },
-    technician: { name: "Technician User", email: "tech@bluestar.com", fallback: "TU", id: "TECH-007", avatar: "https://placehold.co/100x100.png", phone: "9876543211", type: "Fixed" },
-    freelance: { name: "Freelancer User", email: "freelance@bluestar.com", fallback: "FU", id: "TECH-F01", avatar: "https://placehold.co/100x100.png", phone: "9876543215", type: "Freelance" },
-    customer: { name: "Customer User", email: "customer@bluestar.com", fallback: "CU", id: "CUST-101", avatar: "https://placehold.co/100x100.png", phone: "9876543212" },
-    sales: { name: "Priya Sharma", email: "priya.sharma@bluestar.com", fallback: "PS", id: "SALES-001", avatar: "https://placehold.co/100x100.png", phone: "9876543213" },
-    supervisor: { name: "Raj Patel", email: "raj.patel@bluestar.com", fallback: "RP", id: "TECH-007", avatar: "https://placehold.co/100x100.png", phone: "9876543211", type: "Fixed" },
-    default: { name: "Demo User", email: "user@bluestar.com", fallback: "DU", id: "USER-000", avatar: "https://placehold.co/100x100.png", phone: "9876543214" },
+    admin: { name: "Vaibhav Rodge", email: "vaibhav.rodge@bluestar.com", fallback: "VR", id: "ADM-001", avatar: "https://i.pravatar.cc/150?u=admin", phone: "9876543210" },
+    technician: { name: "Suresh Kumar", email: "suresh.kumar@bluestar.com", fallback: "SK", id: "TECH-003", avatar: "https://i.pravatar.cc/150?u=tech", phone: "9876543211", type: "Fixed" },
+    freelance: { name: "Ravi Kumar", email: "ravi.kumar@freelance.com", fallback: "RK", id: "TECH-F01", avatar: "https://i.pravatar.cc/150?u=freelance", phone: "9876543215", type: "Freelance" },
+    customer: { name: "Anjali Mehta", email: "anjali.mehta@example.com", fallback: "AM", id: "CUST-101", avatar: "https://i.pravatar.cc/150?u=customer", phone: "9876543212" },
+    sales: { name: "Priya Sharma", email: "priya.sharma@bluestar.com", fallback: "PS", id: "SALES-001", avatar: "https://i.pravatar.cc/150?u=sales", phone: "9876543213" },
+    supervisor: { name: "Raj Patel", email: "raj.patel@bluestar.com", fallback: "RP", id: "SUP-001", avatar: "https://i.pravatar.cc/150?u=supervisor", phone: "9876543214", type: "Fixed" },
+    default: { name: "Demo User", email: "user@bluestar.com", fallback: "DU", id: "USER-000", avatar: "https://i.pravatar.cc/150?u=demo", phone: "9876543299" },
 };
 
 
@@ -160,28 +144,19 @@ export default function DashboardLayout({
   const logoInputRef = React.useRef<HTMLInputElement>(null);
   
   const getRole = (): UserRole => {
-    const roleFromPath = pathname.split('/')[2];
-    switch (roleFromPath) {
-        case 'users':
-        case 'data':
-            return 'admin';
-        case 'technician':
-            return pathname.includes('/freelance') ? 'freelance' : 'technician';
-        case 'customer':
-            return 'customer';
-        case 'sales':
-        case 'quotations':
-        case 'invoices':
-        case 'purchases':
-        case 'inventory':
-        case 'vendors':
-            // This logic can be refined, but for now we can check a sample user
-            const supervisor = initialRoleInfo.supervisor;
-            // Example check, in a real app this would be based on logged in user's data
-            return supervisor.name === "Raj Patel" ? 'supervisor' : 'sales';
-        default:
-            return 'admin';
+    const segments = pathname.split('/');
+    if (segments.length > 2) {
+        if (pathname.includes('/technician/freelance')) return 'freelance';
+        if (pathname.includes('/technician')) return 'technician';
+        if (pathname.includes('/customer')) return 'customer';
+        if (pathname.includes('/sales') || operationsNavItems.some(item => pathname.startsWith(item.href))) {
+             // In a real app, this would be based on logged-in user data.
+             // For demo, we assume sales/supervisor can access these.
+            return 'supervisor'; 
+        }
+        if (pathname.includes('/users') || pathname.includes('/data')) return 'admin';
     }
+    return 'admin';
   }
   
   const currentRole = getRole();
@@ -191,16 +166,16 @@ export default function DashboardLayout({
     try {
         const storedCompanyInfo = localStorage.getItem('companyInfo');
         if (storedCompanyInfo) {
-          setCompanyInfo(JSON.parse(storedCompanyInfo));
+          const parsedInfo = JSON.parse(storedCompanyInfo);
+          setCompanyInfo(parsedInfo);
+          setEditableCompanyInfo(parsedInfo);
+        } else {
+          localStorage.setItem('companyInfo', JSON.stringify(initialCompanyInfo));
         }
     } catch (error) {
         console.error("Failed to parse company info from localStorage", error);
     }
   }, []);
-
-  React.useEffect(() => {
-    setEditableCompanyInfo(companyInfo);
-  }, [companyInfo, isCompanyProfileOpen]);
   
   React.useEffect(() => {
     if (isEditingProfile) {
@@ -566,7 +541,7 @@ END:VCARD`;
                       </div>
                       <div className="space-y-2">
                           <Label htmlFor="offer-image">Image URL</Label>
-                          <Input id="offer-image" placeholder="https://placehold.co/600x400.png" />
+                          <Input id="offer-image" placeholder="https://picsum.photos/seed/new-offer/600/400" />
                       </div>
                       <Button className="w-full">Add New Offer</Button>
                   </CardContent>
@@ -575,7 +550,7 @@ END:VCARD`;
                   <h3 className="text-lg font-medium mb-4">Current Offers</h3>
                   <div className="space-y-4">
                       <div className="flex items-center gap-4 p-4 border rounded-lg">
-                          <Image src="https://placehold.co/600x400.png" alt="Offer 1" width={100} height={60} className="rounded-md" />
+                          <Image src="https://picsum.photos/seed/sec-offer/100/60" alt="Offer 1" width={100} height={60} className="rounded-md" />
                           <div className="flex-1">
                               <p className="font-semibold">Upgrade Your Security</p>
                               <p className="text-sm text-muted-foreground">Get 20% off on all new smart camera installations.</p>
@@ -585,7 +560,7 @@ END:VCARD`;
                           </Button>
                       </div>
                       <div className="flex items-center gap-4 p-4 border rounded-lg">
-                          <Image src="https://placehold.co/600x400.png" alt="Offer 2" width={100} height={60} className="rounded-md" />
+                          <Image src="https://picsum.photos/seed/maint-offer/100/60" alt="Offer 2" width={100} height={60} className="rounded-md" />
                           <div className="flex-1">
                               <p className="font-semibold">Peace of Mind Plan</p>
                               <p className="text-sm text-muted-foreground">Sign up for our Annual Maintenance Contract and get the first month free.</p>
@@ -696,11 +671,10 @@ END:VCARD`;
                                     viewBox={`0 0 80 80`}
                                   />
                               </div>
-                              <p className="text-xs text-muted-foreground">This card is the property of {companyInfo.name}. If found, please return to the nearest office.</p>
+                              <p className="text-xs text-muted-foreground">Scan to add to contacts</p>
                           </div>
                            <div className="px-6 py-4 border-t flex items-center justify-center gap-2 text-primary">
-                              <ShieldCheck className="h-5 w-5"/>
-                              <span className="font-semibold text-sm">Verified Employee</span>
+                              <span className="font-semibold text-sm">{companyInfo.name}</span>
                           </div>
                       </div>
                   ) : (

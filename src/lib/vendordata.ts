@@ -8,7 +8,7 @@ export const initialVendors: Vendor[] = [
         contactPerson: 'Mr. Anil Sharma',
         email: 'anil.sharma@securetech.com',
         phone: '9820098200',
-        address: '101, Omega Business Park, Lower Parel, Mumbai',
+        address: '101, Omega Business Park, Lower Parel, Mumbai, Maharashtra 400013',
         category: 'CCTV Supplier',
         status: 'Active'
     },
@@ -18,7 +18,7 @@ export const initialVendors: Vendor[] = [
         contactPerson: 'Ms. Sunita Rao',
         email: 'sunita.rao@visionsys.co.in',
         phone: '9988776655',
-        address: '23, Lamington Road, Grant Road, Mumbai',
+        address: '23, Lamington Road, Grant Road, Mumbai, Maharashtra 400007',
         category: 'CCTV Supplier',
         status: 'Active'
     },
@@ -28,7 +28,7 @@ export const initialVendors: Vendor[] = [
         contactPerson: 'Mr. Rajesh Verma',
         email: 'sales@cablesandmore.com',
         phone: '9123456789',
-        address: 'Shop No. 5, Silver Market, Masjid Bunder, Mumbai',
+        address: 'Shop No. 5, Silver Market, Masjid Bunder, Mumbai, Maharashtra 400003',
         category: 'Cable Provider',
         status: 'Active'
     },
@@ -38,7 +38,7 @@ export const initialVendors: Vendor[] = [
         contactPerson: 'Priya Singh',
         email: 'priya@itsolutions.com',
         phone: '9876543210',
-        address: '4th Floor, IT Park, Andheri East, Mumbai',
+        address: '4th Floor, IT Park, Andheri East, Mumbai, Maharashtra 400069',
         category: 'IT Hardware',
         status: 'Inactive'
     },

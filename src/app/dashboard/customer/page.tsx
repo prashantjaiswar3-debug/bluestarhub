@@ -48,13 +48,13 @@ const initialComplaints: Omit<Complaint, 'customer' | 'assignedTo'>[] = [
 ];
 
 const initialInvoices: Invoice[] = [
-    { invoiceId: "INV-2023-0012", customer: { name: 'Customer User', email: '', address: ''}, items: [], laborCost: 0, discount: 0, totalAmount: 4500.00, status: "Paid", date: "2023-10-16", isGst: true },
-    { invoiceId: "INV-2023-0015", customer: { name: 'Customer User', email: '', address: ''}, items: [], laborCost: 0, discount: 0, totalAmount: 1500.00, status: "Pending", date: "2023-09-21", isGst: true },
-    { invoiceId: "INV-2023-0018", customer: { name: 'Customer User', email: '', address: ''}, items: [], laborCost: 0, discount: 0, totalAmount: 800.00, status: "Overdue", date: "2023-08-30", isGst: true },
+    { invoiceId: "INV-2023-0012", customer: { name: 'Green Valley Apartments', email: 'manager@gva.com', address: '456 Park Ave, Residence City'}, items: [], laborCost: 0, discount: 0, totalAmount: 4500.00, status: "Paid", date: "2023-10-16", isGst: true },
+    { invoiceId: "INV-2023-0015", customer: { name: 'Customer User', email: 'customer@bluestar.com', address: '123 Customer Lane'}, items: [], laborCost: 0, discount: 0, totalAmount: 1500.00, status: "Pending", date: "2023-09-21", isGst: true },
+    { invoiceId: "INV-2023-0018", customer: { name: 'Customer User', email: 'customer@bluestar.com', address: '123 Customer Lane'}, items: [], laborCost: 0, discount: 0, totalAmount: 800.00, status: "Overdue", date: "2023-08-30", isGst: true },
 ];
 
 const initialReviews: Review[] = [
-  { id: 'REV-001', customer: { name: 'Ravi Kumar', id: 'CUST-007' }, rating: 5, comment: 'Excellent and prompt service. The technician was very professional and resolved the issue in no time. Highly recommended!', date: '2023-10-28' },
+  { id: 'REV-001', customer: { name: 'Sanjay Gupta', id: 'CUST-007' }, rating: 5, comment: 'Excellent and prompt service. The technician was very professional and resolved the issue in no time. Highly recommended!', date: '2023-10-28' },
   { id: 'REV-002', customer: { name: 'Priya Sharma', id: 'CUST-008' }, rating: 4, comment: 'Good service, but the technician arrived a bit later than scheduled. Overall, satisfied with the work.', date: '2023-10-27' },
 ];
 
@@ -77,7 +77,7 @@ const invoiceStatusVariant: { [key in Invoice["status"]]: "secondary" | "default
 export default function CustomerDashboard() {
   const { toast } = useToast();
   const [complaints, setComplaints] = useState(initialComplaints);
-  const [invoices, setInvoices] = useState(initialInvoices);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
   const [isLodgeComplaintOpen, setIsLodgeComplaintOpen] = useState(false);
   const [newComplaint, setNewComplaint] = useState("");
@@ -95,8 +95,14 @@ export default function CustomerDashboard() {
         if (storedCompanyInfo) {
             setCompanyInfo(JSON.parse(storedCompanyInfo));
         }
+        const storedInvoices = localStorage.getItem('invoices');
+        if (storedInvoices) {
+            setInvoices(JSON.parse(storedInvoices));
+        } else {
+            setInvoices(initialInvoices);
+        }
     } catch (error) {
-        console.error("Failed to load company info from localStorage", error);
+        console.error("Failed to load data from localStorage", error);
     }
   }, []);
 
@@ -283,7 +289,7 @@ export default function CustomerDashboard() {
                 <CarouselItem className="md:basis-1/2 lg:basis-1/3">
                    <Card className="overflow-hidden">
                     <CardContent className="p-0">
-                       <Image src="https://placehold.co/600x400.png" alt="Offer 1" width={600} height={400} className="w-full h-auto aspect-video object-cover" data-ai-hint="security camera offer" />
+                       <Image src="https://picsum.photos/seed/sec-offer/600/400" alt="Offer 1" width={600} height={400} className="w-full h-auto aspect-video object-cover" data-ai-hint="security camera offer" />
                        <div className="p-4">
                            <h3 className="font-semibold">Upgrade Your Security</h3>
                            <p className="text-sm text-muted-foreground">Get 20% off on all new smart camera installations. Limited time offer!</p>
@@ -295,7 +301,7 @@ export default function CustomerDashboard() {
                  <CarouselItem className="md:basis-1/2 lg:basis-1/3">
                    <Card className="overflow-hidden">
                     <CardContent className="p-0">
-                       <Image src="https://placehold.co/600x400.png" alt="Offer 2" width={600} height={400} className="w-full h-auto aspect-video object-cover" data-ai-hint="maintenance contract" />
+                       <Image src="https://picsum.photos/seed/maint-offer/600/400" alt="Offer 2" width={600} height={400} className="w-full h-auto aspect-video object-cover" data-ai-hint="maintenance contract" />
                        <div className="p-4">
                            <h3 className="font-semibold">Peace of Mind Plan</h3>
                            <p className="text-sm text-muted-foreground">Sign up for our Annual Maintenance Contract and get the first month free.</p>
@@ -307,7 +313,7 @@ export default function CustomerDashboard() {
                 <CarouselItem className="md:basis-1/2 lg:basis-1/3">
                    <Card className="overflow-hidden">
                     <CardContent className="p-0">
-                       <Image src="https://placehold.co/600x400.png" alt="Offer 3" width={600} height={400} className="w-full h-auto aspect-video object-cover" data-ai-hint="referral program" />
+                       <Image src="https://picsum.photos/seed/ref-offer/600/400" alt="Offer 3" width={600} height={400} className="w-full h-auto aspect-video object-cover" data-ai-hint="referral program" />
                        <div className="p-4">
                            <h3 className="font-semibold">Refer a Friend</h3>
                            <p className="text-sm text-muted-foreground">Refer a friend and you both get ₹500 off your next service. It's a win-win!</p>
@@ -522,7 +528,7 @@ export default function CustomerDashboard() {
       </Dialog>
       
       <Dialog open={isPdfPreviewOpen} onOpenChange={setIsPdfPreviewOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
+        <DialogContent className="max-w-4xl h-full sm:h-auto max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Invoice Preview</DialogTitle>
             <DialogDescription>

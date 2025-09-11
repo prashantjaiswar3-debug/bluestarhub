@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState } from "react";
@@ -45,37 +44,36 @@ import { Star, PlusCircle, Check, X, ThumbsDown, ThumbsUp } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const initialComplaints: Complaint[] = [
-  { ticketId: "BLU-7238", customer: { name: "John Doe", id: "CUST-001" }, issue: "CCTV Camera not recording", priority: "High", status: "Open", date: "2023-10-26" },
-  { ticketId: "BLU-7239", customer: { name: "Jane Smith", id: "CUST-002" }, issue: "DVR signal loss on 2 channels", priority: "Medium", status: "Assigned", date: "2023-10-26", assignedTo: 'TECH-01' },
-  { ticketId: "BLU-7240", customer: { name: "Bob Johnson", id: "CUST-003" }, issue: "Request for new installation quote", priority: "Low", status: "Open", date: "2023-10-25" },
-  { ticketId: "BLU-7241", customer: { name: "Alice Williams", id: "CUST-004" }, issue: "Annual Maintenance Checkup", priority: "Medium", status: "Open", date: "2023-10-25" },
+  { ticketId: "BLU-7238", customer: { name: "Anjali Mehta", id: "CUST-101" }, issue: "CCTV Camera not recording", priority: "High", status: "Open", date: "2023-10-26" },
+  { ticketId: "BLU-7239", customer: { name: "Green Valley Apartments", id: "CUST-001" }, issue: "DVR signal loss on 2 channels", priority: "Medium", status: "Assigned", date: "2023-10-26", assignedTo: 'TECH-003' },
+  { ticketId: "BLU-7240", customer: { name: "ABC Corporation", id: "CUST-002" }, issue: "Request for new installation quote", priority: "Low", status: "Open", date: "2023-10-25" },
+  { ticketId: "BLU-7241", customer: { name: "ShopLocal Retail", id: "CUST-004" }, issue: "Annual Maintenance Checkup", priority: "Medium", status: "Open", date: "2023-10-25" },
 ];
 
 const initialTechnicians: Technician[] = [
-    { id: "TECH-01", name: "Raj Patel", skills: ["Installation", "Repair"], load: 2, location: "North Zone", type: "Fixed", role: "Supervisor" },
-    { id: "TECH-02", name: "Amit Singh", skills: ["Repair", "Networking"], load: 1, location: "South Zone", type: "Fixed", role: "Technician" },
-    { id: "TECH-03", name: "Suresh Kumar", skills: ["Maintenance", "Installation"], load: 4, location: "North Zone", type: "Fixed", role: "Technician" },
-    { id: "TECH-04", name: "Prashant Jaiswar", skills: ["Installation", "Networking"], load: 0, location: "West Zone", type: "Fixed", role: "Technician" },
-    { id: "TECH-05", name: "Krishna Sharma", skills: ["Repair", "Maintenance"], load: 0, location: "East Zone", type: "Fixed", role: "Technician" },
-    { id: "TECH-06", name: "Ravi Kumar", skills: ["Wiring", "Electrical"], load: 0, location: "All Zones", type: "Freelance", role: "Electrician" },
+    { id: "TECH-001", name: "Raj Patel", skills: ["Installation", "Repair", "Networking"], load: 2, location: "Mumbai", type: "Fixed", role: "Supervisor" },
+    { id: "TECH-002", name: "Amit Singh", skills: ["Repair", "Networking"], load: 1, location: "Mumbai", type: "Fixed", role: "Technician" },
+    { id: "TECH-003", name: "Suresh Kumar", skills: ["Maintenance", "Installation"], load: 4, location: "Mumbai", type: "Fixed", role: "Technician" },
+    { id: "TECH-004", name: "Prashant Jaiswar", skills: ["Installation", "Networking"], load: 0, location: "Mumbai", type: "Fixed", role: "Technician" },
+    { id: "TECH-F01", name: "Ravi Kumar", skills: ["Wiring", "Electrical"], load: 0, location: "Any", type: "Freelance", role: "Electrician" },
 ];
 
 const initialReviews: Review[] = [
-  { id: 'REV-001', customer: { name: 'Ravi Kumar', id: 'CUST-007' }, rating: 5, comment: 'Excellent and prompt service. The technician was very professional and resolved the issue in no time. Highly recommended!', date: '2023-10-28' },
+  { id: 'REV-001', customer: { name: 'Sanjay Gupta', id: 'CUST-007' }, rating: 5, comment: 'Excellent and prompt service. The technician was very professional and resolved the issue in no time. Highly recommended!', date: '2023-10-28' },
   { id: 'REV-002', customer: { name: 'Priya Sharma', id: 'CUST-008' }, rating: 4, comment: 'Good service, but the technician arrived a bit later than scheduled. Overall, satisfied with the work.', date: '2023-10-27' },
 ];
 
 const initialEnquiries: JobEnquiry[] = [
     { id: "ENQ-001", title: "Urgent Wiring Fix", description: "Need an electrician to fix faulty wiring in the main office.", location: "North Zone", proposedRate: 1500, status: "Pending", date: "2023-11-01" },
-    { id: "ENQ-002", title: "New AC Installation", description: "Install a new 1.5 ton split AC unit.", location: "South Zone", proposedRate: 2500, status: "Bargaining", date: "2023-11-01", bargainRate: 2800, assignedTo: "TECH-FREELANCE-01" },
-    { id: "ENQ-003", title: "Weekend Shift Cover", description: "Cover a weekend shift for CCTV monitoring.", location: "Any", proposedRate: 3000, status: "Accepted", date: "2023-10-30", assignedTo: "TECH-FREELANCE-02" },
+    { id: "ENQ-002", title: "New AC Installation", description: "Install a new 1.5 ton split AC unit.", location: "South Zone", proposedRate: 2500, status: "Bargaining", date: "2023-11-01", bargainRate: 2800, assignedTo: "TECH-F01" },
+    { id: "ENQ-003", title: "Weekend Shift Cover", description: "Cover a weekend shift for CCTV monitoring.", location: "Any", proposedRate: 3000, status: "Accepted", date: "2023-10-30", assignedTo: "TECH-F02" },
 ]
 
 const initialExpenses: Expense[] = [
-    { id: 'EXP-001', technicianId: 'TECH-01', technicianName: 'Raj Patel', date: '2023-10-28', category: 'Travel', amount: 350, description: 'Travel to client site in South Zone', status: 'Pending' },
-    { id: 'EXP-002', technicianId: 'TECH-02', technicianName: 'Amit Singh', date: '2023-10-27', category: 'Food', amount: 200, description: 'Lunch during full-day installation', status: 'Approved' },
-    { id: 'EXP-003', technicianId: 'TECH-03', technicianName: 'Suresh Kumar', date: '2023-10-29', category: 'Materials', amount: 1200, description: 'Purchase of extra cables for urgent repair', status: 'Pending' },
-    { id: 'EXP-004', technicianId: 'TECH-01', technicianName: 'Raj Patel', date: '2023-10-29', category: 'Other', amount: 150, description: 'Stationery and printouts for site report', status: 'Rejected' },
+    { id: 'EXP-001', technicianId: 'TECH-001', technicianName: 'Raj Patel', date: '2023-10-28', category: 'Travel', amount: 350, description: 'Travel to client site in South Zone', status: 'Pending' },
+    { id: 'EXP-002', technicianId: 'TECH-002', technicianName: 'Amit Singh', date: '2023-10-27', category: 'Food', amount: 200, description: 'Lunch during full-day installation', status: 'Approved' },
+    { id: 'EXP-003', technicianId: 'TECH-003', technicianName: 'Suresh Kumar', date: '2023-10-29', category: 'Materials', amount: 1200, description: 'Purchase of extra cables for urgent repair', status: 'Pending' },
+    { id: 'EXP-004', technicianId: 'TECH-001', technicianName: 'Raj Patel', date: '2023-10-29', category: 'Other', amount: 150, description: 'Stationery and printouts for site report', status: 'Rejected' },
 ]
 
 const priorityVariant: { [key in Complaint["priority"]]: "destructive" | "secondary" | "default" } = {
@@ -101,7 +99,7 @@ export default function AdminDashboard() {
   const { toast } = useToast();
   const [complaints, setComplaints] = useState<Complaint[]>(initialComplaints);
   const [technicians, setTechnicians] = useState<Technician[]>(initialTechnicians);
-  const [reviews, setReviews] = useState<Review[]>(initialReviews);
+  const [reviews] = useState<Review[]>(initialReviews);
   const [selectedTechnicians, setSelectedTechnicians] = useState<{ [key: string]: string }>({});
   const [enquiries, setEnquiries] = useState<JobEnquiry[]>(initialEnquiries);
   const [isCreateEnquiryOpen, setIsCreateEnquiryOpen] = useState(false);
@@ -628,7 +626,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-
-    
-
-    

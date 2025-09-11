@@ -49,7 +49,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Send, Eye, PlusCircle, Trash2, Share2, DollarSign, QrCode, Zap, Edit, FileText } from "lucide-react";
+import { Send, Eye, PlusCircle, Trash2, DollarSign, QrCode, Zap, Edit, FileText } from "lucide-react";
 import type { Invoice, QuotationItem, Customer, Payment, CompanyInfo } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { initialQuotations } from "@/lib/data";
@@ -64,37 +64,39 @@ import { InvoicePDF } from "@/components/pdf/invoice-pdf";
 
 
 const registeredCustomers: Customer[] = [
-    { id: "CUST-001", name: "Green Valley Apartments", contactPerson: "Mr. Sharma", email: "manager@gva.com", phone: "555-0101", address: "456 Park Ave, Residence City", gstin: "27AAAAA0000A1Z5" },
-    { id: "CUST-002", name: "ABC Corporation", contactPerson: "Ms. Priya", email: "contact@abc.com", phone: "555-0102", address: "123 Business Rd, Corp Town", gstin: "29BBBBB1111B2Z6" },
-    { id: "CUST-003", name: "John Doe", email: "john.doe@example.com", phone: "555-0103", address: "789 Pine Ln, Sometown" },
+    { id: "CUST-001", name: "Green Valley Apartments", contactPerson: "Mr. Sharma", email: "manager@gva.com", phone: "9876543210", address: "456 Park Ave, Residence City", gstin: "27AAAAA0000A1Z5" },
+    { id: "CUST-002", name: "ABC Corporation", contactPerson: "Ms. Priya", email: "priya@abccorp.com", phone: "9876543211", address: "123 Business Rd, Corp Town", gstin: "29BBBBB1111B2Z6" },
+    { id: "CUST-003", name: "John Doe", email: "john.doe@example.com", phone: "9876543212", address: "789 Pine Ln, Sometown" },
+    { id: "CUST-004", name: "ShopLocal Retail", contactPerson: "Mr. Kumar", email: "kumar@shoplocal.com", phone: "9876543213", address: "10 Bayside Rd, Commerce City", gstin: "24CCCCC2222C3Z7" },
+
 ];
 
 const initialInvoices: Invoice[] = [
     {
-        invoiceId: "INV-2023-0012",
+        invoiceId: "INV-2023-001",
         customer: { name: "Green Valley Apartments", email: "manager@gva.com", address: "456 Park Ave, Residence City", contactPerson: "Mr. Sharma", gstin: "27AAAAA0000A1Z5" },
-        items: [{ id: "item-1", description: "16-Channel NVR System", quantity: 1, unit: "nos", price: 80000, gstRate: 18, serialNumbers: ["NVR-GVA-001"] }, { id: "item-2", description: "12x Bullet Cameras", quantity: 1, unit: "nos", price: 40000, gstRate: 18, serialNumbers: ["CAM-GVA-001"] }],
+        items: [{ id: "item-1", description: "16-Channel NVR System", quantity: 1, unit: "nos", price: 80000, gstRate: 18, serialNumbers: ["NVR-GVA-001"] }, { id: "item-2", description: "12x Bullet Cameras 8MP", quantity: 1, unit: "nos", price: 40000, gstRate: 18, serialNumbers: ["CAM-GVA-001"] }],
         laborCost: 20000,
         discount: 5,
         totalAmount: 157528,
         status: "Paid",
         date: "2023-10-22",
-        quoteId: "QT-2023-050",
+        quoteId: "QT-2023-001",
         isGst: true,
         payments: [
             { id: "PAY-001", amount: 157528, date: "2023-10-22", method: "Online" }
         ]
     },
     {
-        invoiceId: "INV-2023-0015",
-        customer: { name: "ABC Corporation", email: "contact@abc.com", address: "123 Business Rd, Corp Town", contactPerson: "Ms. Priya", gstin: "29BBBBB1111B2Z6" },
+        invoiceId: "INV-2023-002",
+        customer: { name: "ABC Corporation", email: "priya@abccorp.com", address: "123 Business Rd, Corp Town", contactPerson: "Ms. Priya", gstin: "29BBBBB1111B2Z6" },
         items: [{ id: "item-1", description: "4x Hikvision 5MP Dome Cameras", quantity: 1, unit: "nos", price: 18000, gstRate: 18, serialNumbers: ["CAM-ABC-001"] }],
         laborCost: 5000,
         discount: 10,
         totalAmount: 24780,
         status: "Partially Paid",
         date: "2023-10-25",
-        quoteId: "QT-2023-051",
+        quoteId: "QT-2023-002",
         isGst: true,
         payments: [
             { id: "PAY-002", amount: 10000, date: "2023-10-26", method: "Cash" }
@@ -201,7 +203,7 @@ const BarcodeScanner = ({ onScanSuccess, onScanFailure }: { onScanSuccess: (text
 
 export default function InvoicesPage() {
   const { toast } = useToast();
-  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("recent");
   const [newInvoice, setNewInvoice] = useState<{
@@ -237,14 +239,10 @@ export default function InvoicesPage() {
     try {
         const storedInvoicesStr = localStorage.getItem('invoices');
         if (storedInvoicesStr) {
-            const storedInvoices: Invoice[] = JSON.parse(storedInvoicesStr);
-            setInvoices(prevInvoices => {
-                const allInvoices = [...storedInvoices, ...prevInvoices];
-                const uniqueInvoices = allInvoices.filter(
-                    (invoice, index, self) => index === self.findIndex(t => t.invoiceId === invoice.invoiceId)
-                );
-                return uniqueInvoices;
-            });
+            setInvoices(JSON.parse(storedInvoicesStr));
+        } else {
+            localStorage.setItem('invoices', JSON.stringify(initialInvoices));
+            setInvoices(initialInvoices);
         }
         
         const storedCompanyInfoStr = localStorage.getItem('companyInfo');
@@ -539,7 +537,7 @@ export default function InvoicesPage() {
     } else {
         // Create new invoice
         const newInvoiceData: Invoice = {
-          invoiceId: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 100) + 16}`,
+          invoiceId: `INV-${new Date().getFullYear()}-${String(invoices.length + 1).padStart(3, '0')}`,
           customer: newInvoice.customer,
           items: finalItems,
           laborCost: newInvoice.laborCost,
@@ -936,7 +934,7 @@ export default function InvoicesPage() {
     </Tabs>
 
       <Dialog open={isPdfPreviewOpen} onOpenChange={setIsPdfPreviewOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
+        <DialogContent className="max-w-4xl h-full sm:h-auto max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Invoice Preview</DialogTitle>
             <DialogDescription>

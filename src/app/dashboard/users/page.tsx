@@ -60,7 +60,7 @@ type User = {
   id: string;
   name: string;
   email: string;
-  role: "Admin" | "Sales" | "Technician" | "Customer" | "Supervisor";
+  role: "Admin" | "Sales" | "Technician" | "Customer" | "Supervisor" | "Freelance";
   status: "Active" | "Inactive";
   password?: string;
 };
@@ -72,21 +72,23 @@ type GeneratedCredentials = {
 };
 
 const initialUsers: User[] = [
-  { id: "ADM-001", name: "Vaibhav Rodge", email: "admin@bluestarhub.com", role: "Admin", status: "Active", password: "admin123" },
-  { id: "SALES-001", name: "Priya Sharma", email: "priya.sharma@bluestar.com", role: "Sales", status: "Active", password: "salespassword" },
-  { id: "TECH-007", name: "Raj Patel", email: "raj.patel@bluestar.com", role: "Supervisor", status: "Active", password: "techpassword" },
-  { id: "TECH-004", name: "Prashant Jaiswar", email: "prashant.jaiswar@bluestar.com", role: "Technician", status: "Active", password: "techpassword4" },
-  { id: "TECH-005", name: "Krishna Sharma", email: "krishna.sharma@bluestar.com", role: "Technician", status: "Active", password: "techpassword5" },
-  { id: "CUST-101", name: "John Doe", email: "john.doe@example.com", role: "Customer", status: "Active", password: "customerpassword" },
-  { id: "CUST-102", name: "Green Valley Apartments", email: "manager@gva.com", role: "Customer", status: "Inactive", password: "customerpassword2" },
+  { id: "ADM-001", name: "Vaibhav Rodge", email: "vaibhav.rodge@bluestar.com", role: "Admin", status: "Active", password: "adminPassword123" },
+  { id: "SUP-001", name: "Raj Patel", email: "raj.patel@bluestar.com", role: "Supervisor", status: "Active", password: "supervisorPassword123" },
+  { id: "SALES-001", name: "Priya Sharma", email: "priya.sharma@bluestar.com", role: "Sales", status: "Active", password: "salesPassword123" },
+  { id: "TECH-003", name: "Suresh Kumar", email: "suresh.kumar@bluestar.com", role: "Technician", status: "Active", password: "techPassword123" },
+  { id: "TECH-F01", name: "Ravi Kumar", email: "ravi.kumar@freelance.com", role: "Freelance", status: "Active", password: "freelancePassword123" },
+  { id: "CUST-101", name: "Anjali Mehta", email: "anjali.mehta@example.com", role: "Customer", status: "Active", password: "customerPassword123" },
+  { id: "CUST-001", name: "Green Valley Apartments", email: "manager@gva.com", role: "Customer", status: "Active", password: "customerPassword123" },
+  { id: "CUST-002", name: "ABC Corporation", email: "priya@abccorp.com", role: "Customer", status: "Inactive", password: "customerPassword123" },
 ];
 
 const roleVariant: { [key in User["role"]]: "default" | "secondary" | "outline" | "destructive" } = {
-  Admin: "default",
-  Sales: "secondary",
-  Technician: "outline",
+  Admin: "destructive",
+  Sales: "default",
+  Technician: "secondary",
   Customer: "outline",
   Supervisor: "destructive",
+  Freelance: "secondary",
 };
 
 export default function UserManagementPage() {
@@ -108,7 +110,7 @@ export default function UserManagementPage() {
   });
 
   const [isRegisterTechnicianOpen, setIsRegisterTechnicianOpen] = React.useState(false);
-  const [newTechnician, setNewTechnician] = React.useState({ name: "", email: "", phone: "", skills: "", type: "Fixed" as Technician['type'] });
+  const [newTechnician, setNewTechnician] = React.useState({ name: "", email: "", phone: "", skills: "", type: "Fixed" as Technician['type'], role: "Technician" as "Technician" | "Supervisor" });
   
   const [isRegisterSalesOpen, setIsRegisterSalesOpen] = React.useState(false);
   const [newSales, setNewSales] = React.useState({ name: "", email: "", phone: "" });
@@ -121,7 +123,8 @@ export default function UserManagementPage() {
     if (activeTab === "All") {
       return users;
     }
-    return users.filter((user) => user.role === activeTab);
+    const rolesForTab: string[] = activeTab === 'Technician' ? ['Technician', 'Supervisor', 'Freelance'] : [activeTab];
+    return users.filter((user) => rolesForTab.includes(user.role));
   }, [users, activeTab]);
 
   const handleEditClick = (user: User) => {
@@ -191,7 +194,7 @@ export default function UserManagementPage() {
     setIsCredentialsDialogOpen(true);
     
     setIsRegisterTechnicianOpen(false);
-    setNewTechnician({ name: "", email: "", phone: "", skills: "", type: "Fixed" });
+    setNewTechnician({ name: "", email: "", phone: "", skills: "", type: "Fixed", role: "Technician" });
   }
 
   const handleRegisterSales = () => {
@@ -245,19 +248,18 @@ export default function UserManagementPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
                 <DropdownMenuItem onClick={() => setIsRegisterCustomerOpen(true)}>Register Customer</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsRegisterTechnicianOpen(true)}>Register Technician</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsRegisterTechnicianOpen(true)}>Register Staff</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setIsRegisterSalesOpen(true)}>Register Sales User</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2 h-auto sm:w-auto sm:inline-flex md:grid-cols-3 lg:grid-cols-6">
+            <TabsList className="grid w-full grid-cols-2 h-auto sm:w-auto sm:inline-flex md:grid-cols-3 lg:grid-cols-4">
               <TabsTrigger value="All">All</TabsTrigger>
               <TabsTrigger value="Admin">Admins</TabsTrigger>
               <TabsTrigger value="Sales">Sales</TabsTrigger>
-              <TabsTrigger value="Technician">Technicians</TabsTrigger>
-              <TabsTrigger value="Supervisor">Supervisors</TabsTrigger>
+              <TabsTrigger value="Technician">Staff</TabsTrigger>
               <TabsTrigger value="Customer">Customers</TabsTrigger>
             </TabsList>
              <div className="mt-4">
@@ -328,6 +330,7 @@ export default function UserManagementPage() {
                               <SelectItem value="Sales">Sales</SelectItem>
                               <SelectItem value="Technician">Technician</SelectItem>
                               <SelectItem value="Supervisor">Supervisor</SelectItem>
+                              <SelectItem value="Freelance">Freelance</SelectItem>
                               <SelectItem value="Customer">Customer</SelectItem>
                           </SelectContent>
                       </Select>
@@ -410,9 +413,9 @@ export default function UserManagementPage() {
       <Dialog open={isRegisterTechnicianOpen} onOpenChange={setIsRegisterTechnicianOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Register New Technician</DialogTitle>
+            <DialogTitle>Register New Staff Member</DialogTitle>
             <DialogDescription>
-              Enter the technician's details below to create a new account.
+              Enter the staff member's details below to create a new account.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -432,24 +435,38 @@ export default function UserManagementPage() {
               <Label htmlFor="tech-skills">Skills</Label>
               <Input id="tech-skills" value={newTechnician.skills} onChange={(e) => setNewTechnician({...newTechnician, skills: e.target.value})} placeholder="e.g., Installation, Repair" />
             </div>
-            <div className="space-y-2">
-                <Label htmlFor="tech-type">Technician Type</Label>
-                <Select value={newTechnician.type} onValueChange={(value: Technician['type']) => setNewTechnician(prev => ({...prev, type: value}))}>
-                    <SelectTrigger id="tech-type">
-                        <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="Fixed">Fixed</SelectItem>
-                        <SelectItem value="Freelance">Freelance</SelectItem>
-                    </SelectContent>
-                </Select>
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="tech-type">Staff Type</Label>
+                    <Select value={newTechnician.type} onValueChange={(value: Technician['type']) => setNewTechnician(prev => ({...prev, type: value}))}>
+                        <SelectTrigger id="tech-type">
+                            <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Fixed">Fixed</SelectItem>
+                            <SelectItem value="Freelance">Freelance</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="tech-role">Role</Label>
+                    <Select value={newTechnician.role} onValueChange={(value: "Technician" | "Supervisor") => setNewTechnician(prev => ({...prev, role: value}))}>
+                        <SelectTrigger id="tech-role">
+                            <SelectValue placeholder="Select role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Technician">Technician</SelectItem>
+                            <SelectItem value="Supervisor">Supervisor</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
           </div>
           <DialogFooter>
             <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button onClick={handleRegisterTechnician}>Register Technician</Button>
+            <Button onClick={handleRegisterTechnician}>Register Staff</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -524,7 +541,6 @@ function UserTable({ users, onEdit, onDelete }: { users: User[], onEdit: (user: 
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead className="hidden md:table-cell">Email</TableHead>
-            <TableHead className="hidden lg:table-cell">Password</TableHead>
             <TableHead>Role</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -535,9 +551,6 @@ function UserTable({ users, onEdit, onDelete }: { users: User[], onEdit: (user: 
             <TableRow key={user.id}>
               <TableCell className="font-medium">{user.name}</TableCell>
               <TableCell className="hidden md:table-cell">{user.email}</TableCell>
-              <TableCell className="hidden lg:table-cell">
-                  <Badge variant="outline">{user.password}</Badge>
-              </TableCell>
               <TableCell>
                 <Badge variant={roleVariant[user.role]}>{user.role}</Badge>
               </TableCell>
@@ -561,5 +574,3 @@ function UserTable({ users, onEdit, onDelete }: { users: User[], onEdit: (user: 
     </ScrollArea>
   );
 }
-
-    

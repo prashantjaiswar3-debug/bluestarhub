@@ -25,15 +25,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { MapPin, Phone, FilePlus, ThumbsUp, ThumbsDown, Handshake } from "lucide-react";
-import type { Job, JobEnquiry, Technician } from "@/lib/types";
+import type { Job, JobEnquiry } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { usePathname } from "next/navigation";
 
 
 const jobs: Job[] = [
-  { id: "JOB-001", customer: "John Doe", address: "123 Main St, Anytown", issue: "CCTV Camera not recording, needs urgent check.", priority: "High", phone: "555-0101" },
-  { id: "JOB-002", customer: "Jane Smith", address: "456 Oak Ave, Otherville", issue: "DVR signal loss on 2 channels. Customer available after 2 PM.", priority: "Medium", phone: "555-0102" },
-  { id: "JOB-003", customer: "Sam Wilson", address: "789 Pine Ln, Sometown", issue: "Check connectivity for camera 4 and 5.", priority: "Low", phone: "555-0103" },
+  { id: "JOB-001", customer: "Anjali Mehta", address: "123 Main St, Anytown", issue: "CCTV Camera not recording, needs urgent check.", priority: "High", phone: "9876543212" },
+  { id: "JOB-002", customer: "Green Valley Apartments", address: "456 Oak Ave, Otherville", issue: "DVR signal loss on 2 channels. Customer available after 2 PM.", priority: "Medium", phone: "9876543210" },
+  { id: "JOB-003", customer: "ShopLocal Retail", address: "789 Pine Ln, Sometown", issue: "Check connectivity for camera 4 and 5.", priority: "Low", phone: "9876543213" },
 ];
 
 const initialEnquiries: JobEnquiry[] = [
