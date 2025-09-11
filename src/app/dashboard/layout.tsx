@@ -89,7 +89,7 @@ const allNavItems = [
 ];
 
 const operationsNavItems = [
-  { href: "/dashboard/quotations", icon: FileText, label: "Quotations", roles: ['sales', 'supervisor'] },
+  { href: "/dashboard/quotations", icon: FileText, label: "Quotations", roles: ['admin', 'sales', 'supervisor'] },
   { href: "/dashboard/invoices", icon: FilePlus2, label: "Invoices", roles: ['admin', 'sales', 'supervisor'] },
   { href: "/dashboard/purchases", icon: ShoppingCart, label: "Purchases", roles: ['admin', 'sales', 'supervisor'] },
   { href: "/dashboard/inventory", icon: Boxes, label: "Inventory", roles: ['admin', 'sales', 'supervisor'] },
@@ -128,16 +128,11 @@ const initialRoleInfo: Record<UserRole, UserInfo> = {
     technician: { name: "Technician User", email: "tech@bluestar.com", fallback: "TU", id: "TECH-007", avatar: "https://placehold.co/100x100.png", phone: "9876543211", type: "Fixed" },
     freelance: { name: "Freelancer User", email: "freelance@bluestar.com", fallback: "FU", id: "TECH-F01", avatar: "https://placehold.co/100x100.png", phone: "9876543215", type: "Freelance" },
     customer: { name: "Customer User", email: "customer@bluestar.com", fallback: "CU", id: "CUST-101", avatar: "https://placehold.co/100x100.png", phone: "9876543212" },
-    sales: { name: "Vaibhav Rodge", email: "vaibhav.rodge@bluestar.com", fallback: "VR", id: "SALES-001", avatar: "https://placehold.co/100x100.png", phone: "9876543213" },
+    sales: { name: "Priya Sharma", email: "priya.sharma@bluestar.com", fallback: "PS", id: "SALES-001", avatar: "https://placehold.co/100x100.png", phone: "9876543213" },
     supervisor: { name: "Raj Patel", email: "raj.patel@bluestar.com", fallback: "RP", id: "TECH-007", avatar: "https://placehold.co/100x100.png", phone: "9876543211", type: "Fixed" },
     default: { name: "Demo User", email: "user@bluestar.com", fallback: "DU", id: "USER-000", avatar: "https://placehold.co/100x100.png", phone: "9876543214" },
 };
 
-type GeneratedCredentials = {
-  username: string;
-  name: string;
-  password?: string;
-};
 
 export default function DashboardLayout({
   children,
@@ -165,17 +160,28 @@ export default function DashboardLayout({
   const logoInputRef = React.useRef<HTMLInputElement>(null);
   
   const getRole = (): UserRole => {
-    if (pathname.startsWith('/dashboard/users') || pathname.startsWith('/dashboard/data')) return 'admin';
-    if (pathname.startsWith('/dashboard/technician/freelance')) return 'freelance';
-    if (pathname.startsWith('/dashboard/technician')) return 'technician';
-    if (pathname.startsWith('/dashboard/customer')) return 'customer';
-    if (pathname.startsWith('/dashboard/sales') || pathname.startsWith('/dashboard/invoices') || pathname.startsWith('/dashboard/quotations') || pathname.startsWith('/dashboard/purchases') || pathname.startsWith('/dashboard/inventory') || pathname.startsWith('/dashboard/vendors')) {
-        const supervisor = initialRoleInfo.supervisor;
-        if (supervisor.name === "Raj Patel") return 'supervisor';
-        return 'sales';
+    const roleFromPath = pathname.split('/')[2];
+    switch (roleFromPath) {
+        case 'users':
+        case 'data':
+            return 'admin';
+        case 'technician':
+            return pathname.includes('/freelance') ? 'freelance' : 'technician';
+        case 'customer':
+            return 'customer';
+        case 'sales':
+        case 'quotations':
+        case 'invoices':
+        case 'purchases':
+        case 'inventory':
+        case 'vendors':
+            // This logic can be refined, but for now we can check a sample user
+            const supervisor = initialRoleInfo.supervisor;
+            // Example check, in a real app this would be based on logged in user's data
+            return supervisor.name === "Raj Patel" ? 'supervisor' : 'sales';
+        default:
+            return 'admin';
     }
-    if (pathname === '/dashboard') return 'admin';
-    return 'admin';
   }
   
   const currentRole = getRole();
@@ -289,12 +295,15 @@ export default function DashboardLayout({
   const isOperationsActive = operationsNavItems.some(item => pathname.startsWith(item.href));
 
   let dashboardLabel = 'Dashboard';
-  const activeTopLevel = allNavItems.find(item => pathname.startsWith(item.href) && item.href !== '/dashboard');
+  const activeTopLevel = allNavItems.find(item => pathname.startsWith(item.href) && item.href !== '/dashboard' && item.href !== `/dashboard/${currentRole}`);
   if (activeTopLevel) {
     dashboardLabel = activeTopLevel.label;
   } else if (isOperationsActive) {
     const activeOp = operationsNavItems.find(item => pathname.startsWith(item.href));
     dashboardLabel = activeOp?.label || 'Operations';
+  } else {
+    const mainNavItem = allNavItems.find(item => item.roles.includes(currentRole) && item.href.endsWith(currentRole));
+    if (mainNavItem) dashboardLabel = mainNavItem.label;
   }
 
 

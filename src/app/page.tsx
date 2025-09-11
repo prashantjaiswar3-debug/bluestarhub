@@ -1,5 +1,9 @@
 
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,8 +15,44 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+type UserRole = 'admin' | 'technician' | 'freelance' | 'customer' | 'sales' | 'supervisor';
+
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [role, setRole] = useState<UserRole>('admin');
+
+  const handleSignIn = () => {
+    let path = '/dashboard';
+    switch (role) {
+      case 'admin':
+        path = '/dashboard';
+        break;
+      case 'technician':
+        path = '/dashboard/technician';
+        break;
+      case 'freelance':
+        path = '/dashboard/technician/freelance';
+        break;
+      case 'customer':
+        path = '/dashboard/customer';
+        break;
+      case 'sales':
+      case 'supervisor':
+        path = '/dashboard/sales';
+        break;
+    }
+    router.push(path);
+  };
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="w-full max-w-md lg:max-w-lg">
@@ -28,14 +68,29 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
+               <div className="space-y-2">
+                <Label htmlFor="role">Select Your Role</Label>
+                 <Select value={role} onValueChange={(value: UserRole) => setRole(value)}>
+                  <SelectTrigger id="role">
+                    <SelectValue placeholder="Select a role to sign in as" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="supervisor">Supervisor</SelectItem>
+                    <SelectItem value="sales">Sales</SelectItem>
+                    <SelectItem value="technician">Technician</SelectItem>
+                    <SelectItem value="freelance">Freelance Tech</SelectItem>
+                    <SelectItem value="customer">Customer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@bluestar.com"
+                  placeholder="user@example.com"
                   required
-                  defaultValue="admin@bluestar.com"
                 />
               </div>
               <div className="space-y-2">
@@ -48,10 +103,10 @@ export default function LoginPage() {
                     Forgot your password?
                   </Link>
                 </div>
-                <Input id="password" type="password" required defaultValue="password" />
+                <Input id="password" type="password" required />
               </div>
-              <Button type="submit" className="w-full" asChild>
-                <Link href="/dashboard">Sign In</Link>
+              <Button type="submit" className="w-full" onClick={handleSignIn}>
+                Sign In
               </Button>
             </div>
           </CardContent>
