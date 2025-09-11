@@ -13,7 +13,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { initialInventory, initialPurchaseOrders, initialQuotations } from "@/lib/data";
 import { initialVendors } from "@/lib/vendordata";
-import { Download, Upload, Cloud, Wifi, X } from "lucide-react";
+import { Download, Upload, Cloud, Wifi, X, FolderPlus } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -26,12 +26,18 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import QRCode from "react-qr-code";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 export default function DataManagementPage() {
     const { toast } = useToast();
     const [isSyncDialogOpen, setIsSyncDialogOpen] = useState(false);
     const [isAutoSync, setIsAutoSync] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
+    const [backupFolder, setBackupFolder] = useState("/Bluestar Backups");
+    const [newFolderName, setNewFolderName] = useState("");
+    
+    const cloudFolders = ["/Bluestar Backups", "/Documents/Backups", "Create new folder"];
 
     const handleBackup = () => {
         try {
@@ -71,9 +77,10 @@ export default function DataManagementPage() {
     const handleConnect = () => {
         setIsConnected(true);
         setIsSyncDialogOpen(false);
+        const finalBackupFolder = backupFolder === 'Create new folder' ? newFolderName : backupFolder;
         toast({
             title: "Cloud Drive Connected",
-            description: "Your cloud storage has been successfully linked.",
+            description: `Auto-sync is enabled to folder: ${finalBackupFolder}`,
         });
     }
 
@@ -163,13 +170,47 @@ export default function DataManagementPage() {
                     <DialogHeader>
                         <DialogTitle>Connect Cloud Storage</DialogTitle>
                         <DialogDescription>
-                            Scan the QR code with your phone to authorize access to your Google Drive account for backups.
+                            Authorize access to your Google Drive, select a backup folder, and enable auto-sync.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="py-4 flex flex-col items-center gap-6">
-                        <div className="bg-white p-4 rounded-lg border">
-                           <QRCode value="https://cloud.google.com/storage" size={160} />
+                    <div className="py-4 grid gap-6">
+                        <div className="flex justify-center">
+                            <div className="bg-white p-4 rounded-lg border">
+                               <QRCode value="https://cloud.google.com/storage" size={128} />
+                            </div>
                         </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="backup-folder">Backup Folder</Label>
+                            <Select value={backupFolder} onValueChange={setBackupFolder}>
+                                <SelectTrigger id="backup-folder">
+                                    <SelectValue placeholder="Select a folder" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {cloudFolders.map(folder => (
+                                        <SelectItem key={folder} value={folder}>
+                                            <span className="flex items-center gap-2">
+                                                {folder === 'Create new folder' ? <FolderPlus /> : null}
+                                                {folder}
+                                            </span>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {backupFolder === "Create new folder" && (
+                            <div className="space-y-2">
+                                <Label htmlFor="new-folder-name">New Folder Name</Label>
+                                <Input 
+                                    id="new-folder-name" 
+                                    placeholder="e.g., /My App/Backups"
+                                    value={newFolderName}
+                                    onChange={(e) => setNewFolderName(e.target.value)}
+                                />
+                            </div>
+                        )}
+
                         <div className="flex items-center space-x-2">
                             <Switch id="auto-sync" checked={isAutoSync} onCheckedChange={setIsAutoSync} />
                             <Label htmlFor="auto-sync">Enable Auto-Sync</Label>
