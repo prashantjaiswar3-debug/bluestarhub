@@ -33,6 +33,8 @@ import {
   Receipt,
   DatabaseZap,
   Copy,
+  ChevronDown,
+  Briefcase,
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -47,6 +49,11 @@ import {
   SidebarInset,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -77,13 +84,16 @@ const allNavItems = [
   { href: "/dashboard/technician", icon: Wrench, label: "My Jobs", roles: ['technician', 'freelance'] },
   { href: "/dashboard/technician/expenses", icon: Receipt, label: "My Expenses", roles: ['technician', 'freelance'] },
   { href: "/dashboard/customer", icon: Users, label: "My Portal", roles: ['customer'] },
+  { href: "/dashboard/users", icon: UserCog, label: "User Management", roles: ['admin'] },
+  { href: "/dashboard/data", icon: DatabaseZap, label: "Data Management", roles: ['admin'] },
+];
+
+const operationsNavItems = [
   { href: "/dashboard/quotations", icon: FileText, label: "Quotations", roles: ['sales', 'supervisor'] },
   { href: "/dashboard/invoices", icon: FilePlus2, label: "Invoices", roles: ['admin', 'sales', 'supervisor'] },
   { href: "/dashboard/purchases", icon: ShoppingCart, label: "Purchases", roles: ['admin', 'sales', 'supervisor'] },
   { href: "/dashboard/inventory", icon: Boxes, label: "Inventory", roles: ['admin', 'sales', 'supervisor'] },
   { href: "/dashboard/vendors", icon: Building, label: "Vendors", roles: ['admin', 'sales', 'supervisor'] },
-  { href: "/dashboard/users", icon: UserCog, label: "User Management", roles: ['admin'] },
-  { href: "/dashboard/data", icon: DatabaseZap, label: "Data Management", roles: ['admin'] },
 ];
 
 const initialCompanyInfo: CompanyInfo = {
@@ -155,7 +165,7 @@ export default function DashboardLayout({
   const logoInputRef = React.useRef<HTMLInputElement>(null);
   
   const getRole = (): UserRole => {
-    if (pathname.startsWith('/dashboard/admin')) return 'admin';
+    if (pathname.startsWith('/dashboard/users') || pathname.startsWith('/dashboard/data')) return 'admin';
     if (pathname.startsWith('/dashboard/technician/freelance')) return 'freelance';
     if (pathname.startsWith('/dashboard/technician')) return 'technician';
     if (pathname.startsWith('/dashboard/customer')) return 'customer';
@@ -245,7 +255,6 @@ export default function DashboardLayout({
           toast({ variant: "destructive", title: "Passwords do not match", description: "The new password and confirmation do not match." });
           return;
         }
-        // In a real app, you'd verify the current password here.
         setPasswordFields({ current: "", new: "", confirm: "" });
         changesMade = true;
     }
@@ -274,13 +283,21 @@ export default function DashboardLayout({
     setIsCompanyProfileOpen(false);
   }
 
-  const navItems = allNavItems.filter(item => {
-    if (item.href === '/dashboard/technician' && currentRole === 'freelance') return false;
-    return item.roles.includes(currentRole)
-  });
-
-  const dashboardLabel = navItems.find(item => pathname.startsWith(item.href) && item.href !== '/dashboard')?.label || 'Dashboard';
+  const navItems = allNavItems.filter(item => item.roles.includes(currentRole));
+  const filteredOpsNavItems = operationsNavItems.filter(item => item.roles.includes(currentRole));
   
+  const isOperationsActive = operationsNavItems.some(item => pathname.startsWith(item.href));
+
+  let dashboardLabel = 'Dashboard';
+  const activeTopLevel = allNavItems.find(item => pathname.startsWith(item.href) && item.href !== '/dashboard');
+  if (activeTopLevel) {
+    dashboardLabel = activeTopLevel.label;
+  } else if (isOperationsActive) {
+    const activeOp = operationsNavItems.find(item => pathname.startsWith(item.href));
+    dashboardLabel = activeOp?.label || 'Operations';
+  }
+
+
   const vCard = `BEGIN:VCARD
 VERSION:3.0
 FN:${currentUser.name}
@@ -300,27 +317,8 @@ END:VCARD`;
             </SidebarHeader>
             <SidebarMenu>
               {navItems.map((item) => {
+                if(item.href === '/dashboard/technician' && currentRole === 'freelance') return null;
                 const isActive = item.href === '/dashboard' ? pathname === item.href : pathname.startsWith(item.href);
-                 if(item.href === '/dashboard/technician' && currentRole === 'technician') {
-                    // Default to My Jobs for fixed technicians
-                    return (
-                      <SidebarMenuItem key={item.href}>
-                        <Link href="/dashboard/technician">
-                           <SidebarMenuButton
-                            isActive={isActive}
-                            tooltip={{ children: item.label }}
-                          >
-                            <item.icon className="shrink-0"/>
-                            <span>{item.label}</span>
-                          </SidebarMenuButton>
-                        </Link>
-                      </SidebarMenuItem>
-                    )
-                }
-                 if(item.href === '/dashboard/technician/expenses' && isEditingProfile) {
-                     return null;
-                 }
-                
                 return (
                   <SidebarMenuItem key={item.href}>
                     <Link href={item.href}>
@@ -335,6 +333,51 @@ END:VCARD`;
                   </SidebarMenuItem>
                 );
               })}
+
+              {filteredOpsNavItems.length > 0 && (
+                 <Collapsible defaultOpen={isOperationsActive}>
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton
+                          isSubmenu
+                          className="!h-auto !p-0"
+                        >
+                          <div className="flex w-full items-center justify-between p-2">
+                            <div className="flex items-center gap-2">
+                              <Briefcase className="shrink-0" />
+                              <span>Operations</span>
+                            </div>
+                            <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                          </div>
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                    </SidebarMenuItem>
+                    <CollapsibleContent asChild>
+                      <SidebarMenu>
+                        {filteredOpsNavItems.map((item) => {
+                          const isActive = pathname.startsWith(item.href);
+                          return (
+                            <SidebarMenuItem key={item.href}>
+                              <Link href={item.href}>
+                                <SidebarMenuButton
+                                  variant="ghost"
+                                  isActive={isActive}
+                                  tooltip={{ children: item.label }}
+                                  className="ml-5"
+                                >
+                                  <item.icon className="shrink-0"/>
+                                  <span>{item.label}</span>
+                                </SidebarMenuButton>
+                              </Link>
+                            </SidebarMenuItem>
+                          );
+                        })}
+                      </SidebarMenu>
+                    </CollapsibleContent>
+                  </Collapsible>
+              )}
+
+
                {currentRole === 'admin' && (
                 <>
                   <SidebarMenuItem>
@@ -682,5 +725,7 @@ END:VCARD`;
     </SidebarProvider>
   );
 }
+
+    
 
     
