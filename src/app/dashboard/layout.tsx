@@ -734,7 +734,3 @@ END:VCARD`;
     </SidebarProvider>
   );
 }
-
-    
-
-    
