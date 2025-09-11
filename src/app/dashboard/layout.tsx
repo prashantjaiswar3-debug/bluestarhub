@@ -32,6 +32,7 @@ import {
   Building,
   Receipt,
   DatabaseZap,
+  Copy,
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -122,6 +123,12 @@ const initialRoleInfo: Record<UserRole, UserInfo> = {
     default: { name: "Demo User", email: "user@bluestar.com", fallback: "DU", id: "USER-000", avatar: "https://placehold.co/100x100.png", phone: "9876543214" },
 };
 
+type GeneratedCredentials = {
+  username: string;
+  name: string;
+  password?: string;
+};
+
 export default function DashboardLayout({
   children,
 }: {
@@ -164,6 +171,9 @@ export default function DashboardLayout({
   const qrCodeInputRef = React.useRef<HTMLInputElement>(null);
   const logoInputRef = React.useRef<HTMLInputElement>(null);
   
+  const [isCredentialsDialogOpen, setIsCredentialsDialogOpen] = React.useState(false);
+  const [generatedCredentials, setGeneratedCredentials] = React.useState<GeneratedCredentials | null>(null);
+
   const getRole = (): UserRole => {
     if (pathname.startsWith('/dashboard/admin')) return 'admin';
     if (pathname.startsWith('/dashboard/technician/freelance')) return 'freelance';
@@ -216,11 +226,14 @@ export default function DashboardLayout({
     }
     const generatedPassword = Math.random().toString(36).slice(-8);
     const customerName = newCustomer.isCompany ? newCustomer.companyName : newCustomer.name;
-    toast({
-      title: "Customer Registered",
-      description: `Customer ${customerName} created. Email: ${newCustomer.email}, Password: ${generatedPassword}`,
-      duration: 9000,
+    
+    setGeneratedCredentials({
+      name: customerName,
+      username: newCustomer.email,
+      password: generatedPassword,
     });
+    setIsCredentialsDialogOpen(true);
+
     setIsRegisterCustomerOpen(false);
     setNewCustomer({ name: "", email: "", phone: "", address: "", isCompany: false, companyName: "", gstin: "" });
   }
@@ -235,11 +248,14 @@ export default function DashboardLayout({
         return;
     }
     const generatedPassword = Math.random().toString(36).slice(-8);
-    toast({
-      title: "Technician Registered",
-      description: `${newTechnician.type} Technician ${newTechnician.name} created. Email: ${newTechnician.email}, Password: ${generatedPassword}`,
-      duration: 9000,
+
+    setGeneratedCredentials({
+      name: newTechnician.name,
+      username: newTechnician.email,
+      password: generatedPassword,
     });
+    setIsCredentialsDialogOpen(true);
+    
     setIsRegisterTechnicianOpen(false);
     setNewTechnician({ name: "", email: "", phone: "", skills: "", type: "Fixed" });
   }
@@ -254,11 +270,14 @@ export default function DashboardLayout({
         return;
     }
     const generatedPassword = Math.random().toString(36).slice(-8);
-    toast({
-      title: "Sales User Registered",
-      description: `Sales user ${newSales.name} created. Email: ${newSales.email}, Password: ${generatedPassword}`,
-      duration: 9000,
+    
+    setGeneratedCredentials({
+      name: newSales.name,
+      username: newSales.email,
+      password: generatedPassword,
     });
+    setIsCredentialsDialogOpen(true);
+
     setIsRegisterSalesOpen(false);
     setNewSales({ name: "", email: "", phone: "" });
   }
@@ -342,6 +361,16 @@ export default function DashboardLayout({
     toast({title: "Company Profile Updated", description: "Your company details have been saved."});
     setIsCompanyProfileOpen(false);
   }
+
+  const handleCopyCredentials = () => {
+    if (!generatedCredentials) return;
+    const textToCopy = `Username: ${generatedCredentials.username}\nPassword: ${generatedCredentials.password}`;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        toast({ title: "Copied to Clipboard", description: "Credentials copied successfully." });
+    }).catch(err => {
+        toast({ variant: "destructive", title: "Copy Failed", description: "Could not copy credentials." });
+    });
+  };
 
   const navItems = allNavItems.filter(item => {
     if (item.href === '/dashboard/technician' && currentRole === 'freelance') return false;
@@ -902,6 +931,35 @@ END:VCARD`;
                     </DialogClose>
                 )}
             </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isCredentialsDialogOpen} onOpenChange={setIsCredentialsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>User Credentials Generated</DialogTitle>
+            <DialogDescription>
+              The account for <span className="font-semibold">{generatedCredentials?.name}</span> has been created. Please share these credentials securely.
+            </DialogDescription>
+          </DialogHeader>
+          {generatedCredentials && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="generated-username">Username / Email</Label>
+                <Input id="generated-username" readOnly value={generatedCredentials.username} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="generated-password">Password</Label>
+                <Input id="generated-password" readOnly value={generatedCredentials.password} />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="secondary" onClick={handleCopyCredentials}>
+              <Copy className="mr-2 h-4 w-4" />
+              Copy Credentials
+            </Button>
+            <Button onClick={() => setIsCredentialsDialogOpen(false)}>Done</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </SidebarProvider>
