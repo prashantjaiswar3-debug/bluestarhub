@@ -436,7 +436,7 @@ END:VCARD`;
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setIsRegisterTechnician(true)} tooltip={{ children: "Register Technician" }}>
+                    <SidebarMenuButton onClick={() => setIsRegisterTechnicianOpen(true)} tooltip={{ children: "Register Technician" }}>
                       <UserPlus className="shrink-0" />
                       <span>Register Technician</span>
                     </SidebarMenuButton>
@@ -907,3 +907,5 @@ END:VCARD`;
     </SidebarProvider>
   );
 }
+
+    
